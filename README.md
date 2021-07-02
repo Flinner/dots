@@ -20,7 +20,7 @@ This is a seamless configuration, where everything just works, but only for me. 
 
 ## Configuration :computer:<img alt="" align="right" src="https://img.shields.io/github/repo-size/Flinner/dots?color=g&logo=github&style=flat-square"/>
 
-  <img href=".assets/Showcase.jpg" src="https://user-images.githubusercontent.com/85732279/124288803-2381d300-db41-11eb-985b-48d45d9a77ae.png" alt="minimal" align="right" width="600px"/>
+  <img href=".assets/Showcase.jpg" src="https://user-images.githubusercontent.com/85732279/124288803-2381d300-db41-11eb-985b-48d45d9a77ae.png" alt="minimal" align="right" width="500px"/>
 
 :octocat: _Those are some details about my setup_
 
