@@ -1,0 +1,13 @@
+#!/bin/bash
+echo "hi" > /tmp/picpresent
+
+#  What I cant create I can understand, Richard Fayman
+URL="https://wallpapercave.com/download/richard-feynman-wallpapers-wp6637060?nocache=1"
+# WRech
+#URL="https://preview.redd.it/eyuib1knsco61.png?width=1920&format=png&auto=webp&s=bb57dce3780b4cd5d7dfd3f2a795053e3cc22ad9"
+
+CACHE_PATH="${XDG_CACHE_HOME}/$(echo $URL | sed  's/\///g')"
+
+[ -f "$CACHE_PATH" ] || curl "$URL" -o "$CACHE_PATH"
+[ -f "$CACHE_PATH" ] && feh --bg-fill  "$CACHE_PATH"
+

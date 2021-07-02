@@ -1,0 +1,56 @@
+add_newline = false
+format = '$username$hostname$shlvl$kubernetes$directory${custom.git_host}$git_branch$git_commit$git_state$git_status$hg_branch$docker_context$package$cmake$dart$dotnet$elixir$elm$erlang$golang$helm$java$julia$kotlin$nim$nodejs$ocaml$perl$php$purescript$python$ruby$rust$swift$terraform$zig$nix_shell$conda$memory_usage$aws$gcloud$openstack$env_var$crystal$custom$cmd_duration$line_break$lua$jobs$battery$time$status$character'
+
+[directory]
+truncation_length = 5
+format = '[$path]($style)[$lock_symbol]($lock_style) '
+
+[git_commit]
+commit_hash_length = 8
+style = 'bold white'
+
+[git_state]
+
+[hostname]
+ssh_only = true
+format = '<[$hostname]($style)>'
+trim_at = '-'
+style = 'bold dimmed white'
+
+[memory_usage]
+format = '[${ram}(| ${swap})]($style) '
+threshold = 50
+style = 'bold dimmed white'
+disabled = true
+
+[username]
+style_user = 'bold dimmed blue'
+[custom.git_host]
+command = '''
+IFS="/"
+GIT_REMOTE=$(command git ls-remote --get-url 2> /dev/null)
+read -ra GIT_HOST <<< "$GIT_REMOTE"
+
+if [[ "$GIT_REMOTE" =~ "github" ]]; then
+    GIT_REMOTE_SYMBOL=" "
+elif [[ "$GIT_REMOTE" =~ "gitlab" ]]; then
+    GIT_REMOTE_SYMBOL=" "
+elif [[ "$GIT_REMOTE" =~ "bitbucket" ]]; then
+    GIT_REMOTE_SYMBOL=" "
+elif [[ "$GIT_REMOTE" =~ "git" ]]; then
+    GIT_REMOTE_SYMBOL=" "
+else
+    GIT_REMOTE_SYMBOL=" localhost"
+fi
+
+echo "$GIT_REMOTE_SYMBOL${GIT_HOST[2]}"
+IFS=" "
+'''
+when = 'git rev-parse --is-inside-work-tree 2> /dev/null'
+shell = [
+    'sh',
+    '--norc',
+    '--noprofile',
+]
+style = 'bright-yellow bold'
+format = 'at [$output]($style) '

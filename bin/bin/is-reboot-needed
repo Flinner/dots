@@ -1,0 +1,4 @@
+#!/bin/sh
+grep -qs '^ID=arch$' /etc/os-release \
+    && { test -e /lib/modules/`uname -r` \
+         || echo Kernel updated, reboot computer.; }

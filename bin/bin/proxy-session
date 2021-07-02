@@ -1,0 +1,7 @@
+#!/bin/sh
+
+export http_proxy='socks5://127.0.0.1:12345'
+export https_proxy='socks5://127.0.0.1:12345'
+
+echo $https_proxy 
+echo $http_proxy

@@ -1,0 +1,42 @@
+#!/bin/bash
+#xset r rate 400 100
+##emacs -fs &
+rm -rf ~/.cache/fontconfig
+
+# dbus-launch sxhkd &
+
+#gpg-agent --server &
+#feh --bg-fill ~/Pictures/monochrome.jpg
+
+#single monitor wallpaper
+source ~/.fehbg
+#feh --randomize --bg-fill Pictures/wallpapers
+
+
+# dual monitor 
+#feh --bg-scale ~/Pictures/wallpapers/morning-wallpaper-cut1.jpg ~/Pictures/wallpapers/morning-wallpaper.-cut2.jpg # dual monitor 
+#Pictures/wander1.png
+
+#dbus-launch emacs --daemon &
+#other
+(sleep 1 && picom --config "$HOME/.config/picom.conf" )&
+(sleep 1 && keynav)&
+(sleep 1 && ~/bin/startup/keyboard ) &
+(sleep 1 && wired ) &
+(sleep 3 && optimus-manager-qt) &
+(sleep 3 && flameshot) &
+(sleep 4 && keepassxc) &
+(sleep 5 && syncthing -no-browser) &
+(sleep 5 && thunderbird ) &
+#ibus-daemon &
+#uim-toolbar-gtk3-systray & #uim Japanses Input
+
+#if bspwm
+
+
+#thunderbird &
+#ibus-daemon -drx &
+#syncthing-gtk -m &
+#qbittorrent &
+
+#~/bin/wm/download-wallpaper 

@@ -1,0 +1,10 @@
+{
+  "languageserver": {
+    "vlang": {
+      "command": "vls",
+      "rootPatterns": ["v.mod"],
+      "trace.server": "verbose",
+      "filetypes": ["vlanga"]
+    }
+  }
+}

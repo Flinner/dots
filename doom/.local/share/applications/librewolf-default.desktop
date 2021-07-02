@@ -1,0 +1,9 @@
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Version=1.0
+Terminal=false
+Type=Application
+Name=default-LibreWolf
+Exec=/usr/bin/librewolf -P default-release %u
+Icon=librewolf 
+StartupWMClass=LibreWolf

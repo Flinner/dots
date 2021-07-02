@@ -1,0 +1,6 @@
+#!/bin/bash
+
+my_laptop_external_monitor=$(xrandr --query | grep 'HDMI-0')
+if [[ $my_laptop_external_monitor = *connected* ]]; then                                                                                                                                                                              
+xrandr --output HDMI-0 --primary --mode 1920x1080  --rotate normal --output eDP-1-1 --mode 1920x1080 --rotate normal --left-of HDMI-0 &                                                                                              
+fi

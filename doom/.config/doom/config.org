@@ -1,0 +1,781 @@
+# -*- eval:(org-content 2) -*-
+#+TITLE: Config
+#+STARTUP: content
+
+* Table of content :toc_2:FOLD:
+- [[#info][Info]]
+- [[#global-settings][Global Settings]]
+  - [[#private-config][Private Config]]
+  - [[#start-as-a-server][Start as a server]]
+  -  [[#ui][UI]]
+  - [[#keybinds][KeyBinds]]
+  - [[#fill-column][Fill column]]
+  - [[#scroll][Scroll]]
+- [[#modes][Modes]]
+- [[#org-mode][Org-Mode]]
+  - [[#roam][ROAM]]
+  - [[#org-directory][Org Directory]]
+  - [[#agenda][Agenda]]
+  - [[#org-latex][Org-Latex]]
+  - [[#capture-templates][Capture templates]]
+  - [[#modes-1][Modes]]
+  - [[#ui-1][UI]]
+- [[#elfeed][Elfeed]]
+  - [[#setup][Setup]]
+  - [[#key-maps][Key Maps]]
+  - [[#utils][Utils]]
+  - [[#modes-2][Modes]]
+- [[#languages][Languages]]
+  - [[#rust][Rust]]
+  - [[#nand2tetris][nand2tetris]]
+- [[#irc][IRC]]
+- [[#telega][Telega]]
+- [[#company-mode][Company mode]]
+- [[#ranger][Ranger]]
+- [[#fixes][Fixes]]
+
+* Info
+#+begin_src emacs-lisp
+;; DOOMDIR/config.el -*- lexical-binding: t; -*-
+;; Here are some additional functions/macros that could help you configure Doom:
+;;
+;; - `load!' for loading external *.el files relative to this one
+;; - `use-package!' for configuring packages
+;; - `after!' for running code after a package has loaded
+;; - `add-load-path!' for adding directories to the `load-path', relative to
+;;   this file. Emacs searches the `load-path' when you load packages with
+;;   `require' or `use-package'.
+;; - `map!' for binding new keys
+;;
+;; To get information about any of these functions/macros, move the cursor over
+;; the highlighted symbol at press 'K' (non-evil users must press 'C-c c k').
+;; This will open documentation for it, including demos of how they are used.
+;;
+;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
+;; they are implemented.
+;;
+#+end_src
+* Global Settings
+Place your private configuration here! Remember, you do not need to run 'doom
+sync' after modifying this file!
+** Private Config
+Some functionality uses this to identify you, e.g. GPG configuration, email
+clients, file templates and snippets.
+
+#+begin_src emacs-lisp
+
+(setq user-full-name "Serben"
+      user-mail-address "serben@disroot.org")
+#+end_src
+** Start as a server
+#+begin_src emacs-lisp
+;;(server-start)
+#+end_src
+**  UI
+
+Doom exposes five (optional) variables for controlling fonts in Doom. Here
+are the three important ones:
+
++ src_lisp{doom-font'}
++ src_lisp{doom-variable-pitch-font'}
++ src_lisp{doom-big-font'} -- used for `doom-big-font-mode'; use this for
+presentations or streaming.
+
+They all accept either a font-spec, font string ("Input Mono-12"), or xlfd
+font string. You generally only need these two:
+*** Theme
+There are two ways to load a theme. Both assume the theme is installed and
+available. You can either set src_elisp{`doom-theme'} or manually load a theme
+with the src_elisp{`load-theme'} function. This is the default src_elisp{(setq
+                                                                          doom-theme 'doom-one)}
+#+begin_src elisp :tangle yes
+(setq leuven-scale-org-agenda-structure nil)
+(setq leuven-scale-outline-headlines nil)
+(setq doom-theme 'doom-gruvbox)
+#+end_src
+*** Font
+
+#+begin_src elisp :tangle yes
+(setq doom-font (font-spec :family "FiraCode" :size 9.0 :weight 'regular)
+      doom-variable-pitch-font (font-spec :family "sans" :size 9.0))
+(after! doom-themes
+  (set-fontset-font t 'arabic "Noto Sans Arabic UI")
+  (setq doom-themes-enable-bold t
+        doom-themes-enable-italic t
+        ))
+(custom-set-faces!
+  '(font-lock-comment-face :slant italic)
+  '(font-lock-keyword-face :slant italic)
+  )
+;;(setq doom-font (font-spec :family "Open Sans" :size 12 :weight 'regular)
+;;doom-variable-pitch-font (font-spec :family "sans" :size 12))
+#+end_src
+*** Line Numbers
+#+begin_src elisp
+(setq display-line-numbers-type 't)
+#+end_src
+*** Neotree
+Use Icons
+#+begin_src elisp :tangle yes
+(setq neo-theme (if (display-graphic-p) 'icons 'arrow))
+#+end_src
+** KeyBinds
+*** Function row <F-{1-12}>
+#+begin_src elisp :tangle yes
+(map!
+ :n "<f5>" 'rustic-cargo-test
+ :n "C-<f5>" 'compile-on-save-mode
+ :n "<f6>" 'elfeed
+ ;; :n "<f7>" email TODO: Add email
+ :n "<f8>" (cmd! (org-agenda nil "c"))
+ :n "<f12>" 'delve-open-or-select
+ )
+#+end_src
+*** alt Leader key
+#+begin_src elisp :tangle yes
+(setq doom-leader-alt-key "C-SPC")
+(setq doom-localleader-alt-key "C-SPC m")
+#+end_src
+*** Text Manipulation
+**** C-h as backspace
+#+begin_src elisp :tangle yes
+(map! "C-h" 'backward-delete-char-untabify)
+#+end_src
+**** ediff init and example
+#+begin_src elisp :tangle yes
+(defun doom/ediff-init-and-example ()
+  "ediff the current `init.el' with the example in doom-emacs-dir"
+  (interactive)
+  (ediff-files (concat doom-private-dir "init.el")
+               (concat doom-emacs-dir "init.example.el")))
+
+(define-key! help-map
+  "di"   #'doom/ediff-init-and-example
+  )
+#+end_src
+** Fill column
+#+begin_src elisp :tangle yes
+(setq-default fill-column 80)
+#+end_src
+** Scroll
+#+begin_src elisp :tangle yes
+(setq scroll-conservatively 10)
+(setq scroll-margin 3)
+#+end_src
+* Modes
+Global Mixed Pitch  mode!
+#+begin_src elisp :tangle yes
+;;(add-hook 'text-mode-hook 'mixed-pitch-mode)
+(add-hook 'text-mode-hook 'blink-cursor-mode)
+#+end_src
+
+* Org-Mode
+** ROAM
+*** Setup
+#+begin_src elisp :tangle yes
+(use-package org-roam-server
+  :after org-roam
+  :config
+  (setq org-roam-server-host "127.0.0.1"
+        org-roam-server-port 8888
+        org-roam-server-authenticate nil
+        org-roam-server-export-inline-images t
+        org-roam-server-serve-files nil
+        org-roam-server-served-file-extensions '("pdf" "mp4" "ogv")
+        org-roam-server-network-poll t
+        org-roam-server-network-arrows nil
+        org-roam-server-network-label-truncate t
+        org-roam-server-network-label-truncate-length 60
+        org-roam-server-network-label-wrap-length 20)
+
+  (defun org-roam-server-open ()
+    "Ensure the server is active, then open the roam graph."
+    (interactive)
+    (unless (server-running-p)
+      (org-roam-server-mode 1))
+    (browse-url-xdg-open (format "http://localhost:%d" org-roam-server-port))))
+#+end_src
+*** Set Directory
+#+begin_src elisp :tangle yes
+;; Moved to Org Directory
+#+end_src
+*** Deft
+#+begin_src elisp :tangle yes
+(setq deft-directory "~/org/roam")
+(setq deft-extensions '("md" "tex" "org"))
+(setq deft-recursive t)
+(setq deft-strip-title-regexp "\\(?:^%+\\|^#\\+TITLE: *\\|^[#* ]+\\|-\\*-[[:alpha:]]+-\\*-\\|^Title:[	 ]*\\|#+$\\)")
+#+end_src
+*** Dailies Template
+me is Smurt
+#+begin_src elisp :tangle yes
+(setq org-roam-dailies-capture-templates
+      (let ((head "\
+:PROPERTIES:
+:ID:       %<%Y%m%d>-daily
+:TITLE: %<%Y-%m-%d (%A)>
+:STARTUP: showall
+:ROAM_TAGS: dailies
+:END:\
+\n#+STARTUP: showall\
+\* MetaData\
+\n- type: [[id:8bedd21f][Dailies]]\
+ \n* Journal :journal: \
+ \n Feelings throught the day\
+ \n* Gratitude \n1. Past\n2. Present\n3. Future\
+ \n* Goals for today [/][%]\
+ \n- [ ] \
+ \n* The Good and Bad \
+ \n** YES \
+ \n** NO \
+  "))
+        `(("j" "journal" entry
+           #'org-roam-capture--get-point
+           "* %<%H:%M> %?"
+           :file-name "daily/%<%Y-%m-%d>"
+           :head ,head
+           :olp ("Journal"))
+          ("t" "do today" item
+           #'org-roam-capture--get-point
+           "[ ] %(princ as/agenda-captured-link)"
+           :file-name "daily/%<%Y-%m-%d>"
+           :head ,head
+           :olp ("Do Today")
+           :immediate-finish t)
+          ("m" "maybe do today" item
+           #'org-roam-capture--get-point
+           "[ ] %(princ as/agenda-captured-link)"
+           :file-name "daily/%<%Y-%m-%d>"
+           :head ,head
+           :olp ("Maybe Do Today")
+           :immediate-finish t))))
+#+end_src
+
+#+RESULTS:
+| j | journal | entry | #'org-roam-capture--get-point | * %<%H:%M> %? | :file-name | daily/%<%Y-%m-%d> | :head | :PROPERTIES: |
+
+*** Templates
+#+INCLUDE: "~/org/roam/templates.org"
+*** delve
+#+begin_src elisp :tangle yes
+                                        ;(add-hook 'org-mode-hook #'delve-minor-mode-maybe-activate)
+(setq delve-use-icons-in-completions t)
+(set-evil-initial-state! 'delve-mode 'insert)
+(map! :map delve-mode-map
+      :n "gr"      #'delve-refresh-buffer
+      :n "<right>" #'delve-expand-insert-tolinks
+      :n "<left>"  #'devle-expand-insert-backlinks
+      :n "TAB"  #'delve-expand-toggle-sublist)
+"RET"  #'lister-key-action
+:localleader
+"RET"  #'lister-key-action
+"TAB"  #'delve-expand-toggle-sublist
+#+end_src
+*** fixes
+smartparens breaks file viewer! [[https://github.com/org-roam/org-roam-server/issues/115][org-roam/org-roam-server#115 Calling "org-roam-server-mode" throws "Wrong typ...]]
+#+begin_src elisp :tangle yes
+(defun org-roam-server-open ()
+  "Ensure the server is active, then open the roam graph."
+  (interactive)
+  (smartparens-global-mode -1)
+  (org-roam-server-mode 1)
+  (browse-url-xdg-open (format "http://localhost:%d" org-roam-server-port))
+  (smartparens-global-mode 1))
+;; automatically enable server-mode
+;; (after! org-roam
+;;   (smartparens-global-mode -1)
+;;   (org-roam-server-mode)
+;;   (smartparens-global-mode 1))
+#+end_src
+for v2,
+#+begin_src elisp :tangle yes
+(setq org-roam-prefer-id-links t)
+#+end_src
+** Org Directory
+If you use `org' and don't want your org files in the default location below,
+change `org-directory'. It must be set before org loads!, end it with a slash "/"
+#+begin_src elisp
+(setq org-directory "~/org/org/")
+(setq org-college-file(concat org-directory "college.org"))
+;; roam
+(setq org-roam-directory "~/org/roam/")
+(setq org-roam-dailies-directory "daily/")
+(setq org-roam-intersting-file (concat org-roam-directory "internet/intersting.org"))
+(setq org-roam-goals-file (concat org-roam-directory "goals.org"))
+#+end_src
+
+** Agenda
+*** custom commands [Inactive]
+#+begin_src elisp :tangle no
+(setq org-agenda-custom-commands
+      '(("d" "Today"
+         ((tags-todo "SCHEDULED<\"<+1d>\"&PRIORITY=\"A\""
+                     ((org-agenda-skip-function
+                       '(org-agenda-skip-entry-if 'todo 'done))
+                      (org-agenda-overriding-header "High-priority unfinished tasks:")))
+          (agenda "" ((org-agenda-span 1)
+                      (org-scheduled-delay-days -14)
+                      (org-agenda-overriding-header "Schedule")))
+          (tags-todo "SCHEDULED<\"<+1d>\""
+                     ((org-agenda-skip-function
+                       '(or (org-agenda-skip-entry-if 'done)))
+                      (org-agenda-overriding-header "Tasks:")))))))
+#+end_src
+*** Org super agenda mode
+[[https://github.com/alphapapa/org-super-agenda][Documentation]]
+This is the raw example
+#+begin_src elisp :tangle yes
+(use-package! org-super-agenda
+  :after org-agenda
+  ;;:custom-face
+  ;;(org-super-agenda-header ((default (:inherit propositum-agenda-heading))))
+
+  :init
+  (setq
+   org-agenda-skip-scheduled-if-done t
+   org-agenda-skip-deadline-if-done t
+   org-agenda-include-deadlines t
+   org-agenda-block-separator nil
+   org-agenda-compact-blocks t
+   org-agenda-start-day nil ;; i.e. today
+   org-agenda-span 1
+   org-agenda-start-on-weekday nil
+   )
+
+  (setq org-agenda-custom-commands
+        '(("c" "Super view"
+           (
+            (agenda "" ((org-agenda-overriding-header "")
+                        (org-super-agenda-groups
+                         '((:name "Today"
+                            :time-grid t
+                            :date today
+                            :order 1)
+                           (:discard (:anything t))
+                           ))))
+            (alltodo "" ((org-agenda-overriding-header "")
+                         (org-super-agenda-groups
+                          '(;;(:log t)
+                            (:name "Important"
+                             :priority "A"
+                             :order 1
+                             )
+                            ;; College
+                            (:name "Events"
+                             :tag "event"
+                             :order 2
+                             )
+                            (:name "College"
+                             :tag "college"
+                             :order 3
+                             )
+                            ;; (:name "Next"
+                            ;;  :todo "STRT"
+                            ;;  :order 2)
+                            ;; ====schedules====== ;;
+                            ;; (:name "habits"
+                            ;;  :and (:habit t :scheduled today )
+                            ;;  :order 13
+                            ;;  )
+                            (:name "Scheduled Soon"
+                             :and (:scheduled future :not (:habit t))
+                             :order 6)
+                            (:name "Due Soon"
+                             :deadline future
+                             :order 6)
+                            (:name "Missed"
+                             :scheduled past
+                             :deadline past
+                             :order 7)
+                            ;;==============================;;
+                            (:name "FOSS"
+                             :tag "foss"
+                             :order 9
+                             )
+                            (:name "Media to Consoom"
+                             :tag "media"
+                             :order 14
+                             )
+                            (:name "code"
+                             :tag "code"
+                             :order 15
+                             )
+                            (:name "Linux"
+                             :tag "rice"
+                             :order 16
+                             )
+
+                            (:discard (:habit t))
+                            ))))))))
+  :config
+  (org-super-agenda-mode))
+#+end_src
+*** UI
+#+begin_src elisp :tangle yes 
+(add-hook 'org-agenda-mode-hook 'elegant-agenda-mode)
+#+end_src
+*** fixes
+#+begin_src elisp :tangle yes
+(with-eval-after-load 'org-agenda
+  (define-key org-super-agenda-header-map "j" nil)
+  (define-key org-super-agenda-header-map "k" nil))
+#+end_src
+save before quiting!
+#+begin_src elisp
+(advice-add 'org-agenda-quit :before 'org-save-all-org-buffers)
+#+end_src
+** Org-Latex
+*** Latex Image Preview options
+#+begin_src elisp :tangle no
+'(org-format-latex-options
+  (quote
+   (:foreground default :background default :scale 0.5 :html-foreground "Black" :html-background "Transparent" :html-scale 1.0 :matchers
+    ("begin" "$1" "$" "$$" "\\(" "\\["))))
+(set-default 'preview-scale-function 0.2)
+#+end_src
+Imagemagick since dvipng can't handle tikz \LaTeX
+#+begin_src elisp :tangle no
+(setq org-latex-create-formula-image-program 'imagemagick)
+#+end_src
+*** Update Latex Fragments with font change
+#+begin_src elisp :tangle yes
+(add-hook 'org-mode-hook 'turn-on-auto-fill)
+(defun update-org-latex-fragments ()
+  (org-latex-preview '(64))
+  (plist-put org-format-latex-options :scale text-scale-mode-amount)
+  (org-latex-preview '(16)))
+(add-hook 'text-scale-mode-hook 'update-org-latex-fragments)
+#+end_src
+*** Tikz Preview
+#+begin_src elisp :tangle yes
+(eval-after-load "preview"
+  '(add-to-list 'preview-default-preamble "\\PreviewEnvironment{tikzpicture}" t))
+#+end_src
+*** nice to be able to use cdlatex.
+#+begin_src elisp :tangle yes
+(after! org (add-hook 'org-mode-hook 'turn-on-org-cdlatex))
+#+end_src
+*** Now, by default, LSPs don’t really function at all in src blocks.
+#+begin_src elisp :tangle yes
+(cl-defmacro lsp-org-babel-enable (lang)
+  "Support LANG in org source code block."
+  (setq centaur-lsp 'lsp-mode)
+  (cl-check-type lang stringp)
+  (let* ((edit-pre (intern (format "org-babel-edit-prep:%s" lang)))
+         (intern-pre (intern (format "lsp--%s" (symbol-name edit-pre)))))
+    `(progn
+       (defun ,intern-pre (info)
+         (let ((file-name (->> info caddr (alist-get :file))))
+           (unless file-name
+             (setq file-name (make-temp-file "babel-lsp-")))
+           (setq buffer-file-name file-name)
+           (lsp-deferred)))
+       (put ',intern-pre 'function-documentation
+            (format "Enable lsp-mode in the buffer of org source block (%s)."
+                    (upcase ,lang)))
+       (if (fboundp ',edit-pre)
+           (advice-add ',edit-pre :after ',intern-pre)
+         (progn
+           (defun ,edit-pre (info)
+             (,intern-pre info))
+           (put ',edit-pre 'function-documentation
+                (format "Prepare local buffer environment for org source block (%s)."
+                        (upcase ,lang))))))))
+(defvar org-babel-lang-list
+  '("go" "python" "ipython" "bash" "sh"))
+(dolist (lang org-babel-lang-list)
+  (eval `(lsp-org-babel-enable ,lang)))
+#+end_src
+** Capture templates
+#+begin_src elisp :tangle yes
+(after! org
+  (setq org-capture-templates
+        '(
+
+          ("t" "General Todo")
+          ("tt" "General" entry
+           (file+headline +org-capture-todo-file  "Inbox")
+           "* TODO %?\n%i")
+          ("tT" "Today" entry
+           (file+headline +org-capture-todo-file  "Inbox")
+           "* TODO %?\n%iSCHEDULED: %T\n")
+
+          ;; College
+          ("c" "College")
+          ("ch" "Homework" entry
+           (file+headline org-college-file  "Homework :college:hw:")
+           "* TODO %?\n%i:PROPERTIES:\n:Created: %U\n:END:")
+          ("cq" "Quiz/Exam/Test" entry
+           (file+headline org-college-file "Quiz :college:exam:")
+           "* TODO %?\n%i:PROPERTIES:\n:Created: %U\n:END:")
+          ("ce" "Event" entry
+           (file+headline org-college-file "Event :college:event:")
+           "* TODO %?\n%i:PROPERTIES:\n:Created: %U\n:END:")
+          ("ct" "Todo" entry
+           (file+headline org-college-file "College Todo :college:")
+           "* TODO %?\n%i:PROPERTIES:\n:Created: %U\n:END:")
+
+          ("i" "Interesting")
+          ("iw" "Interesting Website" entry
+           (file+headline org-roam-intersting-file "Website")
+           "* %?\n%i\n")
+          ("it" "Interesting tweet" entry
+           (file+headline org-roam-intersting-file "Tweet")
+           "- %?\n%i\n")
+          ("ii" "Information" entry
+           (file+headline org-roam-intersting-file  "Information")
+           "** PROJ %?\n%i\n")
+          ("iq" "Quote" entry
+           (file+headline org-roam-intersting-file  "Quotes")
+           "** %?\n%i\n")
+          ("ip" "Project Idea" entry
+           (file+headline org-roam-goals-file  "Project Ideas")
+           "** PROJ %?\n%i\n")
+          ("ib" "Blog Ideas" entry
+           (file+headline org-roam-goals-file  "Blog Ideas")
+           "- %?\n%i\n")
+
+          ;; Media
+          ("m" "Media")
+          ("mr" "To Read" entry
+           (file+headline +org-capture-todo-file  "To Read :media:read:")
+           "* TODO %?\n%i\n")
+          ("mw" "To Watch" entry
+           (file+headline +org-capture-todo-file  "To Watch :media:watch:")
+           "* TODO %?\n%i\n")
+
+          ("r" "Rice")
+          ("ie" "Emacs Ideas" entry
+           (file+headline +org-capture-todo-file  "Emacs Ideas :emacs:rice:")
+           "- %?\n%i\n")
+          ("ro" "Other Ideas" entry
+           (file+headline +org-capture-todo-file "Window Manager :wm:rice:")
+           "- %?\n%i\n")
+
+          ("o" "Free/Open software")
+          ("oa" "AUR" entry
+           (file+headline +org-capture-todo-file "AUR :foss:aur:")
+           "* TODO %? \n%i\n")
+
+          )))
+#+end_src
+** Modes
+#+begin_src elisp :tangle yes
+;;(add-hook 'org-mode-hook #'mixed-pitch-mode)
+(setq geiser-default-implementation  'guile)
+#+end_src
+*** ditaa
+#+begin_src elisp :tangle yes
+(setq org-ditaa-jar-path "/usr/share/java/ditaa/ditaa-0.11.jar")
+#+end_src
+*** Mixed pitch mode
+#+begin_src emacs-lisp :tangle yes
+(add-hook 'markdown-mode-hook 'mixed-pitch-mode)
+(add-hook 'org-mode-hook 'mixed-pitch-mode)
+#+end_src
+** UI
+*** hide the emphasis markup (e.g. /.../ for italics, *...* for bold, etc.):
+#+begin_src elisp :tangle yes
+(setq org-hide-emphasis-markers t)
+#+end_src
+*** Fonts
+#+begin_src elisp :tangle no
+(let* ((variable-tuple
+        (cond ((x-list-fonts "Source Sans Pro") '(:font "Source Sans Pro"))
+              ((x-list-fonts "Lucida Grande")   '(:font "Lucida Grande"))
+              ((x-list-fonts "Verdana")         '(:font "Verdana"))
+              ((x-family-fonts "Sans Serif")    '(:family "Sans Serif"))
+              (nil (warn "Cannot find a Sans Serif Font.  Install Source Sans Pro."))))
+       (base-font-color     (face-foreground 'default nil 'default))
+       (headline           `(:inherit default :weight bold :foreground ,base-font-color)))
+
+  (custom-theme-set-faces
+   'user
+   `(org-level-8 ((t (,@headline ,@variable-tuple))))
+   `(org-level-7 ((t (,@headline ,@variable-tuple))))
+   `(org-level-6 ((t (,@headline ,@variable-tuple))))
+   `(org-level-5 ((t (,@headline ,@variable-tuple))))
+   `(org-level-4 ((t (,@headline ,@variable-tuple :height 1.1))))
+   `(org-level-3 ((t (,@headline ,@variable-tuple :height 1.25))))
+   `(org-level-2 ((t (,@headline ,@variable-tuple :height 1.5))))
+   `(org-level-1 ((t (,@headline ,@variable-tuple :height 1.75))))
+   `(org-document-title ((t (,@headline ,@variable-tuple :height 2.0 :underline nil))))))
+#+end_src
+*** Image preview from urls
+#+begin_src elisp :tangle no
+(defun org-image-link (protocol link _description)
+  "Interpret LINK as base64-encoded image data."
+  (cl-assert (string-match "\\`img" protocol) nil
+             "Expected protocol type starting with img")
+  (let ((buf (url-retrieve-synchronously (concat (substring protocol 3) ":" link))))
+    (cl-assert buf nil
+               "Download of image \"%s\" failed." link)
+    (with-current-buffer buf
+      (goto-char (point-min))
+      (re-search-forward "\r?\n\r?\n")
+      (buffer-substring-no-properties (point) (point-max)))))
+
+(org-link-set-parameters
+ "imghttp"
+ :image-data-fun #'org-image-link)
+
+(org-link-set-parameters
+ "imghttps"
+ :image-data-fun #'org-image-link)
+#+end_src
+*** align tags
+aligning tags misses up with capture templates
+#+begin_src elisp :tangle yes
+;(after! org (setq org-tags-column 60))
+#+end_src
+
+* Elfeed
+** Setup
+*** Use Filter:
+#+begin_src elisp :tangle yes
+(setq-default elfeed-search-filter "@1-week-ago")
+#+end_src
+
+*** Source of Feeds
+Takes feeds from Org-File
+#+begin_src elisp :tangle yes
+;(setq rmh-elfeed-org-files (list "~/.doom.d/elfeed.org" (concat org-roam-directory "internet/elfeed.org")))
+(setq rmh-elfeed-org-files (list (concat org-roam-directory "elfeed.org")))
+#+end_src
+
+*** Refresh Feed
+Set up the url-queue variables for swift and complete operation. The
+defaults are too bad. Especially /url-queue-timeout/ is way too short
+for loading feeds.
+#+begin_src elisp :tangle yes
+(setf url-queue-parallel-processes 20
+      url-queue-timeout 10)
+#+end_src
+** Key Maps
+| KeyBinds | Usage          |
+|----------+----------------|
+| gv       | Open With mpv  |
+| R        | Update Feed    |
+| r        | Mark As Read   |
+| u        | Mark As Unread |
+| <f6>     | Close          |
+| b        | browse url     |
+| c        | clear filter   |
+| s        | search live    |
+| S        | set search     |
+
+Search examples: `@1-week-ago +videos -linux` (+/- are used to filter tags)
+
+#+begin_src elisp :tangle yes
+(after! elfeed (map!  :map elfeed-search-mode-map
+                      :n "gv" 'elfeed-view-mpv
+                      :n "R" 'elfeed-update
+                      :n "r" 'elfeed-search-untag-all-unread
+                      :n "u" 'elfeed-search-tag-all-unread
+                      :n "G" 'evil-goto-line
+                      :n "<f6>" 'elfeed-close-prev-buffer
+                      :n "b" 'elfeed-search-browse-url
+                      :n "c" 'elfeed-search-clear-filter
+                      ))
+#+end_src
+
+** Utils
+*** elfeed-close-prev-buffer
+Closing elfeed forwards to prev buffer
+#+begin_src elisp :tangle yes
+(defun elfeed-close-prev-buffer ()
+  (interactive)
+  "elfeed-kill and restore prev buffer"
+  (elfeed-kill-buffer)
+  (previous-buffer))
+#+end_src
+
+*** elfeed-view-mpv
+(add-hook 'LaTeX-mode-hook (lambda () (yas-minor-mode -1)))
+(add-hook 'LaTeX-mode-hook #'auto-fill-mode)
+Run video in mpv
+#+begin_src elisp :tangle yes
+
+(defun elfeed-v-mpv (url title)
+  "Watch a video from URL in MPV"
+  (defvar cmd (format "mpv --ytdl-format=worst  '%s'" url))
+  (save-window-excursion
+    (async-shell-command cmd)
+    (save-window-excursion
+      (shell-command (format"notify-send 'Loading Video' '%s'" title)))
+    (message "Video Loading")
+    )
+  )
+
+
+(defun elfeed-view-mpv (&optional use-generic-p)
+  "Youtube-feed link"
+  (interactive "P")
+  (let ((entries (elfeed-search-selected)))
+    (cl-loop for entry in entries
+             do (elfeed-untag entry 'unread)
+             when (elfeed-entry-link entry)
+             do (elfeed-v-mpv it (elfeed-entry-title entry))) ;; print title
+    (mapc #'elfeed-search-update-entry entries)
+    (unless (use-region-p) (forward-line))))
+#+end_src
+** Modes
+#+begin_src elisp :tangle yes
+ ;;(add-hook 'elfeed-show-mode-hook #'mixed-pitch-mode)
+#+end_src
+* Languages
+** Rust
+Fix "waiting blocking file"
+#+begin_src elisp :tangle yes
+(setq lsp-rust-target "/tmp/rust-crap")
+#+end_src
+** nand2tetris
+#+begin_src elisp :tangle yes
+#+end_src
+* IRC
+Include The Irc stuff
+##+INCLUDE: "~/Documents/org-roam/internet/irc.org"
+
+#+begin_src elisp :tangle no
+
+(after! circe
+  (set-irc-server! "example.com"
+                   `(:tls t
+                     :port 6697
+                     :nick "username"
+                     :sasl-username ,(+pass-get-user "irc/example.com")
+                     :sasl-password (lambda (&rest _) (+pass-get-secret "irc/example.com"))
+                     :channels ("#lainchan" "#questions")))
+  (set-irc-server! "chat.freenode.net"
+                   `(:tls t
+                     :port 6697
+                     :nick "username"
+                     :sasl-username ,(+pass-get-user "irc/example.net")
+                     :sasl-password (lambda (&rest _) (+pass-get-secret "irc/example.net"))
+                     :channels ("#emacs")))
+#+end_src
+* Telega
+k conflicts with evil up
+#+begin_src elisp :tangle yes
+(with-eval-after-load 'telega
+  (define-key telega-msg-button-map "k" nil)
+  (define-key telega-msg-button-map "l" nil))
+(setq telega-chat-bidi-display-reordering 'right-to-left)
+#+end_src
+* Company mode
+#+begin_src elisp :tangle yes
+(setq company-idle-delay 0.0
+company-minimum-prefix-length 1)
+#+end_src
+* Ranger
+replace dired
+#+begin_src elisp :tangle yes
+(ranger-override-dired-mode t)
+#+end_src
+* Fixes
+In case of Emacs28,
+#+begin_src elisp :tangle yes
+(when EMACS28+
+  (add-hook 'latex-mode-hook #'TeX-latex-mode))
+(setq haskell-process-type 'cabal-new-repl)
+#+end_src

@@ -1,0 +1,11 @@
+* DOOM EMACS
+** .doom.d
+contains doom config
+#+begin_src sh
+.emacs.d/bin/doom build
+#+end_src
+** .local
+contains the org-protocol
+#+begin_src sh
+update-desktop-database ~/.local/share/applications/
+#+end_src

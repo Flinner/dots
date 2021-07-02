@@ -1,0 +1,38 @@
+#!/bin/sh
+echo "settings: '/screen' '/ebook' 'printer' '/repress'"
+
+PS3='Please enter your choice: '
+SETTINGS=''
+options=("low" "medium" "high" "highest" "quti")
+select opt in "${options[@]}"
+do
+    case $opt in
+        "low")
+            echo "you chose '/screen'"
+						SETTINGS="/screen"
+						break
+            ;;
+        "medium")
+            echo "you choose '/ebook'"
+						SETTINGS="/ebook"
+						break
+            ;;
+        "high")
+            echo "you chose '/printer'"
+						SETTINGS="/printer"
+						break
+            ;;
+        "highest")
+            echo "you chose '/repress'"
+						SETTINGS="/repress"
+						break
+            ;;
+        "quit")
+						echo "quitting..."
+            break
+            ;;
+        *) echo "invalid option $REPLY";;
+    esac
+done
+
+gs -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=$SETTINGS -sOutputFile=$2 $1 

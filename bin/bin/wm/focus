@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# if bspwm
+	bspc node "$@" ||
+  bspc monitor "$@"
+

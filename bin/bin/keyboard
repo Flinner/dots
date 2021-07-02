@@ -1,0 +1,4 @@
+setxkbmap -option ctrl:swapcaps 
+setxkbmap -option altwin:swap_lalt_lwin 
+setxkbmap -model pc105 -layout us,ar -variant ,qwerty -option grp:shifts_toggle 
+

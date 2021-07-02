@@ -1,0 +1,16 @@
+use_anti_alias = true
+use_variable_column_width = true
+type_engine = cairo
+bg_color = #28282a293636
+depth = 32
+fg_color = #efeff0f0ebeb
+fontsize = 12
+vertical_mode = none
+only_use_unicode_font = false
+scrollbar_mode = none
+not_use_unicode_font = false
+blink_cursor = true
+regard_uri_as_word = true
+use_transbg = false
+wall_picture = 
+alpha = 220
