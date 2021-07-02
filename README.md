@@ -20,6 +20,8 @@ This is a seamless configuration, where everything just works, but only for me. 
 
 ## Configuration :computer:<img alt="" align="right" src="https://img.shields.io/github/repo-size/Flinner/dots?color=g&logo=github&style=flat-square"/>
 
+  <img href=".assets/Showcase.jpg" src="https://user-images.githubusercontent.com/85732279/124288803-2381d300-db41-11eb-985b-48d45d9a77ae.png" alt="minimal" align="right" width="600px"/>
+
 :octocat: _Those are some details about my setup_
 
 + **OS**							• [Artix Linux](https://artixlinux.org)
@@ -28,6 +30,7 @@ This is a seamless configuration, where everything just works, but only for me. 
 + **Terminal**						• [`Alacritty`](https://github.com/alacritty/alacritty/) 
 + **Editor**						• [`Neovim`](https://github.com/neovim/neovim/) - [`Emacs`](https://emacs.org)
 + **Theme**							• [`Custom - Gruvbox-Snazzy hybrid`]
++ **File Manager**							• [`Ranger`](https://github.com/ranger/ranger)
 + **Font**							• [`Fira Code (Nerd)`](https://github.com/ryanoasis/nerd-fonts)
 + **System information**			• [`neofetch`](https://github.com/dylanaraps/neofetch)
 + **Fuzzy finder**					• [`fzf`](https://github.com/junegunn/fzf) 
