@@ -1,6 +1,12 @@
 #+title: Flinner's Config
 #+PROPERTY: header-args:emacs-lisp :tangle ./init.el :mkdirp yes
 #+startup: content
+* README:
+run the following
+#+begin_src emacs-lisp :tangle no
+  (all-the-icons-install-fonts)
+  (fira-code-mode-set-font)
+#+end_src
 
 * Packaging
 Initialize Package sources
@@ -74,12 +80,14 @@ Emacs Backups trashing local dir!
 #+end_src
 Better Scrolling
 #+begin_src elisp
-(setq scroll-conservatively 10)
-(setq scroll-margin 3)
+  (setq scroll-conservatively 10)
+  (setq scroll-margin 3)
+  (use-package smooth-scrolling
+     :init (smooth-scrolling-mode 1))
 #+end_src
 ** Fonts
 #+begin_src emacs-lisp
-  (setq my/ui/monofont "FiraCode")
+  (setq my/ui/monofont "Fira Code")
   (setq my/ui/varfont "Cantarell")
 #+end_src
 
@@ -200,6 +208,8 @@ Eval First and Last at least block!
   "/" '(counsel-projectile-rg :which-key "projects")
   "," '(counsel-rg :which-key "rg")
   "u" '(universal-argument :which-key "universal arg")
+  ";" '(counsel-M-x :which-key "M-x")
+  ":" '(eval-expression :which-key "eval expression")
 #+end_src
 
 **** Toggles (t)
@@ -223,6 +233,7 @@ Eval First and Last at least block!
   
   "sb" '(swiper :which-key "Choose Theme")
 #+end_src
+
 **** Files (f)
 #+begin_src emacs-lisp 
   "f"  '(:ignore t :which-key "Files")
@@ -365,15 +376,31 @@ Eval First and Last at least block!
 
 *** Evil Escape
 #+begin_src emacs-lisp
-  (use-package evil-escape
-    :after evil
-    :init
-    (evil-escape-mode)
-    :config
-    (setq evil-escape-key-sequence "jk")
-    (setq evil-escape-delay 0.2)
-    (setq evil-escape-unordered-key-sequence t)
-    )
+    ;; (use-package evil-escape
+    ;;   :after evil
+    ;;   :init
+    ;;   (setq  'evil-escape-excluded-major-modes '(magit-status-mode))
+    ;;   (evil-escape-mode)
+    ;;   :config
+    ;;   (setq evil-escape-key-sequence "jk")
+    ;;   (setq evil-escape-delay 0.2)
+    ;;   (setq evil-escape-unordered-key-sequence t))
+  (defun my-jk ()
+    (interactive)
+    (let* ((initial-key ?j)
+           (final-key ?k)
+           (timeout 0.5)
+           (event (read-event nil nil timeout)))
+      (if event
+          ;; timeout met
+          (if (and (characterp event) (= event final-key))
+              (evil-normal-state)
+            (insert initial-key)
+            (push event unread-command-events))
+        ;; timeout exceeded
+        (insert initial-key))))
+  
+  (define-key evil-insert-state-map (kbd "j") 'my-jk)
 #+end_src
 
 * Completions
@@ -682,11 +709,11 @@ Lsp UI
       (lsp-ui-doc-mode t)
       ;(lsp-ui-sideline-show-hover t)
    ;         (lsp-ui-doc-enable nil)
-      :bind (:map lsp-ui-mode-map
-          ("U" . lsp-ui-doc-focus-frame)
-      :map lsp-ui-doc-frame-mode-map
-          ("Q" . lsp-ui-doc-unfocus-frame)
-    ))
+      ;; :bind (:map lsp-ui-mode-map
+      ;;     ("U" . lsp-ui-doc-focus-frame)
+      ;; :map lsp-ui-doc-frame-mode-map
+      ;;     ("Q" . lsp-ui-doc-unfocus-frame)
+    )
 #+end_src
 
 *** lsp treemacs
@@ -702,14 +729,15 @@ Lsp UI
 
 *** Origami Mode (Folding)
 #+begin_src emacs-lisp
-(use-package origami)
+  (use-package origami)
 #+end_src
+
 ** Git
 *** Magit
 #+begin_src emacs-lisp
-  (use-package magit
-    :custom
-    (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+    (use-package magit
+      :custom
+      (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 #+end_src
 
 *** TODO Forge
@@ -717,71 +745,6 @@ Lsp UI
   ;(use-package forge)
 #+end_src
 
-** Language
-*** Rust
-#+begin_src emacs-lisp
-(use-package rustic
-  :ensure
-  :bind (:map rustic-mode-map
-              ("C-c C-c l" . lsp-ui-flycheck-list)
-              ("C-c C-c s" . lsp-rust-analyzer-status))
-  :config
-  ;; uncomment for less flashiness
-  ;; (setq lsp-eldoc-hook nil)
-  ;; (setq lsp-enable-symbol-highlighting nil)
-  ;; (setq lsp-signature-auto-activate nil)
-
-  ;; comment to disable rustfmt on save
-  (setq rustic-format-on-save t)
-  (add-hook 'rustic-mode-hook 'my/dev/rustic-mode-hook))
-
-(defun my/dev/rustic-mode-hook ()
-  ;; so that run C-c C-c C-r works without having to confirm, but don't try to
-  ;; save rust buffers that are not file visiting. Once
-  ;; https://github.com/brotzeit/rustic/issues/253 has been resolved this should
-  ;; no longer be necessary.
-  (when buffer-file-name
-    (setq-local buffer-save-without-query t)))
-#+end_src
-*** Elisp emacs-lisp
-#+begin_src emacs-lisp
-  ;; (add-hook 'emacs-lisp-mode-hook 'company-mode)
-  (add-hook 'emacs-lisp-mode-hook 'flycheck-mode)
-#+end_src
-*** V
-#+begin_src emacs-lisp 
-  (use-package v-mode
-    :preface
-  (defun my/lsp/v ()
-    (interactive)
-    (lsp)
-    (flycheck-mode 1)
-    (company-mode 1))
-  :init
-    (delete '("\\.[ds]?va?h?\\'" . verilog-mode) auto-mode-alist)
-    ;; :straight (v-mode
-    ;;            :type git
-    ;;            :host github
-    ;;            :repo "damon-kwok/v-mode"
-    ;;            :files ("tokens" "v-mode.el"))
-        (setq auto-mode-alist
-            (cons '("\\(\\.v\\|\\.vv\\|\\.vsh\\)$" . v-mode) auto-mode-alist))
-    :hook (v-mode . my/lsp/v)
-    :config
-    (flycheck-define-checker v-checker
-        "A v syntax checker using the v fmt."
-        :command ("v" "fmt" "-verify" (eval (buffer-file-name)))
-        :error-patterns
-        ((error line-start (file-name) ":" line ":" column ": error: " (message) line-end))
-        :modes v-mode)
-    (add-to-list 'flycheck-checkers 'v-checker)
-    :bind-keymap
-    ("M-z" . v-menu)
-    ("<f6>" . v-menu)
-    ("C-c C-f" . v-format-buffer)
-    :mode ("\\.v\\.vsh\\'" . 'v-mode))
-  
-#+end_src
 ** Treemacs
 use-package
 #+begin_src emacs-lisp
@@ -820,14 +783,84 @@ Get treemacs-lsp
       ;:config (treemacs-set-scope-type 'Perspectives))
 #+end_src
 
-
-* Tmp
+** Language
+*** Rust
 #+begin_src emacs-lisp
-  ;;   (use-package peasant-mode
-  ;;     :straight (peasant-mode
-  ;;                :type git
-  ;;                :host github
-  ;;                :repo "flinner/peasant-mode")
-  ;; :config
-  ;; (peasant-mode))
+(use-package rustic
+  :ensure
+  :bind (:map rustic-mode-map
+              ("C-c C-c l" . lsp-ui-flycheck-list)
+              ("C-c C-c s" . lsp-rust-analyzer-status))
+  :config
+  ;; uncomment for less flashiness
+  ;; (setq lsp-eldoc-hook nil)
+  ;; (setq lsp-enable-symbol-highlighting nil)
+  ;; (setq lsp-signature-auto-activate nil)
+
+  ;; comment to disable rustfmt on save
+  (setq rustic-format-on-save t)
+  (add-hook 'rustic-mode-hook 'my/dev/rustic-mode-hook))
+
+(defun my/dev/rustic-mode-hook ()
+  ;; so that run C-c C-c C-r works without having to confirm, but don't try to
+  ;; save rust buffers that are not file visiting. Once
+  ;; https://github.com/brotzeit/rustic/issues/253 has been resolved this should
+  ;; no longer be necessary.
+  (when buffer-file-name
+    (setq-local buffer-save-without-query t)))
 #+end_src
+
+*** Elisp emacs-lisp
+#+begin_src emacs-lisp
+  ;; (add-hook 'emacs-lisp-mode-hook 'company-mode)
+  (add-hook 'emacs-lisp-mode-hook 'flycheck-mode)
+#+end_src
+
+*** V
+#+begin_src emacs-lisp 
+  (use-package v-mode
+    :preface
+  (defun my/lsp/v ()
+    (interactive)
+    (lsp)
+    (flycheck-mode 1)
+    (company-mode 1))
+  :init
+    (delete '("\\.[ds]?va?h?\\'" . verilog-mode) auto-mode-alist)
+    ;; :straight (v-mode
+    ;;            :type git
+    ;;            :host github
+    ;;            :repo "damon-kwok/v-mode"
+    ;;            :files ("tokens" "v-mode.el"))
+        (setq auto-mode-alist
+            (cons '("\\(\\.v\\|\\.vv\\|\\.vsh\\)$" . v-mode) auto-mode-alist))
+    :hook (v-mode . my/lsp/v)
+    :config
+    (flycheck-define-checker v-checker
+        "A v syntax checker using the v fmt."
+        :command ("v" "fmt" "-verify" (eval (buffer-file-name)))
+        :error-patterns
+        ((error line-start (file-name) ":" line ":" column ": error: " (message) line-end))
+        :modes v-mode)
+    (add-to-list 'flycheck-checkers 'v-checker)
+    :bind-keymap
+    ("M-z" . v-menu)
+    ("<f6>" . v-menu)
+    ("C-c C-f" . v-format-buffer)
+    :mode ("\\.v\\.vsh\\'" . 'v-mode))
+  
+#+end_src
+
+*** Haskell
+#+begin_src emacs-lisp
+    (use-package lsp-haskell
+    :hook (haskell-mode . lsp)
+    )
+#+end_src
+
+* Misc
+** Restart Emacs
+#+begin_src emacs-lisp
+(use-package restart-emacs)
+#+end_src
+
