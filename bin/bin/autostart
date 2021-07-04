@@ -21,7 +21,7 @@ source ~/.fehbg
 #other
 (sleep 1 && picom --config "$HOME/.config/picom.conf" )&
 (sleep 1 && keynav)&
-(sleep 1 && ~/bin/startup/keyboard ) &
+(sleep 0 && ~/bin/keyboard ) &
 (sleep 1 && wired ) &
 (sleep 3 && optimus-manager-qt) &
 (sleep 3 && flameshot) &
