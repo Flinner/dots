@@ -49,7 +49,7 @@ straight
     (setq straight-use-package-by-default t)
 #+end_src
 
-* Basic UI Configuration
+* Basic Configuration
 ** Better Defaults
 #+begin_src emacs-lisp 
   (setq inhibit-startup-message t)
@@ -83,7 +83,7 @@ Better Scrolling
   (setq scroll-conservatively 10)
   (setq scroll-margin 3)
   (use-package smooth-scrolling
-     :init (smooth-scrolling-mode 1))
+     :config (smooth-scrolling-mode 1))
 #+end_src
 ** Fonts
 #+begin_src emacs-lisp
@@ -120,7 +120,14 @@ Actuall Theme:
     (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
           doom-themes-enable-italic t) ; if nil, italics is universally disabled
     (load-theme 'doom-gruvbox t)
-
+    (custom-set-faces
+    ;; custom-set-faces was added by Custom.
+    ;; If you edit it by hand, you could mess it up, so be careful.
+    ;; Your init file should contain only one such instance.
+    ;; If there is more than one, they won't work right.
+    '(flycheck-warning ((t (:background "#282828" :underline "#fabd2f"))))
+    '(ivy-posframe-border ((t (:background "#ffffff")))))
+  
     ;; Enable custom neotree theme (all-the-icons must be installed!)
     (doom-themes-neotree-config)
     ;; or for treemacs users
@@ -131,21 +138,27 @@ Actuall Theme:
 #+end_src
 
 ** Line Numbers
-Enable Globally
-#+begin_src emacs-lisp
-  (global-display-line-numbers-mode 1)
+DEPRECATED Enable Globally
+#+begin_src emacs-lisp :tangle no
+  (global-display-line-numbers-mode 0)
 #+end_src
-Disable for the following modes
-#+begin_src emacs-lisp
+
+DEPRECATED Disable for the following modes
+#+begin_src emacs-lisp :tangle no
   (defun disable-line-numbers () "Disables line number" (interactive) (display-line-numbers-mode 0))
 
   (dolist (mode '(org-mode-hook
                   term-mode-hook
                   treemacs-mode-hook
+                  cargo-test-mode-hook
                   shell-mode-hook
                   eshell-mode-hook))
     (add-hook mode #'disable-line-numbers))  
 
+#+end_src
+ONLY IN PROG!
+#+begin_src emacs-lisp
+ (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 #+end_src
  
 ** Undo
@@ -176,6 +189,7 @@ Single Esc to Quit, instead of *three*
 
 ** General.el
 Eval First and Last at least block!
+E: honestly I have no clue wtf that meant, but I will keep it
 *** use-package
 #+begin_src emacs-lisp
 (use-package general
@@ -201,6 +215,7 @@ Eval First and Last at least block!
 #+end_src
 
 **** Symbols, Spaces, Numbers, u
+
 #+begin_src emacs-lisp
   (my/leader-keys
   "." '(counsel-find-file :which-key "find file")
@@ -211,6 +226,7 @@ Eval First and Last at least block!
   ";" '(counsel-M-x :which-key "M-x")
   ":" '(eval-expression :which-key "eval expression")
 #+end_src
+
 
 **** Toggles (t)
 #+begin_src emacs-lisp
@@ -281,6 +297,7 @@ Eval First and Last at least block!
   "ci" '(lsp-ui-imenu :which-key "lsp imenu")
   "cr" '(lsp-rename :which-key "rename")
   "cs" '(lsp-find-refernces :which-key "rename")
+  "cd" '(lsp-find-definition :which-key "rename")
 #+end_src
 
 **** Git (g)
@@ -292,6 +309,12 @@ Eval First and Last at least block!
 **** Projectile (p)
 #+begin_src emacs-lisp
   "p"  '(projectile-command-map t :which-key "Projectile")
+#+end_src
+
+**** Quit (q)
+#+begin_src emacs-lisp
+  "q"  '(:ignore t :which-key "Quit and Stuff")
+  "qf" '(delete-frame :which-key "Close Frame")
 #+end_src
 
 *** Closing Brackets
@@ -376,6 +399,12 @@ Eval First and Last at least block!
 
 *** Evil Escape
 #+begin_src emacs-lisp
+  (use-package key-chord
+  :config
+  (key-chord-define evil-insert-state-map "jk" 'evil-normal-state) 
+  :init
+  (key-chord-mode 1))
+  
     ;; (use-package evil-escape
     ;;   :after evil
     ;;   :init
@@ -385,22 +414,23 @@ Eval First and Last at least block!
     ;;   (setq evil-escape-key-sequence "jk")
     ;;   (setq evil-escape-delay 0.2)
     ;;   (setq evil-escape-unordered-key-sequence t))
-  (defun my-jk ()
-    (interactive)
-    (let* ((initial-key ?j)
-           (final-key ?k)
-           (timeout 0.5)
-           (event (read-event nil nil timeout)))
-      (if event
-          ;; timeout met
-          (if (and (characterp event) (= event final-key))
-              (evil-normal-state)
-            (insert initial-key)
-            (push event unread-command-events))
-        ;; timeout exceeded
-        (insert initial-key))))
+  ;; (defun my-jk ()
+  ;;   (interactive)
+  ;;   (let* ((initial-key ?j)
+  ;;          (final-key ?k)
+  ;;          (timeout 0.5)
+  ;;          (event (read-event nil nil timeout)))
+  ;;     (if event
+  ;;         ;; timeout met
+  ;;         (if (and (characterp event) (= event final-key))
+  ;;             (evil-normal-state)
+  ;;           (insert initial-key)
+  ;;           (push event unread-command-events))
+  ;;       ;; timeout exceeded
+  ;;       (insert initial-key))))
   
-  (define-key evil-insert-state-map (kbd "j") 'my-jk)
+  ;; (define-key evil-insert-state-map (kbd "j") 'my-jk)
+  
 #+end_src
 
 * Completions
@@ -509,6 +539,16 @@ better sorting for ivy, company..
     :after company
     :init (company-prescient-mode 1))
   ;; (use-package selectrum-prescient)
+#+end_src
+
+** Yasnippet
+#+begin_src emacs-lisp
+  (use-package yasnippet
+    :config
+    (yas-global-mode))
+
+  (use-package yasnippet-snippets)
+  
 #+end_src
 
 * Org-Mode
@@ -674,6 +714,13 @@ Counsel Projectile
     :config (counsel-projectile-mode))
 #+end_src
 
+*** Recentf
+#+begin_src emacs-lisp
+  (use-package recentf
+  :init (recentf-mode  1)
+  )
+#+end_src
+
 *** lsp-mode
 #+begin_src emacs-lisp
   (use-package lsp-mode
@@ -686,6 +733,7 @@ Counsel Projectile
     (lsp-rust-analyzer-cargo-watch-command "clippy")
     (lsp-eldoc-render-all t)
     (lsp-eldoc-enable-hover nil)
+  (  lsp-ui-doc-show-with-mouse nil)
     (lsp-idle-delay 0.6)
     (lsp-idle-delay 0.6)
     (lsp-rust-analyzer-server-display-inlay-hints t)
@@ -786,28 +834,29 @@ Get treemacs-lsp
 ** Language
 *** Rust
 #+begin_src emacs-lisp
-(use-package rustic
-  :ensure
-  :bind (:map rustic-mode-map
-              ("C-c C-c l" . lsp-ui-flycheck-list)
-              ("C-c C-c s" . lsp-rust-analyzer-status))
-  :config
-  ;; uncomment for less flashiness
-  ;; (setq lsp-eldoc-hook nil)
-  ;; (setq lsp-enable-symbol-highlighting nil)
-  ;; (setq lsp-signature-auto-activate nil)
-
-  ;; comment to disable rustfmt on save
-  (setq rustic-format-on-save t)
-  (add-hook 'rustic-mode-hook 'my/dev/rustic-mode-hook))
-
-(defun my/dev/rustic-mode-hook ()
-  ;; so that run C-c C-c C-r works without having to confirm, but don't try to
-  ;; save rust buffers that are not file visiting. Once
-  ;; https://github.com/brotzeit/rustic/issues/253 has been resolved this should
-  ;; no longer be necessary.
-  (when buffer-file-name
-    (setq-local buffer-save-without-query t)))
+  (use-package rustic
+    :ensure
+    :bind (:map rustic-mode-map
+                ("C-c C-c l" . lsp-ui-flycheck-list)
+                ("C-c C-c s" . lsp-rust-analyzer-status)
+                ("<f5>" . rustic-cargo-test))
+    :config
+    ;; uncomment for less flashiness
+    ;; (setq lsp-eldoc-hook nil)
+    ;; (setq lsp-enable-symbol-highlighting nil)
+    ;; (setq lsp-signature-auto-activate nil)
+  
+    ;; comment to disable rustfmt on save
+    (setq rustic-format-on-save t)
+    (add-hook 'rustic-mode-hook 'my/dev/rustic-mode-hook))
+  
+  (defun my/dev/rustic-mode-hook ()
+    ;; so that run C-c C-c C-r works without having to confirm, but don't try to
+    ;; save rust buffers that are not file visiting. Once
+    ;; https://github.com/brotzeit/rustic/issues/253 has been resolved this should
+    ;; no longer be necessary.
+    (when buffer-file-name
+      (setq-local buffer-save-without-query t)))
 #+end_src
 
 *** Elisp emacs-lisp
@@ -858,9 +907,20 @@ Get treemacs-lsp
     )
 #+end_src
 
+*** yaml
+#+begin_src emacs-lisp
+  (use-package yaml-mode
+    :hook (yaml-mode . lsp))
+#+end_src
+
 * Misc
 ** Restart Emacs
 #+begin_src emacs-lisp
 (use-package restart-emacs)
+#+end_src
+
+** Server
+#+begin_src emacs-lisp
+(unless (server-running-p) (server-start))
 #+end_src
 

@@ -46,7 +46,8 @@ super + Escape
 
 # emacs
 super + e
-  emacsclient -nc -alternate-editor=""
+  emacsclient -nc -alternate-editor="emacs"
+  #emacsclient -nc -alternate-editor=""
 
 # show poly-bar
 super + b
