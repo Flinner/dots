@@ -227,7 +227,6 @@ E: honestly I have no clue wtf that meant, but I will keep it
   ":" '(eval-expression :which-key "eval expression")
 #+end_src
 
-
 **** Toggles (t)
 #+begin_src emacs-lisp
   "t"  '(:ignore t :which-key "toggles")
@@ -258,6 +257,14 @@ E: honestly I have no clue wtf that meant, but I will keep it
   "fp" '(my/keybind/config :which-key "Recent Files")
   "fd" '(dired :which-key "dired prompt")
   "fD" '(dired-jump :which-key "dired current")
+#+end_src
+
+**** Open (o)
+#+begin_src emacs-lisp
+  "o"  '(:ignore t :which-key "Open")
+  
+  "oT" '(vterm :which-key "Vterm in current window")
+  "ot" '(vterm-other-window :which-key "Vterm in other window")
 #+end_src
 
 **** Buffers (b)
@@ -922,5 +929,11 @@ Get treemacs-lsp
 ** Server
 #+begin_src emacs-lisp
 (unless (server-running-p) (server-start))
+#+end_src
+
+** Vterm
+#+begin_src emacs-lisp
+(use-package vterm
+    :ensure t)
 #+end_src
 
