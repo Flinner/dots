@@ -49,6 +49,10 @@ zplugin load 'flinner/zsh-emacs'
 zplugin ice wait lucid atload'_zsh_autosuggest_start'
 zplugin light zsh-users/zsh-autosuggestions
 
+zplugin ice wait'0' lucid
+zinit load agkozak/zsh-z
+
+
 #zplugin ice wait'1' lucid
 #zplugin load marlonrichert/zsh-autocomplete
 
@@ -181,6 +185,8 @@ export DOOM_PATH="$HOME/.emacs.d/bin"
 
 export PATH="$DOOM_PATH:$HOME/.local/bin:$HOME/bin:$CARGO_HOME/bin:$GOPATH:$PATH"
 
+
+
 # colored GCC warnings and errors
 export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
 
@@ -224,6 +230,7 @@ export LESS_TERMCAP_se=$(printf '\e[0m')     # leave standout mode
 export LESS_TERMCAP_so=$(printf '\e[01;33m') # enter standout mode - yellow
 export LESS_TERMCAP_ue=$(printf '\e[0m')     # leave underline mode
 export LESS_TERMCAP_us=$(printf '\e[04;36m') # enter underline mode - cyan
+
 #===============================================================================================
 
 # Load the pure theme, with zsh-async library that's bundled with it

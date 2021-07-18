@@ -28,7 +28,8 @@ Initialize Package sources
 Make sure to download packages if not present
 #+begin_src emacs-lisp
   (require 'use-package)
-  (setq use-package-always-ensure t)
+  (setq package-native-compile t)
+ (setq use-package-always-ensure t)
 #+end_src
 straight
 #+begin_src emacs-lisp
@@ -50,6 +51,27 @@ straight
 #+end_src
 
 * Basic Configuration
+** Startpage
+#+begin_src emacs-lisp
+  (use-package dashboard
+    :init
+    (dashboard-setup-startup-hook)
+    :config
+    (setq dashboard-startup-banner "~/Downloads/haskell-rec.png")
+    ;; Value can be
+    ;; 'official which displays the official emacs logo
+    ;; 'logo which displays an alternative emacs logo
+    ;; 1, 2 or 3 which displays one of the text banners
+    ;; "path/to/your/image.png" or "path/to/your/text.txt" which
+    ;;   displays whatever image/text you would prefer
+  
+    ;; Content is not centered by default. To center, set
+    (setq dashboard-center-content t)
+  
+    (setq dashboard-set-init-info t)
+    (setq dashboard-projects-switch-function 'counsel-projectile-switch-project-by-name))
+#+end_src
+
 ** Better Defaults
 #+begin_src emacs-lisp 
   (setq inhibit-startup-message t)
@@ -69,6 +91,7 @@ Emacs Backups trashing local dir!
   (setq make-backup-files t          ; backup of a file the first time it is saved.
       backup-by-copying t          ; don't clobber symlinks
       version-control t            ; version numbers for backup files
+      vc-make-backup-files t       ; version control for git/vcs dirs
       delete-old-versions t        ; delete excess backup files silently
       delete-by-moving-to-trash t
       kept-old-versions 6          ; oldest versions to keep when a new numbered backup is made 
@@ -83,7 +106,7 @@ Better Scrolling
   (setq scroll-conservatively 10)
   (setq scroll-margin 3)
   (use-package smooth-scrolling
-     :config (smooth-scrolling-mode 1))
+     :init (smooth-scrolling-mode 1))
 #+end_src
 ** Fonts
 #+begin_src emacs-lisp
@@ -97,7 +120,18 @@ Better Scrolling
   (set-face-attribute 'variable-pitch nil :font my/ui/varfont :height 90)
   ;; Info has a horrible mono font
   (set-face-attribute 'Info-quoted nil :font my/ui/monofont :height 90)
+#+end_src
 
+#+begin_src emacs-lisp
+(defun my/ui/font-check ()
+  "Do font check, then remove self from `focus-in-hook'; need to run this just once."
+  (set-face-attribute 'default nil :font my/ui/monofont :height 90)
+  (set-face-attribute 'fixed-pitch nil :font my/ui/monofont :height 90)
+  (set-face-attribute 'variable-pitch nil :font my/ui/varfont :height 90)
+  ;; Info has a horrible mono font
+  (set-face-attribute 'Info-quoted nil :font my/ui/monofont :height 90)
+  (remove-hook 'focus-in-hook #'my/ui/font-check))
+(add-hook 'focus-in-hook #'my/ui/font-check)
 #+end_src
 
 ** Theme
@@ -107,10 +141,11 @@ Run =M-x= all-the-icons-install-fonts for the first time!
 #+end_src
 
 #+begin_src emacs-lisp
-  (use-package doom-modeline
-    :ensure t
-    :init (doom-modeline-mode 1)
-    :custom ((doom-modeline-height 15)))
+    (use-package doom-modeline
+      :ensure t
+      :init (doom-modeline-mode 1)
+      :custom
+  ((doom-modeline-height 15) (doom-modeline-icon t)))
 #+end_src
 Actuall Theme:
 #+begin_src emacs-lisp
@@ -214,7 +249,7 @@ E: honestly I have no clue wtf that meant, but I will keep it
 
 #+end_src
 
-**** Symbols, Spaces, Numbers, u
+**** Symbols, Spaces, Numbers, u, tabs
 
 #+begin_src emacs-lisp
   (my/leader-keys
@@ -246,7 +281,7 @@ E: honestly I have no clue wtf that meant, but I will keep it
 #+begin_src emacs-lisp
   "s"  '(:ignore t :which-key "Search")
   
-  "sb" '(swiper :which-key "Choose Theme")
+  "sb" '(swiper :which-key "swiper")
 #+end_src
 
 **** Files (f)
@@ -290,6 +325,7 @@ E: honestly I have no clue wtf that meant, but I will keep it
   "wv" '(evil-window-vsplit :which-key "Window Vsplit")
   "wd" '(evil-window-delete :which-key "Window delete")
   "wu" '(winner-undo :which-key "Window Undo")
+  "wo" '(other-window :which-key "Window Other")
   "wr" '(winner-redo :which-key "Window Redo")
   "wt" '(treemacs :which-key "Treemacs")
 #+end_src
@@ -337,13 +373,15 @@ E: honestly I have no clue wtf that meant, but I will keep it
     (setq evil-want-integration t
           evil-want-keybinding nil
           evil-want-C-u-scroll t
+          evil-want-C-w-delete t
+          evil-want-C-i-jump t
+          evil-want-Y-yank-to-eol t
           evil-normal-state-cursor 'box
           evil-emacs-state-cursor  '(box +evil-emacs-cursor-fn); TODO: fix
           evil-insert-state-cursor 'bar
           evil-visual-state-cursor 'hollow
           evil-undo-system 'undo-redo
           )
-    ;(setq evil-want-C-i-jump t)
     :config
     (evil-mode 1)
     (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
@@ -361,30 +399,35 @@ E: honestly I have no clue wtf that meant, but I will keep it
     (define-key evil-normal-state-map "\C-b" 'evil-backward-char)
     (define-key evil-insert-state-map "\C-b" 'evil-backward-char)
     (define-key evil-visual-state-map "\C-b" 'evil-backward-char)
-
+  
     (define-key evil-insert-state-map "\C-d" 'evil-delete-char)
-
+  
+    (define-key evil-normal-state-map "\C-i" 'evil-jump-forward)
+  
     (define-key evil-normal-state-map "\C-n" 'evil-next-line)
     (define-key evil-insert-state-map "\C-n" 'evil-next-line)
     (define-key evil-visual-state-map "\C-n" 'evil-next-line)
     (define-key evil-normal-state-map "\C-p" 'evil-previous-line)
     (define-key evil-insert-state-map "\C-p" 'evil-previous-line)
     (define-key evil-visual-state-map "\C-p" 'evil-previous-line)
-    (define-key evil-normal-state-map "\C-w" 'evil-delete)
-    (define-key evil-insert-state-map "\C-w" 'evil-delete)
-    (define-key evil-visual-state-map "\C-w" 'evil-delete)
+    ;; (define-key evil-normal-state-map "\C-w" 'evil-delete);; in custom
+    (define-key evil-insert-state-map "\C-w" 'evil-delete-backward-word)
+    (define-key evil-visual-state-map "\C-w" 'evil-delete-backward-word)
     (define-key evil-normal-state-map "\C-y" 'yank)
     (define-key evil-insert-state-map "\C-y" 'yank)
+    (define-key evil-visual-state-map "\C-y" 'yank)
+  
+    (define-key evil-normal-state-map "K" 'lsp-ui-doc-glance); TODO: all modes
     (define-key evil-visual-state-map "\C-y" 'yank)
                                           ;(define-key evil-insert-state-map "\C-k" 'kill-line)
     (define-key evil-normal-state-map "Q" 'call-last-kbd-macro)
     (define-key evil-visual-state-map "Q" 'call-last-kbd-macro)
-    (define-key evil-normal-state-map (kbd "TAB") 'evil-undefine)
-
+    ;; (define-key evil-normal-state-map (kbd "TAB") 'evil-undefine)
+  
     ;; Use visual line motions even outside of visual-line-mode buffers
     (evil-global-set-key 'motion "j" 'evil-next-visual-line)
     (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
-
+  
     (evil-set-initial-state 'messages-buffer-mode 'normal)
     (evil-set-initial-state 'dashboard-mode 'normal))
 #+end_src
@@ -400,6 +443,8 @@ E: honestly I have no clue wtf that meant, but I will keep it
 #+begin_src emacs-lisp
   (use-package evil-collection
     :after evil
+    :custom
+     (evil-collection-outline-bind-tab-p  t)
     :config
     (evil-collection-init))
 #+end_src
@@ -409,6 +454,7 @@ E: honestly I have no clue wtf that meant, but I will keep it
   (use-package key-chord
   :config
   (key-chord-define evil-insert-state-map "jk" 'evil-normal-state) 
+  (key-chord-define evil-replace-state-map "jk" 'evil-normal-state) 
   :init
   (key-chord-mode 1))
   
@@ -440,6 +486,50 @@ E: honestly I have no clue wtf that meant, but I will keep it
   
 #+end_src
 
+*** Evil args
+[[https://github.com/wcsmith/evil-args][wcsmith/evil-args: Motions and text objects for delimited arguments in Evil.]]
+#+begin_src emacs-lisp
+  (use-package evil-args
+    :config
+    ;; bind evil-args text objects
+    (define-key evil-inner-text-objects-map "a" 'evil-inner-arg)
+    (define-key evil-outer-text-objects-map "a" 'evil-outer-arg)
+  
+    ;; bind evil-forward/backward-args
+    (define-key evil-normal-state-map "L" 'evil-forward-arg)
+    (define-key evil-normal-state-map "H" 'evil-backward-arg)
+    (define-key evil-motion-state-map "L" 'evil-forward-arg)
+    (define-key evil-motion-state-map "H" 'evil-backward-arg)
+  
+    ;; bind evil-jump-out-args
+    ;; (define-key evil-normal-state-map "K" 'evil-jump-out-args))
+  )
+#+end_src
+
+*** Evil Easy Motion
+[[https://github.com/PythonNut/evil-easymotion][PythonNut/evil-easymotion: A port of vim easymotion to Emacs' evil-mode]]
+#+begin_src emacs-lisp
+  (use-package evil-easymotion
+    :config
+    (evilem-default-keybindings "SPC"))
+  
+#+end_src
+
+*** evil-org
+#+begin_src emacs-lisp
+  (use-package evil-org
+  :hook (org-mode . evil-org-mode))
+#+end_src
+
+*** Evil snipe
+[[https://github.com/hlissner/evil-snipe][hlissner/evil-snipe: 2-char searching ala vim-sneak & vim-seek, for evil-mode]]
+#+begin_src emacs-lisp
+  (use-package evil-snipe
+  :config
+  (setq evil-snipe-repeat-scope 'whole-visible)
+  (evil-snipe-mode +1))
+#+end_src
+
 * Completions
 ** ivy
 #+begin_src emacs-lisp
@@ -463,8 +553,9 @@ E: honestly I have no clue wtf that meant, but I will keep it
 #+end_src
 Ivy Rich for having =M-x= description and keybinds
 #+begin_src emacs-lisp
-(use-package ivy-rich
-  :init (ivy-rich-mode 1))
+  (use-package ivy-rich
+    :after counsel
+    :init (ivy-rich-mode 1))
 #+end_src
 Ivy floating
 #+begin_src emacs-lisp
@@ -477,7 +568,7 @@ Ivy floating
     (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-frame-top-center))
           ivy-posframe-height-alist '((t . 20))
           ivy-posframe-parameters '((internal-border-width . 10)))
-    (setq ivy-posframe-width 70)
+    (setq ivy-posframe-width 120)
     (setq ivy-posframe-parameters
         '((left-fringe . 8)
             (right-fringe . 8)))
@@ -511,8 +602,9 @@ Ivy floating
       :ensure
       ; :hook (lsp-mode . company-mode)
       :custom
-      (company-idle-delay 0.0) ;; how long to wait until popup
+      (company-idle-delay 0.1) ;; how long to wait until popup
       (company-minimum-prefix-length 1) ;; The minimum prefix length for idle completion.
+      (company-selection-wrap-around t)
       ;; (company-begin-commands nil) ;; uncomment to disable popup
       :bind
       (:map company-active-map
@@ -649,7 +741,7 @@ Allow fast code insertion
 #+begin_src emacs-lisp
   (defun my/org-mode/org-mode-visual-fill ()
   (interactive)
-    (setq visual-fill-column-width 100
+    (setq visual-fill-column-width 110
           visual-fill-column-center-text t)
     (visual-fill-column-mode 1))
 #+end_src
@@ -695,6 +787,7 @@ Automatically tangle our Emacs.org config file when we save it
   (lambda () (add-hook 'after-save-hook #'my/org-mode/org-babel-tangle-config)))
 #+end_src
 
+
 * Development
 ** General
 *** Colored Brackets (rainbow delimiters)
@@ -728,6 +821,13 @@ Counsel Projectile
   )
 #+end_src
 
+*** lsp performance
+#+begin_src emacs-lisp
+(setq gc-cons-threshold 100000000)
+(setq read-process-output-max (* 1024 4024)) ;; 4mb
+
+#+end_src
+
 *** lsp-mode
 #+begin_src emacs-lisp
   (use-package lsp-mode
@@ -740,7 +840,7 @@ Counsel Projectile
     (lsp-rust-analyzer-cargo-watch-command "clippy")
     (lsp-eldoc-render-all t)
     (lsp-eldoc-enable-hover nil)
-  (  lsp-ui-doc-show-with-mouse nil)
+    (lsp-ui-doc-show-with-mouse nil)
     (lsp-idle-delay 0.6)
     (lsp-idle-delay 0.6)
     (lsp-rust-analyzer-server-display-inlay-hints t)
@@ -756,19 +856,20 @@ Counsel Projectile
 
 Lsp UI
 #+begin_src emacs-lisp
-  (use-package lsp-ui
-      :ensure
-      :commands lsp-ui-mode
-      :custom
-      ;(lsp-ui-peek-always-show t)
-      (lsp-ui-doc-mode t)
-      ;(lsp-ui-sideline-show-hover t)
-   ;         (lsp-ui-doc-enable nil)
-      ;; :bind (:map lsp-ui-mode-map
-      ;;     ("U" . lsp-ui-doc-focus-frame)
-      ;; :map lsp-ui-doc-frame-mode-map
-      ;;     ("Q" . lsp-ui-doc-unfocus-frame)
-    )
+    (use-package lsp-ui
+        :ensure
+        :commands lsp-ui-mode
+        :custom
+        ;(lsp-ui-peek-always-show t)
+        (lsp-ui-doc-mode t)
+        ;(lsp-ui-sideline-show-hover t)
+             (lsp-ui-doc-enable nil)
+        :bind
+            (:map lsp-ui-mode-map
+            ("C-k" . lsp-ui-doc-focus-frame)
+        :map lsp-ui-doc-frame-mode-map
+            ("C-k" . lsp-ui-doc-unfocus-frame)
+      ))
 #+end_src
 
 *** lsp treemacs
@@ -784,7 +885,8 @@ Lsp UI
 
 *** Origami Mode (Folding)
 #+begin_src emacs-lisp
-  (use-package origami)
+    (use-package origami
+    :hook (prog-mode . origami-mode))
 #+end_src
 
 ** Git
@@ -833,9 +935,9 @@ Get treemacs-lsp
       :after (treemacs lsp))
   (use-package treemacs-magit
       :after treemacs magit)
-  ;(use-package! treemacs-persp
-      ;:after treemacs
-      ;:config (treemacs-set-scope-type 'Perspectives))
+  (use-package treemacs-persp
+      :after treemacs
+      :config (treemacs-set-scope-type 'Perspectives))
 #+end_src
 
 ** Language
@@ -909,8 +1011,21 @@ Get treemacs-lsp
 
 *** Haskell
 #+begin_src emacs-lisp
-    (use-package lsp-haskell
+  (use-package lsp-haskell
+    :preface
+  ;; lambda symbol
+    (defun my/font/pretty-lambdas-haskell ()
+      (font-lock-add-keywords
+       nil `((,(concat "\\(" (regexp-quote "\\") "\\)")
+              (0 (progn (compose-region (match-beginning 1) (match-end 1)
+                                        ,(make-char 'greek-iso8859-7 107))
+                        nil))))))
     :hook (haskell-mode . lsp)
+    (haskell-mode . my/font/pretty-lambdas-haskell)
+    :config
+    (haskell-indentation-mode -1)
+   (add-hook 'before-save-hook 'lsp-format-buffer)
+    ;; :custom (haskell-stylish-on-save t)
     )
 #+end_src
 
@@ -918,6 +1033,78 @@ Get treemacs-lsp
 #+begin_src emacs-lisp
   (use-package yaml-mode
     :hook (yaml-mode . lsp))
+#+end_src
+
+*** Web
+#+begin_src emacs-lisp
+      (use-package tide
+        :preface
+        (defun setup-tide-mode ()
+          (interactive)
+          (tide-setup)
+          (flycheck-mode +1)
+          (setq flycheck-check-syntax-automatically '(save mode-enabled))
+          (eldoc-mode +1)
+          (tide-hl-identifier-mode +1)
+          ;; company is an optional dependency. You have to
+          ;; install it separately via package-install
+          ;; `M-x package-install [ret] company`
+          (company-mode +1))
+        :config
+    
+        ;; aligns annotation to the right hand side
+        (setq company-tooltip-align-annotations t)
+    
+        ;; formats the buffer before saving
+        (add-hook 'before-save-hook 'tide-format-before-save)
+      :hook(typescript-mode . setup-tide-mode)
+      :hook(typescript-mode . lsp))
+#+end_src
+
+svelte
+#+begin_src emacs-lisp
+  (use-package svelte-mode
+        :config
+        (add-hook 'before-save-hook 'lsp-format-buffer)
+      :hook (svelte-mode . lsp))
+#+end_src
+
+prettier
+#+begin_src emacs-lisp
+  (use-package prettier)
+#+end_src
+
+*** Markdown
+Better Diff in header sizes
+#+begin_src emacs-lisp
+  
+  (eval-after-load 'markdown-mode
+  '(custom-set-faces
+   '(markdown-header-face-1 ((t (:inherit markdown-header-face :height 1.7))))
+   '(markdown-header-face-2 ((t (:inherit markdown-header-face :height 1.4))))
+   '(markdown-header-face-3 ((t (:inherit markdown-header-face :height 1.3))))
+   '(markdown-header-face-4 ((t (:inherit markdown-header-face :height 1.2))))
+   '(markdown-header-face-5 ((t (:inherit markdown-header-face :height 1.1))))
+   '(markdown-header-face-6 ((t (:inherit markdown-header-face :height 1.0))))
+  ))
+  (add-hook 'markdown-mode-hook 'my/org-mode/org-mode-visual-fill)
+  (add-hook 'markdown-mode-hook 'outline-minor-mode)
+#+end_src
+
+*** Vue
+#+begin_src emacs-lisp
+(use-package vue-mode
+    :hook (vue-mode . lsp)
+    :hook (vue-mode . prettier-js-mode))
+#+end_src
+
+* Misc
+** Restart Emacs
+#+begin_src emacs-lisp
+(use-package restart-emacs)
+#+end_src
+
+  )
 #+end_src
 
 * Misc
@@ -936,4 +1123,53 @@ Get treemacs-lsp
 (use-package vterm
     :ensure t)
 #+end_src
+
+** ranger
+#+begin_src emacs-lisp
+  (use-package ranger
+  :config (ranger-override-dired-mode t))
+#+end_src
+
+** Ligatures
+#+begin_src emacs-lisp
+
+(let ((ligatures `((?-  . ,(regexp-opt '("-|" "-~" "---" "-<<" "-<" "--" "->" "->>" "-->")))
+                   (?/  . ,(regexp-opt '("/**" "/*" "///" "/=" "/==" "/>" "//")))
+                   (?*  . ,(regexp-opt '("*>" "***" "*/")))
+                   (?<  . ,(regexp-opt '("<-" "<<-" "<=>" "<=" "<|" "<||" "<|||::=" "<|>" "<:" "<>" "<-<"
+                                         "<<<" "<==" "<<=" "<=<" "<==>" "<-|" "<<" "<~>" "<=|" "<~~" "<~"
+                                         "<$>" "<$" "<+>" "<+" "</>" "</" "<*" "<*>" "<->" "<!--")))
+                   (?:  . ,(regexp-opt '(":>" ":<" ":::" "::" ":?" ":?>" ":=")))
+                   (?=  . ,(regexp-opt '("=>>" "==>" "=/=" "=!=" "=>" "===" "=:=" "==")))
+                   (?!  . ,(regexp-opt '("!==" "!!" "!=")))
+                   (?>  . ,(regexp-opt '(">]" ">:" ">>-" ">>=" ">=>" ">>>" ">-" ">=")))
+                   (?&  . ,(regexp-opt '("&&&" "&&")))
+                   (?|  . ,(regexp-opt '("|||>" "||>" "|>" "|]" "|}" "|=>" "|->" "|=" "||-" "|-" "||=" "||")))
+                   (?.  . ,(regexp-opt '(".." ".?" ".=" ".-" "..<" "...")))
+                   (?+  . ,(regexp-opt '("+++" "+>" "++")))
+                   (?\[ . ,(regexp-opt '("[||]" "[<" "[|")))
+                   (?\{ . ,(regexp-opt '("{|")))
+                   (?\? . ,(regexp-opt '("??" "?." "?=" "?:")))
+                   (?#  . ,(regexp-opt '("####" "###" "#[" "#{" "#=" "#!" "#:" "#_(" "#_" "#?" "#(" "##")))
+                   (?\; . ,(regexp-opt '(";;")))
+                   (?_  . ,(regexp-opt '("_|_" "__")))
+                   (?\\ . ,(regexp-opt '("\\" "\\/")))
+                   (?~  . ,(regexp-opt '("~~" "~~>" "~>" "~=" "~-" "~@")))
+                   (?$  . ,(regexp-opt '("$>")))
+                   (?^  . ,(regexp-opt '("^=")))
+                   (?\] . ,(regexp-opt '("]#"))))))
+  (dolist (char-regexp ligatures)
+    (set-char-table-range composition-function-table (car char-regexp)
+                          `([,(cdr char-regexp) 0 font-shape-gstring]))))
+#+end_src
+
+* Buffers and Windows
+** Workspaces (Persepective
+#+begin_src emacs-lisp :tangle no
+(use-package persp-mode
+  :config
+  (setq persp-keymap-prefix (kbd "SPC <tab>"))
+#+end_src
+
+
 
