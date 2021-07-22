@@ -78,6 +78,7 @@ printf "            $d$f1$h  $t$wmname
    $f1>$t $f3^$t $f1<$t    $f5$r  $t$resolution
             $f4$w  $t$netname
 "
+uptime --pretty
 }
 
 # sysinfo with cute bunny
@@ -88,6 +89,7 @@ printf "             $d$f1$h  $t$wmname
    c($f1\"$t)($f1\"$t)   $f5$r  $t$resolution
              $f4$w  $t$netname
 "
+uptime --pretty
 }
 
 # script information
