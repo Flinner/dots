@@ -14,6 +14,9 @@
 ## Remove it to not load settings done via the GUI.
 config.load_autoconfig(True)
 
+# ORG MODE
+config.bind("cec", "open javascript:location.href='org-protocol://roam-ref?template=r&ref='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title)")
+
 ## Aliases for commands. The keys of the given dictionary are the
 ## aliases, while the values are the commands they map to.
 ## Type: Dict

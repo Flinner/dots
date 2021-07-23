@@ -201,6 +201,29 @@ ONLY IN PROG!
   (use-package undo-fu)
 #+end_src
 
+** Org roam warning
+#+begin_src emacs-lisp
+(setq org-roam-v2-ack t) ; anonying startup message
+#+end_src
+
+* Auth!
+should i really be commiting this? :>
+** auth sources
+#+begin_src emacs-lisp
+  (setq auth-sources '("~/Documents/passowrds/authinfo.gpg"
+                       "~/.authinfo.gpg"
+                       "secrets:local"; keepassxc db
+                       "~/.authinfo"
+                       "~/.netrc"))
+#+end_src
+
+** List my passwords :(
+#+begin_src emacs-lisp
+  (setq my/secret/znc/flinner.my.to/secret (secrets-get-secret "local" "znc/flinner.my.to"))
+  (setq my/secret/znc/flinner.my.to/username
+        (cdr (assq :username (secrets-get-attributes "local"  "znc/flinner.my.to"))))
+#+end_src
+
 * Help
 =helpful-key= and =describe-function=
 #+begin_src emacs-lisp
@@ -292,6 +315,15 @@ E: honestly I have no clue wtf that meant, but I will keep it
   "fp" '(my/keybind/config :which-key "Recent Files")
   "fd" '(dired :which-key "dired prompt")
   "fD" '(dired-jump :which-key "dired current")
+#+end_src
+
+**** Roam and Org (r)
+#+begin_src emacs-lisp
+  "r"  '(:ignore t :which-key "Roam+Org")
+
+  "rd" '(deft :which-key "Deft")
+  "rf" '(org-roam-node-find :which-key "Find Note")
+  "rl" '(org-roam-buffer-toggle :which-key "Toggle Sidebar")
 #+end_src
 
 **** Open (o)
@@ -602,6 +634,7 @@ Ivy floating
       :ensure
       ; :hook (lsp-mode . company-mode)
       :custom
+      (global-company-mode t)
       (company-idle-delay 0.1) ;; how long to wait until popup
       (company-minimum-prefix-length 1) ;; The minimum prefix length for idle completion.
       (company-selection-wrap-around t)
@@ -613,9 +646,7 @@ Ivy floating
             ("RET" . company-complete-selection)
             ("C-p". company-select-previous)
             ("M-<". company-select-first)
-            ("M->". company-select-last))
-      (:map lsp-mode-map
-            ("<tab>" . company-indent-or-complete-common)))
+            ("M->". company-select-last)))
   
   
   ;; (use-package company-lsp)
@@ -710,10 +741,12 @@ Symbols
                     (":logbook:" . ?))))
     (prettify-symbols-mode 1))
 #+end_src
+
 ** Set directories
 #+begin_src emacs-lisp
-  (setq org-directory "~/org/gtd/"
+  (setq org-directory "~/Documents/gtd/"
     org-agenda-files (list org-directory)
+    org-roam-directory "~/Documents/roam"
   )
 #+end_src
 
@@ -787,6 +820,51 @@ Automatically tangle our Emacs.org config file when we save it
   (lambda () (add-hook 'after-save-hook #'my/org-mode/org-babel-tangle-config)))
 #+end_src
 
+** org-pomodoro
+#+begin_src emacs-lisp
+  (use-package org-pomodoro
+  :custom
+  (org-pomodoro-length 25)
+  (org-pomodoro-keep-killed-pomodoro-time t)
+  (org-pomodoro-manual-break t))
+#+end_src
+
+** org-roam
+#+begin_src emacs-lisp
+  (use-package org-roam
+    :custom
+    (org-roam-completion-everywhere t)
+    (org-roam-db-gc-threshold most-positive-fixnum) ;; preformance
+    :config
+    ;; side window
+    (require 'org-roam-protocol)
+    (add-to-list 'display-buffer-alist
+                 '("\\*org-roam\\*"
+                   (display-buffer-in-side-window)
+                   (side . right)
+                   (slot . 0)
+                   (window-width . 0.33)
+                   (window-parameters . ((no-other-window . t)
+                                         (no-delete-other-windows . t))))))
+#+end_src
+
+** Deft
+#+begin_src emacs-lisp
+  (use-package deft
+    :after org
+    :bind
+    :custom
+    (deft-strip-summary-regexp "\\`\\(.+\n\\)+\n")
+    (deft-recursive t)
+    (deft-use-filter-string-for-filename t)
+    (deft-default-extension "org")
+    (deft-directory org-roam-directory))
+    (setq deft-recursive t)
+  (setq deft-strip-summary-regexp ":PROPERTIES:\n\\(.+\n\\)+:END:\n")
+  (setq deft-use-filename-as-title 't)
+
+  
+#+end_src
 
 * Development
 ** General
@@ -851,6 +929,9 @@ Counsel Projectile
     (add-hook 'lsp-mode-hook 'lsp-ui-mode)
     (lsp-headerline-breadcrumb-mode -1)
     (flycheck-mode 1)
+    :bind
+      (:map lsp-mode-map
+            ("<tab>" . company-indent-or-complete-common))
   ) 
 #+end_src
 
@@ -1096,15 +1177,6 @@ Better Diff in header sizes
 (use-package vue-mode
     :hook (vue-mode . lsp)
     :hook (vue-mode . prettier-js-mode))
-#+end_src
-
-* Misc
-** Restart Emacs
-#+begin_src emacs-lisp
-(use-package restart-emacs)
-#+end_src
-
-  )
 #+end_src
 
 * Misc
