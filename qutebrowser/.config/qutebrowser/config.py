@@ -15,7 +15,7 @@
 config.load_autoconfig(True)
 
 # ORG MODE
-config.bind("cec", "open javascript:location.href='org-protocol://roam-ref?template=r&ref='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title)")
+config.bind("ec", "open javascript:location.href='org-protocol://roam-ref?template=r&ref='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title)")
 
 ## Aliases for commands. The keys of the given dictionary are the
 ## aliases, while the values are the commands they map to.
@@ -2171,6 +2171,7 @@ c.url.searchengines = {'DEFAULT': 'https://duckduckgo.com/?q={}',
 # config.bind('gJ', 'tab-move +')
 # config.bind('gK', 'tab-move -')
 # config.bind('gO', 'set-cmd-text :open -t -r {url:pretty}')
+# config.bind('gO', 'set-cmd-text :open -t -r {url:pretty}')
 # config.bind('gU', 'navigate up -t')
 # config.bind('g^', 'tab-focus 1')
 # config.bind('ga', 'open -t')
@@ -2247,6 +2248,7 @@ c.url.searchengines = {'DEFAULT': 'https://duckduckgo.com/?q={}',
 # config.bind('xo', 'set-cmd-text -s :open -b')
 # config.bind('yD', 'yank domain -s')
 # config.bind('yM', 'yank inline [{title}]({url}) -s')
+config.bind('ey', 'yank inline [[{url}][{title}]]')
 # config.bind('yP', 'yank pretty-url -s')
 # config.bind('yT', 'yank title -s')
 # config.bind('yY', 'yank -s')
