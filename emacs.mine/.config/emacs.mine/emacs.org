@@ -1,5 +1,5 @@
 #+title: Flinner's Config
-#+PROPERTY: header-args:emacs-lisp :tangle ./init.el :mkdirp yes
+#+PROPERTY: header-args:emacs-lisp :tangle ~/.config/emacs.mine/init.el :mkdirp yes
 #+startup: content
 * README:
 run the following
@@ -99,6 +99,7 @@ Emacs Backups trashing local dir!
       auto-save-default t          ; auto-save every buffer that visits a file
       auto-save-timeout 20         ; number of seconds idle time before auto-save (default: 30)
       auto-save-interval 200       ; number of keystrokes between auto-saves (default: 300)
+      create-lockfiles nil         ; don't use lockfiles (default: t)
       )
 #+end_src
 Better Scrolling
@@ -106,7 +107,7 @@ Better Scrolling
   (setq scroll-conservatively 10)
   (setq scroll-margin 3)
   (use-package smooth-scrolling
-     :init (smooth-scrolling-mode 1))
+     :custom (smooth-scrolling-mode 1))
 #+end_src
 ** Fonts
 #+begin_src emacs-lisp
@@ -317,13 +318,41 @@ E: honestly I have no clue wtf that meant, but I will keep it
   "fD" '(dired-jump :which-key "dired current")
 #+end_src
 
-**** Roam and Org (r)
+**** Roam and Org (r/C)
 #+begin_src emacs-lisp
   "r"  '(:ignore t :which-key "Roam+Org")
-
-  "rd" '(deft :which-key "Deft")
+  
+  "rD" '(deft :which-key "Deft")
   "rf" '(org-roam-node-find :which-key "Find Note")
   "rl" '(org-roam-buffer-toggle :which-key "Toggle Sidebar")
+  "rr" '(org-roam-db-sync :which-key "Roam Sync")
+  "ri" '(org-roam-node-insert :which-key "Node  Insert")
+  "rI" '(org-id-get-create :which-key "Org Id get/create")
+  
+  
+  ;; Dailies
+  "rd"  '(:ignore t :which-key "Dailies")
+  "rdT" '(org-roam-dailies-goto-today :which-key "Go To Today")
+  "rdt" '(org-roam-dailies-capture-today :which-key "Capture Today")
+  "rdY" '(org-roam-dailies-goto-yesterday :which-key "Go To yesterday")
+  "rdy" '(org-roam-dailies-capture-yesterday :which-key "Capture yesterday")
+  "rdM" '(org-roam-dailies-goto-tomorrow :which-key "Go To tomorrow")
+  "rdm" '(org-roam-dailies-capture-tomorrow :which-key "Capture tomorrow")
+  
+  ;; Clocks
+  "rc"  '(:ignore t :which-key "Clocks")
+  "rci" '(org-clock-in :which-key "Clock In")
+  "rcI" '(org-clock-in-last :which-key "Clock In Last")
+  "rco" '(org-clock-out :which-key "Clock Out")
+  "rcp" '(org-pomodoro :which-key "Pomodoro")
+  "rcR" '(org-clock-report :which-key "Clock Report")
+  
+  ;; Schedules and Deadlines
+  ;; TODO!
+#+end_src
+Capture
+#+begin_src emacs-lisp
+  "C"  '(org-capture :which-key "Org-Capture")
 #+end_src
 
 **** Open (o)
@@ -332,6 +361,8 @@ E: honestly I have no clue wtf that meant, but I will keep it
   
   "oT" '(vterm :which-key "Vterm in current window")
   "ot" '(vterm-other-window :which-key "Vterm in other window")
+  "ob" '(bookmark-jump :which-key "Bookmark Jump")
+  "oB" '(bookmark-set :which-key "Bookmark set")
 #+end_src
 
 **** Buffers (b)
@@ -343,16 +374,22 @@ E: honestly I have no clue wtf that meant, but I will keep it
   "bl" '(evil-switch-to-windows-last-buffer :which-key "Last Buffer")
   "bi" '(ibuffer :which-key "Ibuffer")
   "br" '(revert-buffer :which-key "Ibuffer")
+  "bb" '(switch-to-buffer :which-key "Ibuffer")
 #+end_src
 
 **** Windows (w)
 #+begin_src emacs-lisp
   "w"  '(:ignore t :which-key "Windows")
-
-  "wj" '(evil-window-down :which-key "Evil Window Down")
+  
+  "wj" '(evil-window-down :which-key "Window Down")
   "wk" '(evil-window-up :which-key "Window Up")
   "wl" '(evil-window-right :which-key "Window Left")
   "wh" '(evil-window-left :which-key "Window Down")
+  "wJ" '(evil-window-move-very-bottom :which-key "Move Window Down")
+  "wK" '(evil-window-move-very-top :which-key "Move Window Up")
+  "wL" '(evil-window-move-far-right :which-key "Move Window Left")
+  "wH" '(evil-window-move-far-left :which-key "Move Window Down")
+  
   "ws" '(evil-window-split :which-key "Window Split")
   "wv" '(evil-window-vsplit :which-key "Window Vsplit")
   "wd" '(evil-window-delete :which-key "Window delete")
@@ -608,6 +645,7 @@ Ivy floating
     (ivy-posframe-mode +1))
   
 #+end_src
+
 ** Counsel
 #+begin_src emacs-lisp
   (use-package counsel
@@ -625,7 +663,8 @@ Ivy floating
   (use-package which-key
     :init (which-key-mode)
     :diminish which-key-mode
-    :config (setq which-key-idle-delay 1))
+    :config (setq which-key-idle-delay 1
+                  which-key-max-display-columns 5))
 #+end_src
 
 ** Company Mode
@@ -682,7 +721,7 @@ better sorting for ivy, company..
 #+end_src
 
 * Org-Mode
-** use-package and Appereance
+** use-package 
 Modes To Start
 #+begin_src emacs-lisp
   (defun my/org-mode/org-mode-setup ()
@@ -722,7 +761,17 @@ use-package
     (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
     (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch))
 #+end_src
-Symbols
+
+** Set directories
+#+begin_src emacs-lisp
+  (setq org-directory "~/Documents/gtd/"
+    org-agenda-files (list org-directory)
+    org-roam-directory "~/Documents/roam"
+  )
+#+end_src
+
+** Appearance
+*** Symbols
 #+begin_src emacs-lisp
   (defun my/org-mode/load-prettify-symbols ()
     (interactive)
@@ -742,15 +791,59 @@ Symbols
     (prettify-symbols-mode 1))
 #+end_src
 
-** Set directories
+*** Visual Fill (center)
 #+begin_src emacs-lisp
-  (setq org-directory "~/Documents/gtd/"
-    org-agenda-files (list org-directory)
-    org-roam-directory "~/Documents/roam"
-  )
+  (defun my/org-mode/org-mode-visual-fill ()
+  (interactive)
+    (setq visual-fill-column-width 110
+          visual-fill-column-center-text t
+          fill-column 90)
+    (visual-fill-column-mode 1))
+#+end_src
+#+begin_src emacs-lisp
+  (use-package visual-fill-column; center text
+    :hook (org-mode . my/org-mode/org-mode-visual-fill))
 #+end_src
 
-** Structure Templates
+*** org-bullets
+#+begin_src emacs-lisp
+(use-package org-bullets
+  :after org
+  :hook (org-mode . org-bullets-mode)
+  :custom
+  (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
+#+end_src
+
+** HOLD Auto Tangle Configuration Files
+Automatically tangle our Emacs.org config file when we save it
+#+begin_src emacs-lisp :tangle no
+    (defun my/org-mode/org-babel-tangle-config ()
+      (when (string-equal (buffer-file-name)
+                          (expand-file-name "~/.config/emacs/init.org"))
+        ;; Dynamic scoping to the rescue
+        (let ((org-confirm-babel-evaluate nil))
+          (org-babel-tangle))))
+
+    (add-hook 'org-mode-hook
+  (lambda () (add-hook 'after-save-hook #'my/org-mode/org-babel-tangle-config)))
+#+end_src
+
+** Babel
+Don't confirm, I know what I am doing
+#+begin_src emacs-lisp
+  (setq org-confirm-babel-evaluate nil)
+#+end_src
+
+*** Language List
+#+begin_src emacs-lisp
+  (org-babel-do-load-languages
+    'org-babel-load-languages
+    '((emacs-lisp . t)
+      (python . t)
+      (shell . t)))
+#+end_src
+
+*** Structure Templates
 Allow fast code insertion
 #+begin_src emacs-lisp
   ;; This is needed as of Org 9.2
@@ -761,40 +854,12 @@ Allow fast code insertion
   (add-to-list 'org-structure-template-alist '("py" . "src python"))
 #+end_src
 
-** org-bullets
+** Capture Templates
 #+begin_src emacs-lisp
-(use-package org-bullets
-  :after org
-  :hook (org-mode . org-bullets-mode)
-  :custom
-  (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
-#+end_src
-
-** Visual Fill (center)
-#+begin_src emacs-lisp
-  (defun my/org-mode/org-mode-visual-fill ()
-  (interactive)
-    (setq visual-fill-column-width 110
-          visual-fill-column-center-text t)
-    (visual-fill-column-mode 1))
-#+end_src
-#+begin_src emacs-lisp
-  (use-package visual-fill-column; center text
-    :hook (org-mode . my/org-mode/org-mode-visual-fill))
-#+end_src
-
-** Babel
-Don't confirm, I know what I am doing
-#+begin_src emacs-lisp
-  (setq org-confirm-babel-evaluate nil)
-#+end_src
-Language List
-#+begin_src emacs-lisp
-  (org-babel-do-load-languages
-    'org-babel-load-languages
-    '((emacs-lisp . t)
-      (python . t)
-      (shell . t)))
+  (setq org-capture-templates
+        `(
+          ("d" "Distraction" entry (file+headline ,(concat org-directory "distractions.org") "Inbox")
+           "* %?\n%T")))
 #+end_src
 
 ** Agenda
@@ -804,20 +869,6 @@ Language List
          '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
            (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)"
                      "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
-#+end_src
-
-** Auto Tangle Configuration Files
-Automatically tangle our Emacs.org config file when we save it
-#+begin_src emacs-lisp
-    (defun my/org-mode/org-babel-tangle-config ()
-      (when (string-equal (buffer-file-name)
-                          (expand-file-name "~/.config/emacs/init.org"))
-        ;; Dynamic scoping to the rescue
-        (let ((org-confirm-babel-evaluate nil))
-          (org-babel-tangle))))
-
-    (add-hook 'org-mode-hook
-  (lambda () (add-hook 'after-save-hook #'my/org-mode/org-babel-tangle-config)))
 #+end_src
 
 ** org-pomodoro
@@ -831,21 +882,25 @@ Automatically tangle our Emacs.org config file when we save it
 
 ** org-roam
 #+begin_src emacs-lisp
-  (use-package org-roam
-    :custom
-    (org-roam-completion-everywhere t)
-    (org-roam-db-gc-threshold most-positive-fixnum) ;; preformance
-    :config
-    ;; side window
-    (require 'org-roam-protocol)
-    (add-to-list 'display-buffer-alist
-                 '("\\*org-roam\\*"
-                   (display-buffer-in-side-window)
-                   (side . right)
-                   (slot . 0)
-                   (window-width . 0.33)
-                   (window-parameters . ((no-other-window . t)
-                                         (no-delete-other-windows . t))))))
+    (use-package org-roam
+      :custom
+      (org-roam-completion-everywhere t)
+      (org-roam-db-gc-threshold most-positive-fixnum) ;; preformance
+      (org-roam-capture-ref-templates
+      '(("r" "ref" plain "%?" :if-new
+          (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}")
+        :unnarrowed t)))
+      :config
+      ;; side window
+      (require 'org-roam-protocol)
+      (add-to-list 'display-buffer-alist
+                   '("\\*org-roam\\*"
+                     (display-buffer-in-side-window)
+                     (side . right)
+                     (slot . 0)
+                     (window-width . 0.33)
+                     (window-parameters . ((no-other-window . t)
+                                           (no-delete-other-windows . t))))))
 #+end_src
 
 ** Deft
@@ -901,9 +956,8 @@ Counsel Projectile
 
 *** lsp performance
 #+begin_src emacs-lisp
-(setq gc-cons-threshold 100000000)
-(setq read-process-output-max (* 1024 4024)) ;; 4mb
-
+  (setq gc-cons-threshold 100000000)
+  (setq read-process-output-max (* 1024 4024)) ;; 4mb
 #+end_src
 
 *** lsp-mode
@@ -1233,6 +1287,99 @@ Better Diff in header sizes
   (dolist (char-regexp ligatures)
     (set-char-table-range composition-function-table (car char-regexp)
                           `([,(cdr char-regexp) 0 font-shape-gstring]))))
+#+end_src
+
+* IRC
+** unsused 'erc'
+#+begin_src emacs-lisp :tangle no
+  (use-package erc
+    :custom
+    (erc-autojoin-timing 'ident)
+    (erc-fill-function 'erc-fill-static)
+    (erc-fill-static-center 25)
+    (erc-hide-list '("JOIN" "PART" "QUIT"))
+    (erc-lurker-hide-list '("JOIN" "PART" "QUIT"))
+    (erc-lurker-threshold-time 43200)
+    (erc-prompt-for-nickserv-password nil)
+    (erc-server-reconnect-attempts 5)
+    (erc-server-reconnect-timeout 3)
+    (erc-track-exclude-types '("JOIN" "MODE" "NICK" "PART" "QUIT"
+                               "324" "329" "332" "333" "353" "477"))
+    :config
+    ;; (add-to-list 'erc-modules 'notifications)
+    (add-to-list 'erc-modules 'spelling)
+    (erc-services-mode 1)
+    (erc-update-modules))
+  
+  (use-package erc-hl-nicks
+  :after erc)
+  
+  (use-package erc-image
+      :after erc)
+#+end_src
+
+#+begin_src emacs-lisp :tangle no
+  (use-package znc
+    :config
+    (setq znc-servers
+          `(("flinner.my.to" 6697 t ((main ,my/secret/znc/flinner.my.to/username
+                                  ,my/secret/znc/flinner.my.to/secret))))))
+    (defun my/znc-all ()
+    "Connect to all ZNC networks. Accept incoming self signed certificates."
+    (interactive)
+    (let ((tls-checktrust nil) 
+           (gnutls-verify-error nil)) 
+      (znc-all))) 
+#+end_src
+
+** circe
+*** Setup
+#+begin_src emacs-lisp
+  (use-package circe
+    :preface
+    (defun my/circe/clear ()
+      (interactive)
+      (circe-command-CLEAR))
+    :config
+    (add-to-list 'circe-networks `("flinner's znc" :host "flinner.my.to" :port 6697
+                                   :tls t
+                                   ;; :sasl-strict t 
+                                   :nick ,my/secret/znc/flinner.my.to/username
+                                   ;; :sasl-username ,my/secret/znc/flinner.my.to/sassl-username
+                                   ;; :sasl-password ,my/secret/znc/flinner.my.to/secret
+                                   :pass ,my/secret/znc/flinner.my.to/secret
+                                   :user ,my/secret/znc/flinner.my.to/username
+                                   ))
+    (setq circe-color-nicks-min-constrast-ratio 4.5
+          circe-color-nicks-everywhere t)
+    :hook (circe-channel-mode . enable-circe-color-nicks)
+    :custom
+    (circe-format-say "{nick:-16s} {body}")
+    ;; :bind(("C-l" . my/circe/clear))
+  )
+#+end_src
+ 
+#+begin_src emacs-lisp
+  (setq
+   ;; lui-time-stamp-position 'right-margin
+   lui-fill-type nil)
+  
+  (add-hook 'lui-mode-hook 'my-lui-setup)
+  (defun my-lui-setup ()
+    (setq
+     fringes-outside-margins t
+     right-margin-width 5
+     word-wrap t
+     wrap-prefix "    "))
+#+end_src
+a
+
+*** znc stuff
+#+begin_src emacs-lisp
+(defun circe-command-ZNC (what)
+  "Send a message to ZNC incorporated by user '*status'."
+  (circe-command-MSG "*status" what))
+
 #+end_src
 
 * Buffers and Windows
