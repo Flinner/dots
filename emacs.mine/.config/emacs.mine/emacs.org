@@ -51,27 +51,6 @@ straight
 #+end_src
 
 * Basic Configuration
-** Startpage
-#+begin_src emacs-lisp
-  (use-package dashboard
-    :init
-    (dashboard-setup-startup-hook)
-    :config
-    (setq dashboard-startup-banner "~/Downloads/haskell-rec.png")
-    ;; Value can be
-    ;; 'official which displays the official emacs logo
-    ;; 'logo which displays an alternative emacs logo
-    ;; 1, 2 or 3 which displays one of the text banners
-    ;; "path/to/your/image.png" or "path/to/your/text.txt" which
-    ;;   displays whatever image/text you would prefer
-  
-    ;; Content is not centered by default. To center, set
-    (setq dashboard-center-content t)
-  
-    (setq dashboard-set-init-info t)
-    (setq dashboard-projects-switch-function 'counsel-projectile-switch-project-by-name))
-#+end_src
-
 ** Better Defaults
 #+begin_src emacs-lisp 
   (setq inhibit-startup-message t)
@@ -173,6 +152,12 @@ Actuall Theme:
     (doom-themes-org-config))
 #+end_src
 
+buffers with dimmed colors
+#+begin_src emacs-lisp
+  (use-package solaire-mode
+  :init (solaire-global-mode +1))
+#+end_src
+
 ** Line Numbers
 DEPRECATED Enable Globally
 #+begin_src emacs-lisp :tangle no
@@ -251,9 +236,10 @@ Eval First and Last at least block!
 E: honestly I have no clue wtf that meant, but I will keep it
 *** use-package
 #+begin_src emacs-lisp
-(use-package general
-  :after evil
-  :preface
+  (use-package general
+    :after evil
+    :defer t
+    :preface
 #+end_src
 
 *** Helper Functions
@@ -322,6 +308,8 @@ E: honestly I have no clue wtf that meant, but I will keep it
 #+begin_src emacs-lisp
   "r"  '(:ignore t :which-key "Roam+Org")
   
+  "ra"  '(org-agenda :which-key "Agenda")
+  
   "rD" '(deft :which-key "Deft")
   "rf" '(org-roam-node-find :which-key "Find Note")
   "rl" '(org-roam-buffer-toggle :which-key "Toggle Sidebar")
@@ -346,6 +334,7 @@ E: honestly I have no clue wtf that meant, but I will keep it
   "rco" '(org-clock-out :which-key "Clock Out")
   "rcp" '(org-pomodoro :which-key "Pomodoro")
   "rcR" '(org-clock-report :which-key "Clock Report")
+  "rcg" '(org-clock-goto :which-key "Goto Clock")
   
   ;; Schedules and Deadlines
   ;; TODO!
@@ -408,8 +397,8 @@ Capture
   "ca" '(lsp-execute-code-action :which-key "Code Action")
   "ci" '(lsp-ui-imenu :which-key "lsp imenu")
   "cr" '(lsp-rename :which-key "rename")
-  "cs" '(lsp-find-refernces :which-key "rename")
-  "cd" '(lsp-find-definition :which-key "rename")
+  "cs" '(lsp-find-refernces :which-key "find refernces")
+  "cd" '(lsp-find-definition :which-key "goto defintion")
 #+end_src
 
 **** Git (g)
@@ -733,9 +722,11 @@ Modes To Start
 use-package
 #+begin_src emacs-lisp
   (use-package org
+    :defer t
     :hook (org-mode . my/org-mode/org-mode-setup)
     (org-mode . my/org-mode/load-prettify-symbols); symbols
     :config
+    (require 'org-tempo)
     (setq org-ellipsis " ⤵")
     (setq org-agenda-start-with-log-mode t)
     (setq org-log-done 'time)
@@ -750,8 +741,8 @@ use-package
                     (org-level-7 . 1.1)
                     (org-level-8 . 1.1)))
       (set-face-attribute (car face) nil :font my/ui/varfont :weight 'regular :height (cdr face)))
-
-
+  
+  
     ;; Ensure that anything that should be fixed-pitch in Org files appears that way
     (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
     (set-face-attribute 'org-code nil   :inherit '(shadow fixed-pitch))
@@ -765,8 +756,8 @@ use-package
 ** Set directories
 #+begin_src emacs-lisp
   (setq org-directory "~/Documents/gtd/"
-    org-agenda-files (list org-directory)
-    org-roam-directory "~/Documents/roam"
+    org-roam-directory "~/Documents/roam/"
+    org-agenda-files (list org-directory (concat org-roam-directory "life.org"))
   )
 #+end_src
 
@@ -847,7 +838,6 @@ Don't confirm, I know what I am doing
 Allow fast code insertion
 #+begin_src emacs-lisp
   ;; This is needed as of Org 9.2
-  (require 'org-tempo)
 
   (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
   (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
@@ -865,11 +855,88 @@ Allow fast code insertion
 ** Agenda
 *** T/ODOs
 #+begin_src emacs-lisp
-   (setq org-todo-keywords
-         '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
-           (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)"
-                     "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
+   (setq org-todo-keywords '((sequence "TODO(t)" "|" "DONE(d)")
+                            (sequence "BACKLOG(b)" "IN PROGRESS(p)" "WAITING(w)" "|")
+                            (sequence "|" "CANCELED(c)")))
 #+end_src
+
+*** start on sunday!
+#+begin_src emacs-lisp
+  (setq org-agenda-start-on-weekday 0 ;0 is sunday
+        org-agenda-weekend-days '(5 6))
+#+end_src
+
+*** Go EVIL!
+#+BEGIN_SRC emacs-lisp
+  (eval-after-load 'org-agenda
+   '(progn
+      (evil-set-initial-state 'org-agenda-mode 'normal)
+      (evil-define-key 'normal org-agenda-mode-map
+        (kbd "<RET>") 'org-agenda-goto
+        ;; (kbd "\t") 'org-agenda-goto
+  
+        "q" 'org-agenda-quit
+        "r" 'org-agenda-redo
+        "S" 'org-save-all-org-buffers
+        ;; "gj" 'org-agenda-goto-date
+        ;; "gJ" 'org-agenda-clock-goto
+        ;; "gm" 'org-agenda-bulk-mark
+        ;; "go" 'org-agenda-open-link
+        "s" 'org-agenda-schedule
+        ;; "+" 'org-agenda-priority-up
+        "p" 'org-agenda-priority
+        ;; "-" 'org-agenda-priority-down
+        ;; "y" 'org-agenda-todo-yesterday
+        ;; "n" 'org-agenda-add-note
+        "t" 'org-agenda-todo
+        ":" 'org-agenda-set-tags
+        ;; ";" 'org-timer-set-timer
+        ;; "I" 'helm-org-task-file-headings
+        ;; "i" 'org-agenda-clock-in-avy
+        ;; "O" 'org-agenda-clock-out-avy
+        ;; "u" 'org-agenda-bulk-unmark
+        ;; "x" 'org-agenda-exit
+        "j"  'org-agenda-next-line
+        "k"  'org-agenda-previous-line
+        "vt" 'org-agenda-toggle-time-grid
+        ;; "va" 'org-agenda-archives-mode
+        "vw" 'org-agenda-week-view
+        "vd" 'org-agenda-day-view
+        ;; "vl" 'org-agenda-log-mode
+        ;; "vc" 'org-agenda-show-clocking-issues
+        "g/" 'org-agenda-filter-by-tag
+        ;; "o" 'delete-other-windows
+        ;; "gh" 'org-agenda-holiday
+        ;; "gv" 'org-agenda-view-mode-dispatch
+        "f" 'org-agenda-later
+        "b" 'org-agenda-earlier
+        "c" 'org-capture
+        "e" 'org-agenda-set-effort
+        "n" nil  ; evil-search-next
+        ;; "{" 'org-agenda-manipulate-query-add-re
+        ;; "}" 'org-agenda-manipulate-query-subtract-re
+        ;; "A" 'org-agenda-toggle-archive-tag
+        "." 'org-agenda-goto-today
+        ;; "0" 'evil-digit-argument-or-evil-beginning-of-line
+        ;; "<" 'org-agenda-filter-by-category
+        ;; ">" 'org-agenda-date-prompt
+        "F" 'org-agenda-follow-mode
+        "d" 'org-agenda-deadline
+        ;; "H" 'org-agenda-holidays
+        "J" 'org-agenda-next-date-line
+        "K" 'org-agenda-previous-date-line
+        ;; "L" 'org-agenda-recenter
+        "P" 'org-agenda-show-priority
+        ;; "R" 'org-agenda-clockreport-mode
+        ;; "Z" 'org-agenda-sunrise-sunset
+        ;; "T" 'org-agenda-show-tags
+        ;; "X" 'org-agenda-clock-cancel
+        ;; "[" 'org-agenda-manipulate-query-add
+        ;; "g\\" 'org-agenda-filter-by-tag-refine
+        ;; "]" 'org-agenda-manipulate-query-subtract
+  )))
+  ;; TODO check this
+#+END_SRC
 
 ** org-pomodoro
 #+begin_src emacs-lisp
@@ -882,25 +949,26 @@ Allow fast code insertion
 
 ** org-roam
 #+begin_src emacs-lisp
-    (use-package org-roam
-      :custom
-      (org-roam-completion-everywhere t)
-      (org-roam-db-gc-threshold most-positive-fixnum) ;; preformance
-      (org-roam-capture-ref-templates
-      '(("r" "ref" plain "%?" :if-new
-          (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}")
-        :unnarrowed t)))
-      :config
-      ;; side window
-      (require 'org-roam-protocol)
-      (add-to-list 'display-buffer-alist
-                   '("\\*org-roam\\*"
-                     (display-buffer-in-side-window)
-                     (side . right)
-                     (slot . 0)
-                     (window-width . 0.33)
-                     (window-parameters . ((no-other-window . t)
-                                           (no-delete-other-windows . t))))))
+  (use-package org-roam
+    :defer t
+    :custom
+    (org-roam-completion-everywhere t)
+    (org-roam-db-gc-threshold most-positive-fixnum) ;; preformance
+    (org-roam-capture-ref-templates
+    '(("r" "ref" plain "%?" :if-new
+        (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}")
+      :unnarrowed t)))
+    :config
+    ;; side window
+    (require 'org-roam-protocol)
+    (add-to-list 'display-buffer-alist
+                 '("\\*org-roam\\*"
+                   (display-buffer-in-side-window)
+                   (side . right)
+                   (slot . 0)
+                   (window-width . 0.33)
+                   (window-parameters . ((no-other-window . t)
+                                         (no-delete-other-windows . t))))))
 #+end_src
 
 ** Deft
@@ -932,6 +1000,7 @@ Allow fast code insertion
 *** Projectile
 #+begin_src emacs-lisp
   (use-package projectile
+    :defer t
     :diminish projectile-mode
     :config (projectile-mode)
     :custom ((projectile-completion-system 'ivy))
@@ -985,7 +1054,8 @@ Counsel Projectile
     (flycheck-mode 1)
     :bind
       (:map lsp-mode-map
-            ("<tab>" . company-indent-or-complete-common))
+            ("<tab>" . company-indent-or-complete-common)
+      )
   ) 
 #+end_src
 
@@ -1028,6 +1098,7 @@ Lsp UI
 *** Magit
 #+begin_src emacs-lisp
     (use-package magit
+      :defer t
       :custom
       (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 #+end_src
@@ -1079,6 +1150,7 @@ Get treemacs-lsp
 *** Rust
 #+begin_src emacs-lisp
   (use-package rustic
+    :defer t
     :ensure
     :bind (:map rustic-mode-map
                 ("C-c C-c l" . lsp-ui-flycheck-list)
@@ -1103,7 +1175,7 @@ Get treemacs-lsp
       (setq-local buffer-save-without-query t)))
 #+end_src
 
-*** Elisp emacs-lisp
+*** emacs-lisp
 #+begin_src emacs-lisp
   ;; (add-hook 'emacs-lisp-mode-hook 'company-mode)
   (add-hook 'emacs-lisp-mode-hook 'flycheck-mode)
@@ -1112,6 +1184,7 @@ Get treemacs-lsp
 *** V
 #+begin_src emacs-lisp 
   (use-package v-mode
+    :defer t
     :preface
   (defun my/lsp/v ()
     (interactive)
@@ -1147,6 +1220,7 @@ Get treemacs-lsp
 *** Haskell
 #+begin_src emacs-lisp
   (use-package lsp-haskell
+    :defer t
     :preface
   ;; lambda symbol
     (defun my/font/pretty-lambdas-haskell ()
@@ -1172,28 +1246,29 @@ Get treemacs-lsp
 
 *** Web
 #+begin_src emacs-lisp
-      (use-package tide
-        :preface
-        (defun setup-tide-mode ()
-          (interactive)
-          (tide-setup)
-          (flycheck-mode +1)
-          (setq flycheck-check-syntax-automatically '(save mode-enabled))
-          (eldoc-mode +1)
-          (tide-hl-identifier-mode +1)
-          ;; company is an optional dependency. You have to
-          ;; install it separately via package-install
-          ;; `M-x package-install [ret] company`
-          (company-mode +1))
-        :config
-    
-        ;; aligns annotation to the right hand side
-        (setq company-tooltip-align-annotations t)
-    
-        ;; formats the buffer before saving
-        (add-hook 'before-save-hook 'tide-format-before-save)
-      :hook(typescript-mode . setup-tide-mode)
-      :hook(typescript-mode . lsp))
+  (use-package tide
+    :defer t
+    :preface
+    (defun setup-tide-mode ()
+      (interactive)
+      (tide-setup)
+      (flycheck-mode +1)
+      (setq flycheck-check-syntax-automatically '(save mode-enabled))
+      (eldoc-mode +1)
+      (tide-hl-identifier-mode +1)
+      ;; company is an optional dependency. You have to
+      ;; install it separately via package-install
+      ;; `M-x package-install [ret] company`
+      (company-mode +1))
+    :config
+  
+    ;; aligns annotation to the right hand side
+    (setq company-tooltip-align-annotations t)
+  
+    ;; formats the buffer before saving
+    (add-hook 'before-save-hook 'tide-format-before-save)
+  :hook(typescript-mode . setup-tide-mode)
+  :hook(typescript-mode . lsp))
 #+end_src
 
 svelte
@@ -1233,6 +1308,19 @@ Better Diff in header sizes
     :hook (vue-mode . prettier-js-mode))
 #+end_src
 
+*** Scheme (guile)
+#+begin_src emacs-lisp
+(use-package geiser)
+(use-package geiser-guile)
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package parinfer-rust-mode
+    :hook emacs-lisp-mode scheme-mode
+    :init
+    (setq parinfer-rust-auto-download t))
+#+end_src
+
 * Misc
 ** Restart Emacs
 #+begin_src emacs-lisp
@@ -1246,13 +1334,16 @@ Better Diff in header sizes
 
 ** Vterm
 #+begin_src emacs-lisp
-(use-package vterm
-    :ensure t)
+  (use-package vterm
+      :defer t
+      :ensure t)
 #+end_src
+
 
 ** ranger
 #+begin_src emacs-lisp
   (use-package ranger
+  :defer t
   :config (ranger-override-dired-mode t))
 #+end_src
 
@@ -1293,6 +1384,7 @@ Better Diff in header sizes
 ** unsused 'erc'
 #+begin_src emacs-lisp :tangle no
   (use-package erc
+    :defer t
     :custom
     (erc-autojoin-timing 'ident)
     (erc-fill-function 'erc-fill-static)
@@ -1320,6 +1412,7 @@ Better Diff in header sizes
 
 #+begin_src emacs-lisp :tangle no
   (use-package znc
+    :defer t
     :config
     (setq znc-servers
           `(("flinner.my.to" 6697 t ((main ,my/secret/znc/flinner.my.to/username
@@ -1336,6 +1429,7 @@ Better Diff in header sizes
 *** Setup
 #+begin_src emacs-lisp
   (use-package circe
+    :defer t
     :preface
     (defun my/circe/clear ()
       (interactive)
@@ -1386,9 +1480,30 @@ a
 ** Workspaces (Persepective
 #+begin_src emacs-lisp :tangle no
 (use-package persp-mode
+  :defer t
   :config
   (setq persp-keymap-prefix (kbd "SPC <tab>"))
 #+end_src
 
 
 
+* Startpage
+#+begin_src emacs-lisp
+  (use-package dashboard
+    :init
+    (dashboard-setup-startup-hook)
+    :config
+    (setq dashboard-startup-banner "~/Downloads/haskell-rec.png")
+    ;; Value can be
+    ;; 'official which displays the official emacs logo
+    ;; 'logo which displays an alternative emacs logo
+    ;; 1, 2 or 3 which displays one of the text banners
+    ;; "path/to/your/image.png" or "path/to/your/text.txt" which
+    ;;   displays whatever image/text you would prefer
+  
+    ;; Content is not centered by default. To center, set
+    (setq dashboard-center-content t)
+  
+    (setq dashboard-set-init-info t)
+    (setq dashboard-projects-switch-function 'counsel-projectile-switch-project-by-name))
+#+end_src
