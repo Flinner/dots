@@ -592,6 +592,7 @@ Capture
 ** ivy
 #+begin_src emacs-lisp
   (use-package ivy
+    :defer 2
     :diminish
     :bind (("C-s" . swiper); TODO: move to Keybinds
            :map ivy-minibuffer-map
@@ -638,6 +639,7 @@ Ivy floating
 ** Counsel
 #+begin_src emacs-lisp
   (use-package counsel
+    :defer 2
     :bind (("M-x" . counsel-M-x)
            ;("C-x b" . counsel-ibuffer)
            ("C-x C-f" . counsel-find-file)
@@ -648,12 +650,15 @@ Ivy floating
 #+end_src
 
 ** Which Key (Shows Next keys)
+slow loading! defer it
 #+begin_src emacs-lisp
-  (use-package which-key
-    :init (which-key-mode)
-    :diminish which-key-mode
-    :config (setq which-key-idle-delay 1
-                  which-key-max-display-columns 5))
+(use-package which-key
+  :defer 9
+  :diminish which-key-mode
+  :config
+  (which-key-mode)
+  (setq which-key-idle-delay 1
+	which-key-max-display-columns 5))
 #+end_src
 
 ** Company Mode
@@ -725,8 +730,10 @@ use-package
     :defer t
     :hook (org-mode . my/org-mode/org-mode-setup)
     (org-mode . my/org-mode/load-prettify-symbols); symbols
+    (org-mode . auto-fill-mode)
     :config
     (require 'org-tempo)
+    (require 'org-habit)
     (setq org-ellipsis " ⤵")
     (setq org-agenda-start-with-log-mode t)
     (setq org-log-done 'time)
@@ -805,7 +812,8 @@ use-package
   (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
 #+end_src
 
-** HOLD Auto Tangle Configuration Files
+** CANCELED Auto Tangle Configuration Files
+CLOSED: [2021-07-30 Fri 12:52]
 Automatically tangle our Emacs.org config file when we save it
 #+begin_src emacs-lisp :tangle no
     (defun my/org-mode/org-babel-tangle-config ()
@@ -937,6 +945,12 @@ Allow fast code insertion
   )))
   ;; TODO check this
 #+END_SRC
+
+*** habits
+#+begin_src emacs-lisp
+  (setq org-habit-graph-column 80   ; prevent overwriting title
+        org-habit-show-all-today t) ; show even if DONE
+#+end_src
 
 ** org-pomodoro
 #+begin_src emacs-lisp

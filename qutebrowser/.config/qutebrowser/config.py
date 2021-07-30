@@ -890,7 +890,7 @@ c.content.cookies.store = True
 
 ## Enable JavaScript.
 ## Type: Bool
-# c.content.javascript.enabled = True
+c.content.javascript.enabled = False
 
 ## Log levels to use for JavaScript console logging messages. When a
 ## JavaScript message with the level given in the dictionary key is
