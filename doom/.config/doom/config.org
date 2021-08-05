@@ -55,6 +55,7 @@
 ;; they are implemented.
 ;;
 #+end_src
+
 * Global Settings
 Place your private configuration here! Remember, you do not need to run 'doom
 sync' after modifying this file!
@@ -67,10 +68,12 @@ clients, file templates and snippets.
 (setq user-full-name "Serben"
       user-mail-address "serben@disroot.org")
 #+end_src
+
 ** Start as a server
 #+begin_src emacs-lisp
 ;;(server-start)
 #+end_src
+
 **  UI
 
 Doom exposes five (optional) variables for controlling fonts in Doom. Here
@@ -93,6 +96,7 @@ with the src_elisp{`load-theme'} function. This is the default src_elisp{(setq
 (setq leuven-scale-outline-headlines nil)
 (setq doom-theme 'doom-gruvbox)
 #+end_src
+
 *** Font
 
 #+begin_src elisp :tangle yes
@@ -110,15 +114,18 @@ with the src_elisp{`load-theme'} function. This is the default src_elisp{(setq
 ;;(setq doom-font (font-spec :family "Open Sans" :size 12 :weight 'regular)
 ;;doom-variable-pitch-font (font-spec :family "sans" :size 12))
 #+end_src
+
 *** Line Numbers
 #+begin_src elisp
 (setq display-line-numbers-type 't)
 #+end_src
+
 *** Neotree
 Use Icons
 #+begin_src elisp :tangle yes
 (setq neo-theme (if (display-graphic-p) 'icons 'arrow))
 #+end_src
+
 ** KeyBinds
 *** Function row <F-{1-12}>
 #+begin_src elisp :tangle yes
@@ -131,16 +138,19 @@ Use Icons
  :n "<f12>" 'delve-open-or-select
  )
 #+end_src
+
 *** alt Leader key
 #+begin_src elisp :tangle yes
 (setq doom-leader-alt-key "C-SPC")
 (setq doom-localleader-alt-key "C-SPC m")
 #+end_src
+
 *** Text Manipulation
 **** C-h as backspace
 #+begin_src elisp :tangle yes
 (map! "C-h" 'backward-delete-char-untabify)
 #+end_src
+
 **** ediff init and example
 #+begin_src elisp :tangle yes
 (defun doom/ediff-init-and-example ()
@@ -153,21 +163,25 @@ Use Icons
   "di"   #'doom/ediff-init-and-example
   )
 #+end_src
+
 ** Fill column
 #+begin_src elisp :tangle yes
 (setq-default fill-column 80)
 #+end_src
+
 ** Scroll
 #+begin_src elisp :tangle yes
 (setq scroll-conservatively 10)
 (setq scroll-margin 3)
 #+end_src
+
 * Modes
 Global Mixed Pitch  mode!
 #+begin_src elisp :tangle yes
 ;;(add-hook 'text-mode-hook 'mixed-pitch-mode)
 (add-hook 'text-mode-hook 'blink-cursor-mode)
 #+end_src
+
 
 * Org-Mode
 ** ROAM
@@ -195,10 +209,12 @@ Global Mixed Pitch  mode!
       (org-roam-server-mode 1))
     (browse-url-xdg-open (format "http://localhost:%d" org-roam-server-port))))
 #+end_src
+
 *** Set Directory
 #+begin_src elisp :tangle yes
 ;; Moved to Org Directory
 #+end_src
+
 *** Deft
 #+begin_src elisp :tangle yes
 (setq deft-directory "~/org/roam")
@@ -206,6 +222,7 @@ Global Mixed Pitch  mode!
 (setq deft-recursive t)
 (setq deft-strip-title-regexp "\\(?:^%+\\|^#\\+TITLE: *\\|^[#* ]+\\|-\\*-[[:alpha:]]+-\\*-\\|^Title:[	 ]*\\|#+$\\)")
 #+end_src
+
 *** Dailies Template
 me is Smurt
 #+begin_src elisp :tangle yes
@@ -251,6 +268,7 @@ me is Smurt
            :immediate-finish t))))
 #+end_src
 
+
 #+RESULTS:
 | j | journal | entry | #'org-roam-capture--get-point | * %<%H:%M> %? | :file-name | daily/%<%Y-%m-%d> | :head | :PROPERTIES: |
 
@@ -271,6 +289,7 @@ me is Smurt
 "RET"  #'lister-key-action
 "TAB"  #'delve-expand-toggle-sublist
 #+end_src
+
 *** fixes
 smartparens breaks file viewer! [[https://github.com/org-roam/org-roam-server/issues/115][org-roam/org-roam-server#115 Calling "org-roam-server-mode" throws "Wrong typ...]]
 #+begin_src elisp :tangle yes
@@ -287,10 +306,12 @@ smartparens breaks file viewer! [[https://github.com/org-roam/org-roam-server/is
 ;;   (org-roam-server-mode)
 ;;   (smartparens-global-mode 1))
 #+end_src
+
 for v2,
 #+begin_src elisp :tangle yes
 (setq org-roam-prefer-id-links t)
 #+end_src
+
 ** Org Directory
 If you use `org' and don't want your org files in the default location below,
 change `org-directory'. It must be set before org loads!, end it with a slash "/"
@@ -303,6 +324,7 @@ change `org-directory'. It must be set before org loads!, end it with a slash "/
 (setq org-roam-intersting-file (concat org-roam-directory "internet/intersting.org"))
 (setq org-roam-goals-file (concat org-roam-directory "goals.org"))
 #+end_src
+
 
 ** Agenda
 *** custom commands [Inactive]
@@ -321,6 +343,7 @@ change `org-directory'. It must be set before org loads!, end it with a slash "/
                        '(or (org-agenda-skip-entry-if 'done)))
                       (org-agenda-overriding-header "Tasks:")))))))
 #+end_src
+
 *** Org super agenda mode
 [[https://github.com/alphapapa/org-super-agenda][Documentation]]
 This is the raw example
@@ -410,20 +433,24 @@ This is the raw example
   :config
   (org-super-agenda-mode))
 #+end_src
+
 *** UI
 #+begin_src elisp :tangle yes 
 (add-hook 'org-agenda-mode-hook 'elegant-agenda-mode)
 #+end_src
+
 *** fixes
 #+begin_src elisp :tangle yes
 (with-eval-after-load 'org-agenda
   (define-key org-super-agenda-header-map "j" nil)
   (define-key org-super-agenda-header-map "k" nil))
 #+end_src
+
 save before quiting!
 #+begin_src elisp
 (advice-add 'org-agenda-quit :before 'org-save-all-org-buffers)
 #+end_src
+
 ** Org-Latex
 *** Latex Image Preview options
 #+begin_src elisp :tangle no
@@ -433,10 +460,12 @@ save before quiting!
     ("begin" "$1" "$" "$$" "\\(" "\\["))))
 (set-default 'preview-scale-function 0.2)
 #+end_src
+
 Imagemagick since dvipng can't handle tikz \LaTeX
 #+begin_src elisp :tangle no
 (setq org-latex-create-formula-image-program 'imagemagick)
 #+end_src
+
 *** Update Latex Fragments with font change
 #+begin_src elisp :tangle yes
 (add-hook 'org-mode-hook 'turn-on-auto-fill)
@@ -446,15 +475,18 @@ Imagemagick since dvipng can't handle tikz \LaTeX
   (org-latex-preview '(16)))
 (add-hook 'text-scale-mode-hook 'update-org-latex-fragments)
 #+end_src
+
 *** Tikz Preview
 #+begin_src elisp :tangle yes
 (eval-after-load "preview"
   '(add-to-list 'preview-default-preamble "\\PreviewEnvironment{tikzpicture}" t))
 #+end_src
+
 *** nice to be able to use cdlatex.
 #+begin_src elisp :tangle yes
 (after! org (add-hook 'org-mode-hook 'turn-on-org-cdlatex))
 #+end_src
+
 *** Now, by default, LSPs don’t really function at all in src blocks.
 #+begin_src elisp :tangle yes
 (cl-defmacro lsp-org-babel-enable (lang)
@@ -486,6 +518,7 @@ Imagemagick since dvipng can't handle tikz \LaTeX
 (dolist (lang org-babel-lang-list)
   (eval `(lsp-org-babel-enable ,lang)))
 #+end_src
+
 ** Capture templates
 #+begin_src elisp :tangle yes
 (after! org
@@ -559,25 +592,30 @@ Imagemagick since dvipng can't handle tikz \LaTeX
 
           )))
 #+end_src
+
 ** Modes
 #+begin_src elisp :tangle yes
 ;;(add-hook 'org-mode-hook #'mixed-pitch-mode)
 (setq geiser-default-implementation  'guile)
 #+end_src
+
 *** ditaa
 #+begin_src elisp :tangle yes
 (setq org-ditaa-jar-path "/usr/share/java/ditaa/ditaa-0.11.jar")
 #+end_src
+
 *** Mixed pitch mode
 #+begin_src emacs-lisp :tangle yes
 (add-hook 'markdown-mode-hook 'mixed-pitch-mode)
 (add-hook 'org-mode-hook 'mixed-pitch-mode)
 #+end_src
+
 ** UI
 *** hide the emphasis markup (e.g. /.../ for italics, *...* for bold, etc.):
 #+begin_src elisp :tangle yes
 (setq org-hide-emphasis-markers t)
 #+end_src
+
 *** Fonts
 #+begin_src elisp :tangle no
 (let* ((variable-tuple
@@ -601,6 +639,7 @@ Imagemagick since dvipng can't handle tikz \LaTeX
    `(org-level-1 ((t (,@headline ,@variable-tuple :height 1.75))))
    `(org-document-title ((t (,@headline ,@variable-tuple :height 2.0 :underline nil))))))
 #+end_src
+
 *** Image preview from urls
 #+begin_src elisp :tangle no
 (defun org-image-link (protocol link _description)
@@ -623,11 +662,13 @@ Imagemagick since dvipng can't handle tikz \LaTeX
  "imghttps"
  :image-data-fun #'org-image-link)
 #+end_src
+
 *** align tags
 aligning tags misses up with capture templates
 #+begin_src elisp :tangle yes
 ;(after! org (setq org-tags-column 60))
 #+end_src
+
 
 * Elfeed
 ** Setup
@@ -636,12 +677,14 @@ aligning tags misses up with capture templates
 (setq-default elfeed-search-filter "@1-week-ago")
 #+end_src
 
+
 *** Source of Feeds
 Takes feeds from Org-File
 #+begin_src elisp :tangle yes
 ;(setq rmh-elfeed-org-files (list "~/.doom.d/elfeed.org" (concat org-roam-directory "internet/elfeed.org")))
 (setq rmh-elfeed-org-files (list (concat org-roam-directory "elfeed.org")))
 #+end_src
+
 
 *** Refresh Feed
 Set up the url-queue variables for swift and complete operation. The
@@ -651,6 +694,7 @@ for loading feeds.
 (setf url-queue-parallel-processes 20
       url-queue-timeout 10)
 #+end_src
+
 ** Key Maps
 | KeyBinds | Usage          |
 |----------+----------------|
@@ -679,6 +723,7 @@ Search examples: `@1-week-ago +videos -linux` (+/- are used to filter tags)
                       ))
 #+end_src
 
+
 ** Utils
 *** elfeed-close-prev-buffer
 Closing elfeed forwards to prev buffer
@@ -689,6 +734,7 @@ Closing elfeed forwards to prev buffer
   (elfeed-kill-buffer)
   (previous-buffer))
 #+end_src
+
 
 *** elfeed-view-mpv
 (add-hook 'LaTeX-mode-hook (lambda () (yas-minor-mode -1)))
@@ -719,19 +765,23 @@ Run video in mpv
     (mapc #'elfeed-search-update-entry entries)
     (unless (use-region-p) (forward-line))))
 #+end_src
+
 ** Modes
 #+begin_src elisp :tangle yes
  ;;(add-hook 'elfeed-show-mode-hook #'mixed-pitch-mode)
 #+end_src
+
 * Languages
 ** Rust
 Fix "waiting blocking file"
 #+begin_src elisp :tangle yes
 (setq lsp-rust-target "/tmp/rust-crap")
 #+end_src
+
 ** nand2tetris
 #+begin_src elisp :tangle yes
 #+end_src
+
 * IRC
 Include The Irc stuff
 ##+INCLUDE: "~/Documents/org-roam/internet/irc.org"
@@ -754,6 +804,7 @@ Include The Irc stuff
                      :sasl-password (lambda (&rest _) (+pass-get-secret "irc/example.net"))
                      :channels ("#emacs")))
 #+end_src
+
 * Telega
 k conflicts with evil up
 #+begin_src elisp :tangle yes
@@ -762,16 +813,19 @@ k conflicts with evil up
   (define-key telega-msg-button-map "l" nil))
 (setq telega-chat-bidi-display-reordering 'right-to-left)
 #+end_src
+
 * Company mode
 #+begin_src elisp :tangle yes
 (setq company-idle-delay 0.0
 company-minimum-prefix-length 1)
 #+end_src
+
 * Ranger
 replace dired
 #+begin_src elisp :tangle yes
 (ranger-override-dired-mode t)
 #+end_src
+
 * Fixes
 In case of Emacs28,
 #+begin_src elisp :tangle yes
