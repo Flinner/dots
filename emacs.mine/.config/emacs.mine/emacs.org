@@ -88,6 +88,7 @@ Better Scrolling
   (use-package smooth-scrolling
      :custom (smooth-scrolling-mode 1))
 #+end_src
+
 ** Fonts
 #+begin_src emacs-lisp
   (setq my/ui/monofont "Fira Code")
@@ -141,6 +142,7 @@ Actuall Theme:
     ;; Your init file should contain only one such instance.
     ;; If there is more than one, they won't work right.
     '(flycheck-warning ((t (:background "#282828" :underline "#fabd2f"))))
+    '(org-date ((t (:inherit fixed-pitch))))
     '(ivy-posframe-border ((t (:background "#ffffff")))))
   
     ;; Enable custom neotree theme (all-the-icons must be installed!)
@@ -250,6 +252,7 @@ E: honestly I have no clue wtf that meant, but I will keep it
 #+end_src
 
 ***  leader-keys
+**** config head declartion
 #+begin_src emacs-lisp
   :config
   (general-create-definer my/leader-keys
@@ -285,6 +288,8 @@ E: honestly I have no clue wtf that meant, but I will keep it
   "hk" '(helpful-key :which-key "Describe Key")
   "hf" '(counsel-describe-function :which-key "Describe Function")
   "hv" '(counsel-describe-variable :which-key "Describe Variable")
+  "hF" '(counsel-describe-face :which-key "Describe Face")
+  "hi" '(info :which-key "info")
 #+end_src
 
 **** search (s)
@@ -299,7 +304,7 @@ E: honestly I have no clue wtf that meant, but I will keep it
   "f"  '(:ignore t :which-key "Files")
 
   "fr" '(counsel-recentf :which-key "Recent Files")
-  "fp" '(my/keybind/config :which-key "Recent Files")
+  "fp" '(my/keybind/config :which-key "Config")
   "fd" '(dired :which-key "dired prompt")
   "fD" '(dired-jump :which-key "dired current")
 #+end_src
@@ -352,6 +357,8 @@ Capture
   "ot" '(vterm-other-window :which-key "Vterm in other window")
   "ob" '(bookmark-jump :which-key "Bookmark Jump")
   "oB" '(bookmark-set :which-key "Bookmark set")
+  
+  "oe" '(elfeed-dashboard :which-key "Bookmark set")
 #+end_src
 
 **** Buffers (b)
@@ -617,7 +624,7 @@ Ivy Rich for having =M-x= description and keybinds
     :init (ivy-rich-mode 1))
 #+end_src
 Ivy floating
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package ivy-posframe
     :after ivy
     :diminish
@@ -727,15 +734,17 @@ Modes To Start
 use-package
 #+begin_src emacs-lisp
   (use-package org
-    :defer t
+    :defer 3
     :hook (org-mode . my/org-mode/org-mode-setup)
     (org-mode . my/org-mode/load-prettify-symbols); symbols
     (org-mode . auto-fill-mode)
     :config
     (require 'org-tempo)
     (require 'org-habit)
+    (setq geiser-default-implementation  'guile)
     (setq org-ellipsis " ⤵")
     (setq org-agenda-start-with-log-mode t)
+    (setq org-highlight-latex-and-related '(latex))
     (setq org-log-done 'time)
     (setq org-log-into-drawer t)
     (dolist (face '((org-document-title . 2.0)
@@ -765,6 +774,9 @@ use-package
   (setq org-directory "~/Documents/gtd/"
     org-roam-directory "~/Documents/roam/"
     org-agenda-files (list org-directory (concat org-roam-directory "life.org"))
+    rmh-elfeed-org-files (list "~/Documents/private.el/elfeed.org")
+    elfeed-dashboard-file "~/Documents/private.el/elfeed-dashboard.org"
+    org-preview-latex-image-directory  "/tmp/ltximg"
   )
 #+end_src
 
@@ -839,6 +851,7 @@ Don't confirm, I know what I am doing
     'org-babel-load-languages
     '((emacs-lisp . t)
       (python . t)
+      (scheme . t)
       (shell . t)))
 #+end_src
 
@@ -850,6 +863,7 @@ Allow fast code insertion
   (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
   (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
   (add-to-list 'org-structure-template-alist '("py" . "src python"))
+  (add-to-list 'org-structure-template-alist '("scm" . "src scheme"))
 #+end_src
 
 ** Capture Templates
@@ -985,6 +999,26 @@ Allow fast code insertion
                                          (no-delete-other-windows . t))))))
 #+end_src
 
+** org roam server
+#+begin_src emacs-lisp
+  (use-package websocket
+      :after org-roam)
+  
+  (use-package simple-httpd
+      :after org-roam)
+  
+  (use-package org-roam-ui
+      :straight (org-roam-ui
+                 :type git
+                 :host github
+                 :repo "org-roam/org-roam-ui"
+                 :files ("*.el" "out"))
+      :after org-roam ;; or :after org
+      :hook (org-roam . org-roam-ui-mode)
+      :config)
+  
+#+end_src
+
 ** Deft
 #+begin_src emacs-lisp
   (use-package deft
@@ -1005,10 +1039,13 @@ Allow fast code insertion
 
 * Development
 ** General
-*** Colored Brackets (rainbow delimiters)
+*** Brackets setup
 #+begin_src emacs-lisp
   (use-package rainbow-delimiters
-    :hook (prog-mode . rainbow-delimiters-mode))
+    :hook (prog-mode . rainbow-delimiters-mode)
+          (prog-mode . show-paren-mode)
+          ;; (prog-mode . electric-pair-mode)
+     ) 
 #+end_src
 
 *** Projectile
@@ -1324,15 +1361,17 @@ Better Diff in header sizes
 
 *** Scheme (guile)
 #+begin_src emacs-lisp
-(use-package geiser)
-(use-package geiser-guile)
+  (use-package geiser
+    :bind
+    ([remap eval-last-sexp] . geiser-eval-last-sexp))
+    (use-package geiser-guile)
 #+end_src
 
 #+begin_src emacs-lisp
-(use-package parinfer-rust-mode
-    :hook emacs-lisp-mode scheme-mode
-    :init
-    (setq parinfer-rust-auto-download t))
+  (use-package parinfer-rust-mode
+      :hook emacs-lisp-mode scheme-mode
+      :init
+      (setq parinfer-rust-auto-download t))
 #+end_src
 
 * Misc
@@ -1349,49 +1388,65 @@ Better Diff in header sizes
 ** Vterm
 #+begin_src emacs-lisp
   (use-package vterm
-      :defer t
+      :defer 3
       :ensure t)
 #+end_src
 
+** Elfeed org
+#+begin_src emacs-lisp
+  (use-package elfeed-dashboard
+    :config
+    ;; (setq elfeed-dashboard-file "~/Documents/private.el/elfeed-dashboard.org")
+    ;; update feed counts on elfeed-quit
+    (advice-add 'elfeed-search-quit-window :after #'elfeed-dashboard-update-links))
+  
+  (use-package elfeed-org
+    :commands elfeed
+    :hook (elfeed . elfeed-org)
+    :config)
+  ;; (setq rmh-elfeed-org-files (list "~/Documents/private.el/elfeed.org"))
+  
+#+end_src
 
 ** ranger
 #+begin_src emacs-lisp
   (use-package ranger
-  :defer t
+  :defer 3
   :config (ranger-override-dired-mode t))
 #+end_src
 
 ** Ligatures
 #+begin_src emacs-lisp
-
-(let ((ligatures `((?-  . ,(regexp-opt '("-|" "-~" "---" "-<<" "-<" "--" "->" "->>" "-->")))
-                   (?/  . ,(regexp-opt '("/**" "/*" "///" "/=" "/==" "/>" "//")))
-                   (?*  . ,(regexp-opt '("*>" "***" "*/")))
-                   (?<  . ,(regexp-opt '("<-" "<<-" "<=>" "<=" "<|" "<||" "<|||::=" "<|>" "<:" "<>" "<-<"
-                                         "<<<" "<==" "<<=" "<=<" "<==>" "<-|" "<<" "<~>" "<=|" "<~~" "<~"
-                                         "<$>" "<$" "<+>" "<+" "</>" "</" "<*" "<*>" "<->" "<!--")))
-                   (?:  . ,(regexp-opt '(":>" ":<" ":::" "::" ":?" ":?>" ":=")))
-                   (?=  . ,(regexp-opt '("=>>" "==>" "=/=" "=!=" "=>" "===" "=:=" "==")))
-                   (?!  . ,(regexp-opt '("!==" "!!" "!=")))
-                   (?>  . ,(regexp-opt '(">]" ">:" ">>-" ">>=" ">=>" ">>>" ">-" ">=")))
-                   (?&  . ,(regexp-opt '("&&&" "&&")))
-                   (?|  . ,(regexp-opt '("|||>" "||>" "|>" "|]" "|}" "|=>" "|->" "|=" "||-" "|-" "||=" "||")))
-                   (?.  . ,(regexp-opt '(".." ".?" ".=" ".-" "..<" "...")))
-                   (?+  . ,(regexp-opt '("+++" "+>" "++")))
-                   (?\[ . ,(regexp-opt '("[||]" "[<" "[|")))
-                   (?\{ . ,(regexp-opt '("{|")))
-                   (?\? . ,(regexp-opt '("??" "?." "?=" "?:")))
-                   (?#  . ,(regexp-opt '("####" "###" "#[" "#{" "#=" "#!" "#:" "#_(" "#_" "#?" "#(" "##")))
-                   (?\; . ,(regexp-opt '(";;")))
-                   (?_  . ,(regexp-opt '("_|_" "__")))
-                   (?\\ . ,(regexp-opt '("\\" "\\/")))
-                   (?~  . ,(regexp-opt '("~~" "~~>" "~>" "~=" "~-" "~@")))
-                   (?$  . ,(regexp-opt '("$>")))
-                   (?^  . ,(regexp-opt '("^=")))
-                   (?\] . ,(regexp-opt '("]#"))))))
-  (dolist (char-regexp ligatures)
-    (set-char-table-range composition-function-table (car char-regexp)
-                          `([,(cdr char-regexp) 0 font-shape-gstring]))))
+  
+  (let ((ligatures `((?-  . ,(regexp-opt '("-|" "-~" "---" "-<<" "-<" "--" "->" "->>" "-->")))
+                     (?/  . ,(regexp-opt '("/**" "/*" "///" "/=" "/==" "/>" "//")))
+                     ;; (?*  . ,(regexp-opt '("*>" "***" "*/")))
+                     (?*  . ,(regexp-opt '("*>" "*/")))
+                     (?<  . ,(regexp-opt '("<-" "<<-" "<=>" "<=" "<|" "<||" "<|||::=" "<|>" "<:" "<>" "<-<"
+                                           "<<<" "<==" "<<=" "<=<" "<==>" "<-|" "<<" "<~>" "<=|" "<~~" "<~"
+                                           "<$>" "<$" "<+>" "<+" "</>" "</" "<*" "<*>" "<->" "<!--")))
+                     (?:  . ,(regexp-opt '(":>" ":<" ":::" "::" ":?" ":?>" ":=")))
+                     (?=  . ,(regexp-opt '("=>>" "==>" "=/=" "=!=" "=>" "===" "=:=" "==")))
+                     (?!  . ,(regexp-opt '("!==" "!!" "!=")))
+                     (?>  . ,(regexp-opt '(">]" ">:" ">>-" ">>=" ">=>" ">>>" ">-" ">=")))
+                     (?&  . ,(regexp-opt '("&&&" "&&")))
+                     (?|  . ,(regexp-opt '("|||>" "||>" "|>" "|]" "|}" "|=>" "|->" "|=" "||-" "|-" "||=" "||")))
+                     (?.  . ,(regexp-opt '(".." ".?" ".=" ".-" "..<" "...")))
+                     (?+  . ,(regexp-opt '("+++" "+>" "++")))
+                     (?\[ . ,(regexp-opt '("[||]" "[<" "[|")))
+                     (?\{ . ,(regexp-opt '("{|")))
+                     (?\? . ,(regexp-opt '("??" "?." "?=" "?:")))
+                     (?#  . ,(regexp-opt '("####" "###" "#[" "#{" "#=" "#!" "#:" "#_(" "#_" "#?" "#(" "##")))
+                     (?\; . ,(regexp-opt '(";;")))
+                     (?_  . ,(regexp-opt '("_|_" "__")))
+                     (?\\ . ,(regexp-opt '("\\" "\\/")))
+                     (?~  . ,(regexp-opt '("~~" "~~>" "~>" "~=" "~-" "~@")))
+                     (?$  . ,(regexp-opt '("$>")))
+                     (?^  . ,(regexp-opt '("^=")))
+                     (?\] . ,(regexp-opt '("]#"))))))
+    (dolist (char-regexp ligatures)
+      (set-char-table-range composition-function-table (car char-regexp)
+                            `([,(cdr char-regexp) 0 font-shape-gstring]))))
 #+end_src
 
 * IRC
