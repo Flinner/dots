@@ -141,9 +141,10 @@ Actuall Theme:
     ;; If you edit it by hand, you could mess it up, so be careful.
     ;; Your init file should contain only one such instance.
     ;; If there is more than one, they won't work right.
-    '(flycheck-warning ((t (:background "#282828" :underline "#fabd2f"))))
+    ;; '(flycheck-warning ((t (:background "#282828" :underline "#fabd2f"))))
     '(org-date ((t (:inherit fixed-pitch))))
-    '(ivy-posframe-border ((t (:background "#ffffff")))))
+    ;; '(ivy-posframe-border ((t (:background "#ffffff")))))
+  )
   
     ;; Enable custom neotree theme (all-the-icons must be installed!)
     (doom-themes-neotree-config)
@@ -231,6 +232,12 @@ should i really be commiting this? :>
 Single Esc to Quit, instead of *three*
 #+begin_src emacs-lisp
   (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+#+end_src
+
+** Function keys
+#+begin_src emacs-lisp
+  (global-set-key (kbd "M-<f8>") '(lambda () (interactive) (org-agenda  nil "a")))
+  (global-set-key (kbd "M-<f6>") 'elfeed-dashboard)
 #+end_src
 
 ** General.el
@@ -340,6 +347,12 @@ E: honestly I have no clue wtf that meant, but I will keep it
   "rcp" '(org-pomodoro :which-key "Pomodoro")
   "rcR" '(org-clock-report :which-key "Clock Report")
   "rcg" '(org-clock-goto :which-key "Goto Clock")
+  
+  ;; Anki
+  "rn"  '(:ignore t :which-key "AnKi")
+  "rnp" '(anki-editor-push-notes :which-key "Clock In")
+  "rni" '(anki-editor-insert-notes :which-key "Clock In")
+  
   
   ;; Schedules and Deadlines
   ;; TODO!
@@ -595,6 +608,7 @@ Capture
   (evil-snipe-mode +1))
 #+end_src
 
+
 * Completions
 ** ivy
 #+begin_src emacs-lisp
@@ -722,6 +736,18 @@ better sorting for ivy, company..
 #+end_src
 
 * Org-Mode
+** Set directories
+#+begin_src emacs-lisp
+  (setq org-directory "~/Documents/gtd/"
+    org-roam-directory "~/Documents/roam/"
+    org-agenda-files (list org-directory (concat org-roam-directory "life.org"))
+    rmh-elfeed-org-files (list "~/Documents/private.el/elfeed.org")
+    elfeed-dashboard-file "~/Documents/private.el/elfeed-dashboard.org"
+    org-preview-latex-image-directory  "/tmp/ltximg"
+    org-my-anki-file (concat org-roam-directory "anki.org")
+  )
+#+end_src
+
 ** use-package 
 Modes To Start
 #+begin_src emacs-lisp
@@ -759,6 +785,7 @@ use-package
       (set-face-attribute (car face) nil :font my/ui/varfont :weight 'regular :height (cdr face)))
   
   
+  (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
     ;; Ensure that anything that should be fixed-pitch in Org files appears that way
     (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
     (set-face-attribute 'org-code nil   :inherit '(shadow fixed-pitch))
@@ -767,17 +794,6 @@ use-package
     (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
     (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
     (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch))
-#+end_src
-
-** Set directories
-#+begin_src emacs-lisp
-  (setq org-directory "~/Documents/gtd/"
-    org-roam-directory "~/Documents/roam/"
-    org-agenda-files (list org-directory (concat org-roam-directory "life.org"))
-    rmh-elfeed-org-files (list "~/Documents/private.el/elfeed.org")
-    elfeed-dashboard-file "~/Documents/private.el/elfeed-dashboard.org"
-    org-preview-latex-image-directory  "/tmp/ltximg"
-  )
 #+end_src
 
 ** Appearance
@@ -824,19 +840,11 @@ use-package
   (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
 #+end_src
 
-** CANCELED Auto Tangle Configuration Files
-CLOSED: [2021-07-30 Fri 12:52]
-Automatically tangle our Emacs.org config file when we save it
-#+begin_src emacs-lisp :tangle no
-    (defun my/org-mode/org-babel-tangle-config ()
-      (when (string-equal (buffer-file-name)
-                          (expand-file-name "~/.config/emacs/init.org"))
-        ;; Dynamic scoping to the rescue
-        (let ((org-confirm-babel-evaluate nil))
-          (org-babel-tangle))))
-
-    (add-hook 'org-mode-hook
-  (lambda () (add-hook 'after-save-hook #'my/org-mode/org-babel-tangle-config)))
+*** Latex
+scale inline
+#+begin_src emacs-lisp
+;  moved to use -package
+; (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
 #+end_src
 
 ** Babel
@@ -866,12 +874,35 @@ Allow fast code insertion
   (add-to-list 'org-structure-template-alist '("scm" . "src scheme"))
 #+end_src
 
-** Capture Templates
+** Capture 
+*** Templates
 #+begin_src emacs-lisp
   (setq org-capture-templates
         `(
           ("d" "Distraction" entry (file+headline ,(concat org-directory "distractions.org") "Inbox")
-           "* %?\n%T")))
+           "* %?\n%T")
+          ("a" "Anki basic"
+           entry
+           (file+headline org-my-anki-file "Dispatch Shelf")
+           "* %<%H:%M>   \n:PROPERTIES:\n:ANKI_NOTE_TYPE: Basic\n:ANKI_DECK: Math::Calculus-III\n:END:\n** Front\n%?\n** Back\n%x\n")
+          
+        ("A" "Anki cloze"
+                 entry
+                 (file+headline org-my-anki-file "Dispatch Shelf")
+                 "* %<%H:%M>   \n:PROPERTIES:\n:ANKI_NOTE_TYPE: Cloze\n:ANKI_DECK: Mega\n:END:\n** Text\n%x\n** Extra\n")))
+#+end_src
+
+*** Utils
+launch with =emacsclient -e '(make-orgcapture-frame)'=
+#+begin_src emacs-lisp
+  (defun make-orgcapture-frame ()
+      "Create a new frame and run org-capture."
+      (interactive)
+      (make-frame '((name . "org-capture") (window-system . x)))
+      (select-frame-by-name "org-capture")
+      (counsel-org-capture)
+      (delete-other-windows)
+      )
 #+end_src
 
 ** Agenda
@@ -976,6 +1007,7 @@ Allow fast code insertion
 #+end_src
 
 ** org-roam
+*** use-package
 #+begin_src emacs-lisp
   (use-package org-roam
     :defer t
@@ -999,7 +1031,7 @@ Allow fast code insertion
                                          (no-delete-other-windows . t))))))
 #+end_src
 
-** org roam server
+*** org roam server
 #+begin_src emacs-lisp
   (use-package websocket
       :after org-roam)
@@ -1019,7 +1051,7 @@ Allow fast code insertion
   
 #+end_src
 
-** Deft
+*** Deft
 #+begin_src emacs-lisp
   (use-package deft
     :after org
@@ -1035,6 +1067,23 @@ Allow fast code insertion
   (setq deft-use-filename-as-title 't)
 
   
+#+end_src
+
+**  Anki
+#+begin_src emacs-lisp
+  (use-package anki-editor
+    :after org
+    :bind (:map org-mode-map
+                ("<f12>" . anki-editor-cloze-region-auto-incr))
+    :init
+    (setq-default anki-editor-use-math-jax t)
+
+    :config
+  
+     (setq anki-editor-create-decks nil ;; Allow anki-editor to create a new deck if it doesn't exist
+          anki-editor-org-tags-as-anki-tags t)
+  
+  )
 #+end_src
 
 * Development
@@ -1206,7 +1255,8 @@ Get treemacs-lsp
     :bind (:map rustic-mode-map
                 ("C-c C-c l" . lsp-ui-flycheck-list)
                 ("C-c C-c s" . lsp-rust-analyzer-status)
-                ("<f5>" . rustic-cargo-test))
+                ("<f5>" . rustic-cargo-test)
+                ("C-<f5>" . rustic-cargo-run))
     :config
     ;; uncomment for less flashiness
     ;; (setq lsp-eldoc-hook nil)
@@ -1362,9 +1412,9 @@ Better Diff in header sizes
 *** Scheme (guile)
 #+begin_src emacs-lisp
   (use-package geiser
-    :bind
-    ([remap eval-last-sexp] . geiser-eval-last-sexp))
-    (use-package geiser-guile)
+    :bind ([remap eval-last-sexp] . geiser-eval-last-sexp))
+  
+  (use-package geiser-guile)
 #+end_src
 
 #+begin_src emacs-lisp
@@ -1390,22 +1440,6 @@ Better Diff in header sizes
   (use-package vterm
       :defer 3
       :ensure t)
-#+end_src
-
-** Elfeed org
-#+begin_src emacs-lisp
-  (use-package elfeed-dashboard
-    :config
-    ;; (setq elfeed-dashboard-file "~/Documents/private.el/elfeed-dashboard.org")
-    ;; update feed counts on elfeed-quit
-    (advice-add 'elfeed-search-quit-window :after #'elfeed-dashboard-update-links))
-  
-  (use-package elfeed-org
-    :commands elfeed
-    :hook (elfeed . elfeed-org)
-    :config)
-  ;; (setq rmh-elfeed-org-files (list "~/Documents/private.el/elfeed.org"))
-  
 #+end_src
 
 ** ranger
@@ -1448,6 +1482,46 @@ Better Diff in header sizes
       (set-char-table-range composition-function-table (car char-regexp)
                             `([,(cdr char-regexp) 0 font-shape-gstring]))))
 #+end_src
+
+* Elfeed org
+ =;; (setq rmh-elfeed-org-files (list "~/Documents/private.el/elfeed.org"))=
+** Elfeed-org
+#+begin_src emacs-lisp
+  (use-package elfeed-org
+    :commands elfeed
+    :config (elfeed-org))
+  
+#+end_src
+
+** Elfeed Dashboard
+#+begin_src emacs-lisp
+  (use-package elfeed-dashboard
+    :commands elfeed-dashboard
+    :config
+    ;; (setq elfeed-dashboard-file "~/Documents/private.el/elfeed-dashboard.org")
+    ;; update feed counts on elfeed-quit
+    (advice-add 'elfeed-search-quit-window :after #'elfeed-dashboard-update-links)
+    (evil-set-initial-state 'elfeed-dashboard-mode 'emacs)
+  :hook (elfeed-dashboard-mode . (lambda () (variable-pitch-mode -1))))
+  
+#+end_src
+
+** Visual
+#+begin_src emacs-lisp
+    (use-package elfeed
+    :config 
+    (defun my/elfeed/visual ()
+    (interactive)
+    	(set-face-attribute 'variable-pitch (selected-frame) :font (font-spec :family my/ui/varfont :size 13))
+      (setq visual-fill-column-width 110
+            visual-fill-column-center-text t
+            fill-column 90)
+      (visual-fill-column-mode 1)
+      (visual-line-mode 1))
+  :hook (elfeed-show-mode  . my/elfeed/visual))
+  
+#+end_src
+
 
 * IRC
 ** unsused 'erc'
