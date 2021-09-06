@@ -43,7 +43,7 @@ zplugin snippet OMZ::plugins/vi-mode/vi-mode.plugin.zsh
 zplugin ice wait'1' lucid
 zplugin load zdharma/fast-syntax-highlighting  
 
-zplugin ice wait'1' lucid
+zplugin ice wait'0' lucid
 zplugin load 'flinner/zsh-emacs'
 
 zplugin ice wait lucid atload'_zsh_autosuggest_start'
@@ -93,6 +93,7 @@ bindkey jk vi-cmd-mode
 # exit on partianl command with Ctrl-D
 exit_zsh() { exit }
 zle -N exit_zsh
+bindkey '^v' edit-command-line
 bindkey '^D' exit_zsh
 
 #===============================================================================================
@@ -143,6 +144,17 @@ ip.me () { curl eth0.me ; curl ipv6.icanhazip.com } # or ip.me
   curl -F "file=@$file" 0x0.st | xclip -sel clip
 }
 
+# curl with cache
+curl_cache(){
+  local cache_path=`echo $1 |  sed 's|/|_|g'`
+  local cache_path="/tmp/$cache_path"
+
+  [ -f "$cache_path" ] || curl -s "$1" -o "$cache_path"
+
+  cat "$cache_path"
+}
+
+
 alias doas='sudo '
 alias sudo='sudo '
 
@@ -165,6 +177,9 @@ alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo
 
 alias ip='ip --color=auto'
 alias ytfzfd='YTFZF_PLAYER="youtube-dl --embed-subs --write-sub --sub-lang en" ytfzf'
+
+alias cargo-doc-server="python -m http.server -d target/doc/ -b 127.0.0.1"
+alias sc="bat ~/schedule.org"
 
 #===============================================================================================
 
@@ -238,3 +253,7 @@ PS1="> "
 RPS1=" "
 #zplugin ice wait'!0' lucid pick"async.zsh" src"pure.zsh"; zplugin light sindresorhus/pure
 eval "$(starship init zsh)"
+[ -f "/home/user/.ghcup/env" ] && source "/home/user/.ghcup/env" # ghcup-env
+
+#~/bin/dennis
+#cutefetch 2> /dev/null

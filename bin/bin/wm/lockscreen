@@ -1,7 +1,7 @@
 #!/bin/bash
 #img=$(mktemp /tmp/XXXXXXXXXX.png)
 qdbus org.keepassxc.KeePassXC.MainWindow /keepassxc org.keepassxc.MainWindow.lockAllDatabases &
-img="$HOME/Pictures/wallpapers/arch-linux-dunno.png"
+img="$HOME/Pictures/wall.png"
 # Take a screenshot of current desktop
 #import -window root $img 
 ## Pixelate the screenshot

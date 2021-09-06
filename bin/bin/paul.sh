@@ -39,10 +39,20 @@ solution_url="$domain/$solution_path"
 
 # ====  get solution =========
 # download if not already downloaded
+echo '** Item
+:PROPERTIES:
+:ANKI_DECK: Math::Calculus-III
+:ANKI_NOTE_TYPE: Basic
+:END:
+'
 solution_path=`curl_cache "$solution_url"`
-
+echo '*** Front'
 echo "$question_text"
 echo "\n"
-cat "$solution_path" | pup 'body .soln-content p text{}'
-
+echo '*** Back'
+cat "$solution_path" | pup 'body .soln-content text{}' | sed -r '/^\s*$/d'
+solution_title=`cat "$solution_path" | pup 'title text{}' | sed -r '/^\s*$/d'`
+echo "\n"
+echo "[[$solution_url][$solution_title]]"
+echo "\n"
 

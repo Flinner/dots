@@ -743,7 +743,7 @@ better sorting for ivy, company..
     org-agenda-files (list org-directory (concat org-roam-directory "life.org"))
     rmh-elfeed-org-files (list "~/Documents/private.el/elfeed.org")
     elfeed-dashboard-file "~/Documents/private.el/elfeed-dashboard.org"
-    org-preview-latex-image-directory  "/tmp/ltximg"
+    org-preview-latex-image-directory  "~/.cache/ltximg"
     org-my-anki-file (concat org-roam-directory "anki.org")
   )
 #+end_src
@@ -760,7 +760,6 @@ Modes To Start
 use-package
 #+begin_src emacs-lisp
   (use-package org
-    :defer 3
     :hook (org-mode . my/org-mode/org-mode-setup)
     (org-mode . my/org-mode/load-prettify-symbols); symbols
     (org-mode . auto-fill-mode)
@@ -1020,7 +1019,7 @@ launch with =emacsclient -e '(make-orgcapture-frame)'=
       :unnarrowed t)))
     :config
     ;; side window
-    (require 'org-roam-protocol)
+    ;(require 'org-roam-protocol)
     (add-to-list 'display-buffer-alist
                  '("\\*org-roam\\*"
                    (display-buffer-in-side-window)
@@ -1067,6 +1066,13 @@ launch with =emacsclient -e '(make-orgcapture-frame)'=
   (setq deft-use-filename-as-title 't)
 
   
+#+end_src
+
+** org-download
+#+begin_src emacs-lisp
+    (use-package org-download
+        :after org
+  )
 #+end_src
 
 **  Anki
@@ -1385,6 +1391,12 @@ prettier
   (use-package prettier)
 #+end_src
 
+lsp hooks setups
+#+begin_src emacs-lisp
+  (add-hook 'html-mode-hook 'lsp)
+  (add-hook 'js-mode-hook 'lsp)
+#+end_src
+
 *** Markdown
 Better Diff in header sizes
 #+begin_src emacs-lisp
@@ -1422,6 +1434,14 @@ Better Diff in header sizes
       :hook emacs-lisp-mode scheme-mode
       :init
       (setq parinfer-rust-auto-download t))
+#+end_src
+
+*** C and cpp
+#+begin_src emacs-lisp
+  (use-package cc-mode
+    :hook (cc-mode . lsp)
+    :hook (c-mode . lsp)
+    :hook (c++-mode . lsp))
 #+end_src
 
 * Misc
