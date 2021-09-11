@@ -743,7 +743,7 @@ better sorting for ivy, company..
     org-agenda-files (list org-directory (concat org-roam-directory "life.org"))
     rmh-elfeed-org-files (list "~/Documents/private.el/elfeed.org")
     elfeed-dashboard-file "~/Documents/private.el/elfeed-dashboard.org"
-    org-preview-latex-image-directory  "~/.cache/ltximg"
+    org-preview-latex-image-directory  "~/.cache/ltx/ltximg"
     org-my-anki-file (concat org-roam-directory "anki.org")
   )
 #+end_src

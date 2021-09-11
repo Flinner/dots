@@ -12,7 +12,8 @@ call plug#begin('~/.vim/plugged')
 " Appearence {{{ "
 "Plug 'itchyny/lightline.vim'		" UI
 "Plug 'ap/vim-buftabline'		" buffers to tabline
-Plug 'connorholyday/vim-snazzy'
+"Plug 'connorholyday/vim-snazzy'
+Plug 'morhetz/gruvbox'
 Plug 'ayu-theme/ayu-vim'
 Plug 'dylanaraps/wal.vim'
 Plug 'mhinz/vim-startify'
@@ -235,9 +236,9 @@ nmap <leader>rn <Plug>(coc-rename)
 "set colorcolumn=80
 highlight ColorColumn ctermbg=0 guibg=lightgrey
 set termguicolors     " enable true colors support
-colorscheme snazzy
 "let g:lightline = {  'colorscheme': 'snazzy'  }
 set background=dark
+colorscheme gruvbox
 hi Normal guibg=NONE ctermbg=NONE " trasnperant!
 
 if executable('rg')

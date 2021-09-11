@@ -1,5 +1,9 @@
+#!/bin/bash
 setxkbmap -option ctrl:swapcaps 
 setxkbmap -option altwin:swap_lalt_lwin 
 setxkbmap -model pc105 -layout us,ar -variant ,qwerty -option grp:shifts_toggle 
-xinput set-prop 18 309 1
+
+# touchpad touch
+idd=$(xinput --list | grep 'Touchpad' | awk '{print $6}'| cut -d'=' -f2)
+xinput set-prop $idd 309 1
 
