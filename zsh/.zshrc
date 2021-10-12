@@ -109,6 +109,11 @@ bindkey '^D' exit_zsh
 autoload -Uz url-quote-magic
 zle -N self-insert url-quote-magic
 
+#  should kill upto to the slash 
+autoload -U select-word-style
+select-word-style bash
+
+
 
 SAVEHIST=1000
 HISTSIZE=1000
@@ -166,6 +171,8 @@ alias la='ls -A'
 alias l='ls -CF'
 alias sl='ls -CF'
 alias ls='ls --color=auto'
+
+alias please='sudo $(fc -ln -1)'
 
 alias p='paru'
 

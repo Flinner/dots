@@ -88,6 +88,7 @@ let g:coc_global_extensions = [
   \ 'coc-html', 
   \ 'coc-css', 
   \ 'coc-prettier', 
+  \ 'coc-clangd', 
   \ 'coc-json', 
   \ 'coc-emoji',
   \ ]
@@ -103,6 +104,7 @@ set hidden
 set nu
 set wrap
 set smartcase
+set ignorecase
 set noswapfile
 set nobackup
 set undodir=~/.vim/undodir
@@ -160,7 +162,7 @@ nnoremap <leader>oT :term<CR>                                           " open t
 " }}}
 "
 "Function keys {{{
-autocmd filetype tex nnoremap <F5> :LLPStartPreview<CR>  "compile
+autocmd filetype tex nnoremap <F5> :LLPStartPreview<CR>
 nnoremap <F8> :TagbarToggle<CR>
 " }}}
 
@@ -240,6 +242,7 @@ set termguicolors     " enable true colors support
 set background=dark
 colorscheme gruvbox
 hi Normal guibg=NONE ctermbg=NONE " trasnperant!
+highlight SignColumn guibg=NONE
 
 if executable('rg')
     let g:rg_derive_root='true'

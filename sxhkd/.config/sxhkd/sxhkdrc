@@ -71,7 +71,7 @@ super + g
 
 #======================== scripts and  other =====
 #Lockscreen
-super + {Pause}
+super + {Home}
   {~/bin/wm/lockscreen}
 
 #=============================

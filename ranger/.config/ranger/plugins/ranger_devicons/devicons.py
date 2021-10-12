@@ -176,7 +176,7 @@ file_node_extensions = {
     'swift'    : '',
     't'        : '',
     'tar'      : '',
-    'tex'      : 'ﭨ',
+    'tex'      : '',
     'tgz'      : '',
     'toml'     : '',
     'ts'       : '',

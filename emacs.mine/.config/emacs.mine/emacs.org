@@ -208,9 +208,9 @@ should i really be commiting this? :>
 
 ** List my passwords :(
 #+begin_src emacs-lisp
-  (setq my/secret/znc/flinner.my.to/secret (secrets-get-secret "local" "znc/flinner.my.to"))
-  (setq my/secret/znc/flinner.my.to/username
-        (cdr (assq :username (secrets-get-attributes "local"  "znc/flinner.my.to"))))
+  ;; (setq my/secret/znc/flinner.my.to/secret (secrets-get-secret "local" "znc/flinner.my.to"))
+  ;; (setq my/secret/znc/flinner.my.to/username
+  ;;       (cdr (assq :username (secrets-get-attributes "local"  "znc/flinner.my.to"))))
 #+end_src
 
 * Help
@@ -1442,6 +1442,12 @@ Better Diff in header sizes
     :hook (cc-mode . lsp)
     :hook (c-mode . lsp)
     :hook (c++-mode . lsp))
+#+end_src
+
+*** python
+#+begin_src emacs-lisp
+    (add-hook 'python-mode-hook 'lsp)
+    (add-hook 'python-mode-hook 'prettify-symbols-mode)
 #+end_src
 
 * Misc
