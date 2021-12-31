@@ -16,9 +16,11 @@ map p print
 
 set recolor-keephue true
 
+# gruvbox
 #set recolor-lightcolor \#2B2A27
 #set recolor-darkcolor   \#f1f1f0
 
+# snazzy
 #set recolor-darkcolor  \#ffffff
 #set recolor-lightcolor   \#282a36
 #set default-bg \#282a36

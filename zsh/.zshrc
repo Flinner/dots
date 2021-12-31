@@ -158,6 +158,9 @@ curl_cache(){
 
   cat "$cache_path"
 }
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../'
 
 
 alias doas='sudo '
@@ -173,6 +176,7 @@ alias sl='ls -CF'
 alias ls='ls --color=auto'
 
 alias please='sudo $(fc -ln -1)'
+alias plz='echo sudo $(fc -ln -1); sudo $(fc -ln -1)'
 
 alias p='paru'
 

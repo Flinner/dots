@@ -92,7 +92,7 @@ Better Scrolling
 ** Fonts
 #+begin_src emacs-lisp
   (setq my/ui/monofont "Fira Code")
-  (setq my/ui/varfont "Cantarell")
+  (setq my/ui/varfont "Noto Serif")
 #+end_src
 
 #+begin_src emacs-lisp
@@ -104,15 +104,15 @@ Better Scrolling
 #+end_src
 
 #+begin_src emacs-lisp
-(defun my/ui/font-check ()
-  "Do font check, then remove self from `focus-in-hook'; need to run this just once."
-  (set-face-attribute 'default nil :font my/ui/monofont :height 90)
-  (set-face-attribute 'fixed-pitch nil :font my/ui/monofont :height 90)
-  (set-face-attribute 'variable-pitch nil :font my/ui/varfont :height 90)
-  ;; Info has a horrible mono font
-  (set-face-attribute 'Info-quoted nil :font my/ui/monofont :height 90)
-  (remove-hook 'focus-in-hook #'my/ui/font-check))
-(add-hook 'focus-in-hook #'my/ui/font-check)
+  (defun my/ui/font-check ()
+    "Do font check, then remove self from `focus-in-hook'; need to run this just once."
+    (set-face-attribute 'default nil :font my/ui/monofont :height 90)
+    (set-face-attribute 'fixed-pitch nil :font my/ui/monofont :height 90)
+    (set-face-attribute 'variable-pitch nil :font my/ui/varfont :height 90)
+    ;; Info has a horrible mono font
+    (set-face-attribute 'Info-quoted nil :font my/ui/monofont :height 90)
+    (remove-hook 'focus-in-hook #'my/ui/font-check))
+  (add-hook 'focus-in-hook #'my/ui/font-check)
 #+end_src
 
 ** Theme
@@ -136,6 +136,7 @@ Actuall Theme:
     (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
           doom-themes-enable-italic t) ; if nil, italics is universally disabled
     (load-theme 'doom-gruvbox t)
+    ;; (load-theme 'doom-one-light t)
     (custom-set-faces
     ;; custom-set-faces was added by Custom.
     ;; If you edit it by hand, you could mess it up, so be careful.
@@ -145,7 +146,7 @@ Actuall Theme:
     '(org-date ((t (:inherit fixed-pitch))))
     ;; '(ivy-posframe-border ((t (:background "#ffffff")))))
   )
-  
+
     ;; Enable custom neotree theme (all-the-icons must be installed!)
     (doom-themes-neotree-config)
     ;; or for treemacs users
@@ -159,6 +160,15 @@ buffers with dimmed colors
 #+begin_src emacs-lisp
   (use-package solaire-mode
   :init (solaire-global-mode +1))
+#+end_src
+
+#+begin_src emacs-lisp
+  (use-package olivetti
+    :diminish
+    :hook (text-mode . olivetti-mode)
+    :config
+    (setq olivetti-body-width 100))
+  
 #+end_src
 
 ** Line Numbers
@@ -608,7 +618,6 @@ Capture
   (evil-snipe-mode +1))
 #+end_src
 
-
 * Completions
 ** ivy
 #+begin_src emacs-lisp
@@ -674,7 +683,7 @@ Ivy floating
 slow loading! defer it
 #+begin_src emacs-lisp
 (use-package which-key
-  :defer 9
+  :defer 5
   :diminish which-key-mode
   :config
   (which-key-mode)
@@ -686,16 +695,18 @@ slow loading! defer it
 #+begin_src emacs-lisp
     (use-package company
       :ensure
-      ; :hook (lsp-mode . company-mode)
+      :defer 3
+      :diminish company-mode
       :custom
       (global-company-mode t)
-      (company-idle-delay 0.1) ;; how long to wait until popup
+      (company-idle-delay 0.01) ;; how long to wait until popup
       (company-minimum-prefix-length 1) ;; The minimum prefix length for idle completion.
       (company-selection-wrap-around t)
       ;; (company-begin-commands nil) ;; uncomment to disable popup
       :bind
       (:map company-active-map
             ("C-n". company-select-next)
+            ("C-w". evil-delete-backward-word)
             ("<tab>" . company-complete-common-or-cycle)
             ("RET" . company-complete-selection)
             ("C-p". company-select-previous)
@@ -705,6 +716,7 @@ slow loading! defer it
   
   ;; (use-package company-lsp)
   (use-package company-box
+    :after company
     :hook (company-mode . company-box-mode))
 #+end_src
 
@@ -714,25 +726,31 @@ better sorting for ivy, company..
   (use-package prescient
     :diminish
     :config (prescient-persist-mode 1))
-
+  
   (use-package ivy-prescient
     :after counsel
     :init (ivy-prescient-mode 1))
-
+  
   (use-package company-prescient
     :after company
-    :init (company-prescient-mode 1))
+    :config
+     (company-prescient-mode 1)
+     (prescient-persist-mode)
+   )
   ;; (use-package selectrum-prescient)
 #+end_src
 
 ** Yasnippet
 #+begin_src emacs-lisp
-  (use-package yasnippet
-    :config
-    (yas-global-mode))
+    (use-package yasnippet
+      :defer 3
+      :config
+      (yas-global-mode))
 
-  (use-package yasnippet-snippets)
-  
+    (use-package yasnippet-snippets
+    :after yasnippet
+  )
+
 #+end_src
 
 * Org-Mode
@@ -754,7 +772,7 @@ Modes To Start
   (defun my/org-mode/org-mode-setup ()
   (interactive)
     (org-indent-mode)
-    (variable-pitch-mode 1)
+    (variable-pitch-mode 0)
     (visual-line-mode 1))
 #+end_src
 use-package
@@ -781,9 +799,11 @@ use-package
                     (org-level-6 . 1.1)
                     (org-level-7 . 1.1)
                     (org-level-8 . 1.1)))
+      ;; (set-face-attribute (car face) nil :font my/ui/varfont :weight 'regular :height (cdr face)))
       (set-face-attribute (car face) nil :font my/ui/varfont :weight 'regular :height (cdr face)))
-  
-  
+  ;)
+
+
   (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
     ;; Ensure that anything that should be fixed-pitch in Org files appears that way
     (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
@@ -817,7 +837,7 @@ use-package
 #+end_src
 
 *** Visual Fill (center)
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (defun my/org-mode/org-mode-visual-fill ()
   (interactive)
     (setq visual-fill-column-width 110
@@ -825,7 +845,7 @@ use-package
           fill-column 90)
     (visual-fill-column-mode 1))
 #+end_src
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package visual-fill-column; center text
     :hook (org-mode . my/org-mode/org-mode-visual-fill))
 #+end_src
@@ -908,7 +928,8 @@ launch with =emacsclient -e '(make-orgcapture-frame)'=
 *** T/ODOs
 #+begin_src emacs-lisp
    (setq org-todo-keywords '((sequence "TODO(t)" "|" "DONE(d)")
-                            (sequence "BACKLOG(b)" "IN PROGRESS(p)" "WAITING(w)" "|")
+                            (sequence "BACKLOG(b)" "STARTED(s)" "WAITING(w)" "|")
+                            (sequence "CLASS(l)" "|" "FUN(f)" )
                             (sequence "|" "CANCELED(c)")))
 #+end_src
 
@@ -1125,8 +1146,8 @@ Counsel Projectile
 *** Recentf
 #+begin_src emacs-lisp
   (use-package recentf
-  :init (recentf-mode  1)
-  )
+    :defer 10
+    :init (recentf-mode  1))
 #+end_src
 
 *** lsp performance
@@ -1289,7 +1310,7 @@ Get treemacs-lsp
 #+end_src
 
 *** V
-#+begin_src emacs-lisp 
+#+begin_src emacs-lisp :tangle no
   (use-package v-mode
     :defer t
     :preface
@@ -1388,7 +1409,9 @@ svelte
 
 prettier
 #+begin_src emacs-lisp
-  (use-package prettier)
+    (use-package prettier
+    :defer t
+  )
 #+end_src
 
 lsp hooks setups
@@ -1400,7 +1423,7 @@ lsp hooks setups
 *** Markdown
 Better Diff in header sizes
 #+begin_src emacs-lisp
-  
+
   (eval-after-load 'markdown-mode
   '(custom-set-faces
    '(markdown-header-face-1 ((t (:inherit markdown-header-face :height 1.7))))
@@ -1411,7 +1434,7 @@ Better Diff in header sizes
    '(markdown-header-face-6 ((t (:inherit markdown-header-face :height 1.0))))
   ))
   (add-hook 'markdown-mode-hook 'my/org-mode/org-mode-visual-fill)
-  (add-hook 'markdown-mode-hook 'outline-minor-mode)
+  ;; (add-hook 'markdown-mode-hook 'outline-minor-mode)
 #+end_src
 
 *** Vue
@@ -1424,8 +1447,10 @@ Better Diff in header sizes
 *** Scheme (guile)
 #+begin_src emacs-lisp
   (use-package geiser
-    :bind ([remap eval-last-sexp] . geiser-eval-last-sexp))
-  
+    :defer
+    ;; :bind ([remap eval-last-sexp] . geiser-eval-last-sexp))
+  )
+
   (use-package geiser-guile)
 #+end_src
 
@@ -1448,6 +1473,209 @@ Better Diff in header sizes
 #+begin_src emacs-lisp
     (add-hook 'python-mode-hook 'lsp)
     (add-hook 'python-mode-hook 'prettify-symbols-mode)
+#+end_src
+
+*** LaTeX
+AucTex
+#+begin_src emacs-lisp
+  ;; latexmk
+  (use-package auctex-latexmk
+  :defer t)
+  ;; company
+  (use-package company-math
+      :after company)
+  (use-package company-auctex
+      :after company)
+  (use-package company-reftex
+      :after company)
+
+
+  ;;  use cdlatex
+  (use-package cdlatex
+  :defer t)
+
+  ;; https://gist.github.com/saevarb/367d3266b3f302ecc896
+  ;; https://piotr.is/2010/emacs-as-the-ultimate-latex-editor/
+
+  (use-package latex
+    :straight auctex
+    :defer t
+    :custom
+    (olivetti-body-width 120)
+    (cdlatex-simplify-sub-super-scripts nil)
+    (reftex-default-bibliography
+     '("~/Documents/refs.bib"))
+    (bibtex-dialect 'biblatex)
+    :mode
+    ("\\.tex\\'" . latex-mode)
+    :bind (:map LaTeX-mode-map
+                ("TAB" . cdlatex-tab)
+                ("'" . cdlatex-math-modify)
+                ("C-c C-e" . cdlatex-environment))
+
+    :hook
+    ;; (LaTeX-mode . olivetti-mode)
+    ;; (LaTeX-mode . TeX-PDF-mode)
+    ;; (LaTeX-mode . company-mode)
+    ;; (LaTeX-mode . flyspell-mode)
+    ;; (LaTeX-mode . xenops-mode)
+    ;; (LaTeX-mode . flycheck-mode)
+    ;; (LaTeX-mode . LaTeX-math-mode)
+    (LaTeX-mode . turn-on-reftex)
+    (LaTeX-mode . TeX-source-correlate-mode)
+    (LaTeX-mode . try/latex-mode-setup)
+    (LaTeX-mode . turn-on-cdlatex)
+    (LaTeX-mode . lsp)
+
+    :config
+    ;; (setq TeX-auto-save t)
+    (setq TeX-parse-self t)
+    (setq-default TeX-master nil)
+    (setq-default TeX-command-default "LatexMK")
+    (setq TeX-save-query nil)
+
+    (setq reftex-plug-into-AUCTeX t)
+
+    ;; ;; pdftools
+    ;; ;; https://emacs.stackexchange.com/questions/21755/use-pdfview-as-default-auctex-pdf-viewer#21764
+    (setq TeX-view-program-selection '((output-pdf "Zathura"))
+          ;; TeX-view-program-list '(("PDF Tools" TeX-pdf-tools-sync-view))
+          TeX-source-correlate-start-server t) ;; not sure if last line is neccessary
+  ;; (add-to-list 'TeX-view-program-selection '(output-pdf "Zathura"))
+
+  ;; clean intermdiate tex crap
+  (add-to-list 'LaTeX-clean-intermediate-suffixes '"-figure[0-9]*\\.\\(pdf\\|md5\\|log\\|dpth\\|dep\\|run\\.xml\\)")
+  (add-to-list 'LaTeX-clean-intermediate-suffixes '".auxlock")
+
+
+    ;; to have the buffer refresh after compilation,
+    ;; very important so that PDFView refesh itself after comilation
+    ;; (add-hook 'TeX-after-compilation-finished-functions
+    ;;           #'TeX-revert-document-buffer)
+
+    ;; latexmk
+    (require 'auctex-latexmk)
+    (auctex-latexmk-setup)
+    (setq auctex-latexmk-inherit-TeX-PDF-mode t))
+
+#+end_src
+
+Custom functions
+#+begin_src emacs-lisp
+(defun try/TeX-command-save-buffer-and-run-all ()
+    "Save the buffer and run TeX-command-run-all"
+    (interactive)
+    (let (TeX-save-query) (TeX-save-document (TeX-master-file)))
+    (TeX-command-run-all nil))
+
+;; copied ivy-bibtex and modified it to cite action
+(defun try/ivy-bibtex-cite (&optional arg local-bib)
+  "Search BibTeX entries using ivy.
+
+With a prefix ARG the cache is invalidated and the bibliography
+reread.
+
+If LOCAL-BIB is non-nil, display that the BibTeX entries are read
+from the local bibliography.  This is set internally by
+`ivy-bibtex-with-local-bibliography'."
+  (interactive "P")
+  (when arg
+    (bibtex-completion-clear-cache))
+  (bibtex-completion-init)
+  (let* ((candidates (bibtex-completion-candidates))
+          (key (bibtex-completion-key-at-point))
+          (preselect (and key
+                          (cl-position-if (lambda (cand)
+                                            (member (cons "=key=" key)
+                                                    (cdr cand)))
+                                          candidates))))
+    (ivy-read (format "Insert citation %s: " (if local-bib " (local)" ""))
+              candidates
+              :preselect preselect
+              :caller 'ivy-bibtex
+              :history 'ivy-bibtex-history
+              :action 'ivy-bibtex-insert-citation)))
+
+(defun try/latex-mode-setup ()
+  (require 'company-reftex)
+        (turn-on-reftex)
+        (require 'company-auctex)
+        (require 'company-math)
+(setq-local company-backends
+      
+    (append '(
+                              (company-reftex-labels
+                                company-reftex-citations)
+              (company-math-symbols-unicode company-math-symbols-latex company-latex-commands)
+              (company-auctex-macros company-auctex-symbols company-auctex-environments)
+              company-ispell
+              )
+            company-backends)))
+
+
+(defun try/counsel-insert-file-path ()
+  "Insert relative file path using counsel minibuffer"
+  (interactive)
+  (unless (featurep 'counsel) (require 'counsel))
+  (ivy-read "Insert filename: " 'read-file-name-internal
+            :matcher #'counsel--find-file-matcher
+            :action
+            (lambda (x)
+              (insert (file-relative-name x)))))
+
+
+#+end_src
+
+Folding
+#+begin_src emacs-lisp
+(use-package outshine
+  :config
+(setq LaTeX-section-list '(
+                           ("part" 0)
+                           ("chapter" 1)
+                           ("section" 2)
+                           ("subsection" 3)
+                           ("subsubsection" 4)
+                           ("paragraph" 5)
+                           ("subparagraph" 6)
+                           ("begin" 7)
+                           )
+      )
+(add-hook 'LaTeX-mode-hook #'(lambda ()
+                               (outshine-mode 1)
+                               (setq outline-level #'LaTeX-outline-level)
+                               (setq outline-regexp (LaTeX-outline-regexp t))
+                               (setq outline-heading-alist
+                                     (mapcar (lambda (x)
+                                               (cons (concat "\\" (nth 0 x)) (nth 1 x)))
+                                             LaTeX-section-list))))
+
+  )
+
+    (general-define-key
+      :states '(normal visual)
+      :keymaps 'LaTeX-mode-map
+      "TAB"  '(outshine-cycle :which-key "outshine-cycle")
+  )
+
+#+end_src
+
+ivy bibtex
+#+begin_src emacs-lisp
+  (use-package ivy-bibtex
+    :custom
+    (bibtex-completion-bibliography
+          '("~/Documents/refs.bib"))
+    (bibtex-completion-library-path '("~/papers"))
+    (bibtex-completion-cite-prompt-for-optional-arguments nil)
+    (bibtex-completion-cite-default-as-initial-input t)
+  )
+  
+#+end_src
+
+*** Verilog
+#+begin_src emacs-lisp
+(setq verilog-linter "verilator --lint-only")
 #+end_src
 
 * Misc
@@ -1547,7 +1775,6 @@ Better Diff in header sizes
   :hook (elfeed-show-mode  . my/elfeed/visual))
   
 #+end_src
-
 
 * IRC
 ** unsused 'erc'
@@ -1653,7 +1880,6 @@ a
   :config
   (setq persp-keymap-prefix (kbd "SPC <tab>"))
 #+end_src
-
 
 
 * Startpage

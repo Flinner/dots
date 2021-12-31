@@ -5,5 +5,7 @@ setxkbmap -model pc105 -layout us,ar -variant ,qwerty -option grp:shifts_toggle
 
 # touchpad touch
 idd=$(xinput --list | grep 'Touchpad' | awk '{print $6}'| cut -d'=' -f2)
-xinput set-prop $idd 309 1
+#xinput set-prop $idd 343 1
 
+prop=$(xinput list-props $idd | grep 'Tapping Enabled (' | sed 's/.*(\(.*\)).*/\1/')
+xinput set-prop $idd $prop 1
