@@ -35,5 +35,5 @@ This is a seamless configuration, where everything just works, but only for me. 
 + **System information**			• [`neofetch`](https://github.com/dylanaraps/neofetch)
 + **Fuzzy finder**					• [`fzf`](https://github.com/junegunn/fzf) 
 + **Launcher**						• [`Rofi`](https://github.com/davatorium/rofi)
-+ **Resource monitor**				• [`Htop`](https://github.com/aristocratos/bpytop) *(aliased to top)*
++ **Resource monitor**				• [`Htop`](https://github.com/aristocratos/bpytop)
 + **Browser**						• [`Qutebrowser`](https://www.mozilla.org/en-US/firefox/61.0a1/releasenotes/)
