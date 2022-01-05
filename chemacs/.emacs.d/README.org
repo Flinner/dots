@@ -1,0 +1,225 @@
+#+BEGIN_SRC
+       ___           ___           ___           ___           ___           ___           ___
+      /  /\         /__/\         /  /\         /__/\         /  /\         /  /\         /  /\
+     /  /:/         \  \:\       /  /:/_       |  |::\       /  /::\       /  /:/        /  /:/_
+    /  /:/           \__\:\     /  /:/ /\      |  |:|:\     /  /:/\:\     /  /:/        /  /:/ /\
+   /  /:/  ___   ___ /  /::\   /  /:/ /:/_   __|__|:|\:\   /  /:/~/::\   /  /:/  ___   /  /:/ /::\
+  /__/:/  /  /\ /__/\  /:/\:\ /__/:/ /:/ /\ /__/::::| \:\ /__/:/ /:/\:\ /__/:/  /  /\ /__/:/ /:/\:\
+  \  \:\ /  /:/ \  \:\/:/__\/ \  \:\/:/ /:/ \  \:\~~\__\/ \  \:\/:/__\/ \  \:\ /  /:/ \  \:\/:/~/:/
+   \  \:\  /:/   \  \::/       \  \::/ /:/   \  \:\        \  \::/       \  \:\  /:/   \  \2.0 /:/
+    \  \:\/:/     \  \:\        \  \:\/:/     \  \:\        \  \:\        \  \:\/:/     \__\/ /:/
+     \  \::/       \  \:\        \  \::/       \  \:\        \  \:\        \  \::/        /__/:/
+      \__\/         \__\/         \__\/         \__\/         \__\/         \__\/         \__\/
+
+                                          222222222222222
+                                         2:::::::::::::::22
+                                         2::::::222222:::::2
+                                         2222222     2:::::2
+                                                     2:::::2
+                                                     2:::::2
+                                                  2222::::2
+                                             22222::::::22
+                                           22::::::::222
+                                          2:::::22222
+                                         2:::::2
+                                         2:::::2
+                                         2:::::2       222222
+                                         2::::::2222222:::::2
+                                         2::::::::::::::::::2
+                                         22222222222222222222
+
+#+END_SRC
+
+* Chemacs
+
+Chemacs 2 is an Emacs profile switcher, it makes it easy to run multiple Emacs
+configurations side by side.
+
+Think of it as a bootloader for Emacs.
+
+** Differences from Chemacs 1
+
+Emacs intialization used to have a single entry point, either =~/.emacs= or
+=~/.emacs.d/init.el=. More recent Emacsen have introduced a second startup
+script, =~/.emacs/early-init.el=, which runs earlier in the boot process, and
+can be used for things that should happen very early on, like tweaking the GC,
+or disabling UI elements.
+
+Chemacs 2 supports =early-init.el=, Chemacs 1 does not. This does also imply
+that Chemacs 2 needs to be installed as =~/.emacs.d= (a directory), rather than
+simply linking it to =~/.emacs= (a single file).
+
+** Rationale
+
+Emacs configuration is either kept in a =~/.emacs= file or, more commonly, in a
+=~/.emacs.d= directory. These paths are hard-coded. If you want to try out
+someone else's configuration, or run different distributions like Prelude or
+Spacemacs, then you either need to swap out =~/.emacs.d=, or run Emacs with a
+different =$HOME= directory set.
+
+This last approach is quite common, but has some real drawbacks, since now
+packages will no longer know where your actual home directory is.
+
+All of these makes trying out different Emacs configurations and distributions
+needlessly cumbersome.
+
+Various approaches to solving this have been floated over the years. There's an
+Emacs patch around that adds an extra command line option, and various examples
+of how to add a command line option in userspace from Emacs Lisp.
+
+Chemacs tries to implement this idea in a user-friendly way, taking care of the
+various edge cases and use cases that come up.
+
+** Installation
+
+Clone the Chemacs 2 repository as =$HOME/.emacs.d=. Note that if you already
+have an Emacs setup in =~/.emacs.d= you need to move it out of the way first. If
+you have an =~/.emacs= startup script then move that out of the way as well.
+
+#+BEGIN_SRC shell
+  [ -f ~/.emacs ] && mv ~/.emacs ~/.emacs.bak
+  [ -d ~/.emacs.d ] && mv ~/.emacs.d ~/.emacs.default
+  git clone https://github.com/plexus/chemacs2.git ~/.emacs.d
+#+END_SRC
+
+Note that this is different from Chemacs 1. Before Chemacs installed itself as
+=~/.emacs= and you could have your own default setup in =~/.emacs.d=. This
+approach no longer works because of =~/.emacs.d/early-init.el=, so Chemacs 2
+needs to be installed as =~/.emacs.d=.
+
+Next you will need to create a =~/.emacs-profiles.el= file, for details see
+below.
+
+#+begin_src emacs-lisp
+  (("default" . ((user-emacs-directory . "~/.emacs.default"))))
+#+end_src
+
+** Usage
+
+Chemacs adds an extra command line option to Emacs, =--with-profile=. Profiles
+are configured in =~/.emacs-profiles.el=.
+
+If no profile is given at the command line then the =default= profile is used.
+
+#+BEGIN_SRC shell
+$ emacs --with-profile my-profile
+#+END_SRC
+
+There is an option for using profile that is not preconfigured in =~/.emacs-profiles.el=. To accomplish that you can directly provide the profile via the command line, like so
+#+BEGIN_SRC shell
+$ emacs --with-profile '((user-emacs-directory . "/path/to/config"))'
+#+END_SRC
+This method supports all the profile options given below.
+
+** .emacs-profiles.el
+
+This file contains an association list, with the keys/cars being the profile
+names, and the values/cdrs their configuration.
+
+The main thing to configure is the =user-emacs-directory=
+
+#+BEGIN_SRC emacs-lisp
+  (("default" . ((user-emacs-directory . "~/.emacs.default")))
+   ("spacemacs" . ((user-emacs-directory . "~/spacemacs"))))
+#+END_SRC
+
+Chemacs will set this to be the =user-emacs-directory= in use, and load
+=init.el= from that directory.
+
+Other things you can configure
+
+- =custom-file= : The file where Customize stores its customizations. If this
+  isn't configured, and the =custom-file= variable is still unset after loading
+  the profile's =init.el=, then this will get set to the profile's =init.el=
+- =server-name= : Sets the =server-name= variable, so you can distinguish multiple
+  instances with =emacsclient -s <server-name>=.
+- =env= An association list of environment variables. These will get set before
+  loading the profile, so they can influence the initialization, and they are
+  visible to any subprocesses spawned from Emacs.
+- =straight-p= Enable the [[https://github.com/raxod502/straight.el][Straight]]
+  functional package manager.
+
+Store =.emacs-profiles.el= together with your dotfiles. If you're not yet keeping
+a version controlled directory of dotfiles, then check out
+[[https://github.com/plexus/dotfiles/blob/master/connect-the-dots][connect-the-dots]]
+for a helpful script to do that.
+
+** Changing the default profile (e.g. for GUI editors)
+
+Where it is not possible to use the =--with-profile= flag, the default profile
+can be set using a =~/.emacs-profile= file.
+
+If your =~/.emacs-profiles.el= file contains the following:
+
+#+BEGIN_SRC emacs-lisp
+  (("default" . ((user-emacs-directory . "~/.emacs.default")))
+   ("spacemacs" . ((user-emacs-directory . "~/spacemacs")))
+   ("prelude" . ((user-emacs-directory . "~/prelude"))))
+#+END_SRC
+
+you can create a file called =~/.emacs-profile=, containing the name of the
+profile you'd like to be used when none is given on the command line:
+
+#+BEGIN_SRC shell
+$ echo 'spacemacs' > ~/.emacs-profile
+#+END_SRC
+
+This will set the default profile to be the "spacemacs" profile, instead of
+"default". You can change the default by simply changing the contents of this
+file:
+
+#+BEGIN_SRC shell
+$ echo 'prelude' > ~/.emacs-profile
+#+END_SRC
+
+If this file doesn't exist, then "default" will be used, as before.
+
+** Spacemacs
+
+Spacemacs is typically installed by cloning the Spacemacs repo to =~/.emacs.d=,
+and doing extra customization from =~/.spacemacs= or =~/.spacemacs.d/init.el=.
+This makes it tedious to switch between version of Spacemacs, or between
+different Spacemacs configurations.
+
+With Chemacs you can point your =user-emacs-directory= to wherever you have
+Spacemacs installed, and use the =SPACEMACSDIR= environment variable to point at
+a directory with customizations that are applied on top of the base install.
+
+#+BEGIN_SRC emacs-lisp
+(("spacemacs" . ((user-emacs-directory . "~/spacemacs")
+                 (env . (("SPACEMACSDIR" . "~/.spacemacs.d")))))
+
+ ("spacemacs-develop" . ((user-emacs-directory . "~/spacemacs/develop")
+                        (env . (("SPACEMACSDIR" . "~/.spacemacs.d")))))
+
+ ("new-config" . ((user-emacs-directory . "~/spacemacs/develop")
+                  (env . (("SPACEMACSDIR" . "~/my-spacemacs-config"))))))
+#+END_SRC
+
+** DOOM emacs
+
+You can add an entry similar to the following to your =.emacs-profiles.el=
+
+In the following snippet =~/doom-emacs= is where you have cloned doom emacs.
+
+(Depending on when you read this) =DOOMDIR= support is only in =develop= branch of doom emacs. Check commit history of =master= branch of doom emacs
+
+#+BEGIN_SRC emacs-lisp
+("doom" . ((user-emacs-directory . "~/doom-emacs")
+           (env . (("DOOMDIR" . "~/doom-config")))))
+#+END_SRC
+
+Please refer to [[https://github.com/plexus/chemacs/issues/5][this]] discussion for details.
+
+** FreeDesktop Directories
+
+Both =~/.emacs-profiles.el= and =~/.emacs-profile= can also be stored under =$XDG_CONFIG_HOME/chemacs= (typically =~/.config/chemacs=) as =$XGD_CONFIG_HOME/chemacs/profiles.el= and =$XDG_CONFIG_HOME/chemacs/profile= respectively.
+
+Further, as indicated by the [[http://git.savannah.gnu.org/cgit/emacs.git/tree/etc/NEWS?h=emacs-27][Emacs 27.1 changelog]], Emacs is now compatible with XDG Standards, looking for its configuration files in =${XDG_CONFIG_HOME}/emacs= directory too (provided the traditional =~/.emacs.d= and =~/.emacs= does not exist).
+Therefore, it is perfectly viable to install Chemacs 2 in =${XDG_CONFIG_HOME}/emacs= (usually =~/.config/emacs=) directory - with the aforementioned caveat: _the directory =~/.emacs.d"= and the file ="~/.emacs"= does not exist_.
+
+** LICENSE
+
+Copyright © Arne Brasseur 2018-2020
+
+Distributed under the terms of the GPL v3.
