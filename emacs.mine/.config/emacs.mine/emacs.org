@@ -8,6 +8,13 @@ run the following
   (fira-code-mode-set-font)
 #+end_src
 
+* Performance
+#+begin_src emacs-lisp
+  (setq gc-cons-threshold-original gc-cons-threshold) ;; unused
+  (setq gc-cons-threshold (* 1024 1024 100))
+  (setq read-process-output-max (* 1024 4024)) ;; 4mb
+#+end_src
+
 * Packaging
 Initialize Package sources
 #+begin_src emacs-lisp
@@ -50,6 +57,10 @@ straight
     (setq straight-use-package-by-default t)
 #+end_src
 
+remove warning by use-package
+#+begin_src emacs-lisp
+(custom-set-variables '(warning-suppress-types '((use-package))))
+#+end_src
 * Basic Configuration
 ** Better Defaults
 #+begin_src emacs-lisp 
@@ -421,6 +432,7 @@ Capture
   "ce" '(eval-last-sexp :which-key "Eval Function")
   "cb" '(eval-buffer :which-key "Eval Buffer")
   "ca" '(lsp-execute-code-action :which-key "Code Action")
+  "cl" '(lsp-avy-lens :which-key "Code Action")
   "ci" '(lsp-ui-imenu :which-key "lsp imenu")
   "cr" '(lsp-rename :which-key "rename")
   "cs" '(lsp-find-refernces :which-key "find refernces")
@@ -517,7 +529,7 @@ Capture
 #+end_src
 (Not Working) Emacs State Cursor Color
 #+begin_src emacs-lisp
-  (defun +evil-default-cursor-fn ()
+  (defun +evil-default-cursor-fn (interactive)
     (evil-set-cursor-color (get 'cursor 'evil-normal-color)))
   (defun +evil-emacs-cursor-fn () (interactive)
     (evil-set-cursor-color (get 'cursor 'evil-emacs-color)))
@@ -618,7 +630,7 @@ Capture
 ** ivy
 #+begin_src emacs-lisp
   (use-package ivy
-    :defer 2
+    :defer t
     :diminish
     :bind (("C-s" . swiper); TODO: move to Keybinds
            :map ivy-minibuffer-map
@@ -665,7 +677,7 @@ Ivy floating
 ** Counsel
 #+begin_src emacs-lisp
   (use-package counsel
-    :defer 2
+    :defer t
     :bind (("M-x" . counsel-M-x)
            ;("C-x b" . counsel-ibuffer)
            ("C-x C-f" . counsel-find-file)
@@ -691,11 +703,11 @@ slow loading! defer it
 #+begin_src emacs-lisp
     (use-package company
       :ensure
-      :defer 3
+      :defer 5
       :diminish company-mode
       :custom
       (global-company-mode t)
-      (company-idle-delay 0.01) ;; how long to wait until popup
+      (company-idle-delay 0.3) ;; how long to wait until popup
       (company-minimum-prefix-length 1) ;; The minimum prefix length for idle completion.
       (company-selection-wrap-around t)
       ;; (company-begin-commands nil) ;; uncomment to disable popup
@@ -720,13 +732,14 @@ slow loading! defer it
 better sorting for ivy, company..
 #+begin_src emacs-lisp
   (use-package prescient
+    :defer t
     :diminish
     :config (prescient-persist-mode 1))
-  
+
   (use-package ivy-prescient
     :after counsel
     :init (ivy-prescient-mode 1))
-  
+
   (use-package company-prescient
     :after company
     :config
@@ -739,7 +752,7 @@ better sorting for ivy, company..
 ** Yasnippet
 #+begin_src emacs-lisp
     (use-package yasnippet
-      :defer 3
+      :defer 4
       :config
       (yas-global-mode))
 
@@ -774,6 +787,7 @@ Modes To Start
 use-package
 #+begin_src emacs-lisp
   (use-package org
+    :defer t
     :hook (org-mode . my/org-mode/org-mode-setup)
     (org-mode . my/org-mode/load-prettify-symbols); symbols
     (org-mode . auto-fill-mode)
@@ -874,6 +888,7 @@ Don't confirm, I know what I am doing
     'org-babel-load-languages
     '((emacs-lisp . t)
       (python . t)
+      (octave . t)
       (scheme . t)
       (shell . t)))
 #+end_src
@@ -885,6 +900,7 @@ Allow fast code insertion
 
   (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
   (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+  (add-to-list 'org-structure-template-alist '("oc" . "src octave"))
   (add-to-list 'org-structure-template-alist '("py" . "src python"))
   (add-to-list 'org-structure-template-alist '("scm" . "src scheme"))
 #+end_src
@@ -896,15 +912,7 @@ Allow fast code insertion
         `(
           ("d" "Distraction" entry (file+headline ,(concat org-directory "distractions.org") "Inbox")
            "* %?\n%T")
-          ("a" "Anki basic"
-           entry
-           (file+headline org-my-anki-file "Dispatch Shelf")
-           "* %<%H:%M>   \n:PROPERTIES:\n:ANKI_NOTE_TYPE: Basic\n:ANKI_DECK: Math::Calculus-III\n:END:\n** Front\n%?\n** Back\n%x\n")
-          
-        ("A" "Anki cloze"
-                 entry
-                 (file+headline org-my-anki-file "Dispatch Shelf")
-                 "* %<%H:%M>   \n:PROPERTIES:\n:ANKI_NOTE_TYPE: Cloze\n:ANKI_DECK: Mega\n:END:\n** Text\n%x\n** Extra\n")))
+        ))
 #+end_src
 
 *** Utils
@@ -1016,6 +1024,7 @@ launch with =emacsclient -e '(make-orgcapture-frame)'=
 ** org-pomodoro
 #+begin_src emacs-lisp
   (use-package org-pomodoro
+  :defer t
   :custom
   (org-pomodoro-length 25)
   (org-pomodoro-keep-killed-pomodoro-time t)
@@ -1092,7 +1101,7 @@ launch with =emacsclient -e '(make-orgcapture-frame)'=
   )
 #+end_src
 
-**  Anki
+**  COMMENT Anki
 #+begin_src emacs-lisp
   (use-package anki-editor
     :after org
@@ -1143,12 +1152,12 @@ Counsel Projectile
 #+begin_src emacs-lisp
   (use-package recentf
     :defer 10
-    :init (recentf-mode  1))
+    :config (recentf-mode  1))
 #+end_src
 
 *** lsp performance
-#+begin_src emacs-lisp
-  (setq gc-cons-threshold 100000000)
+#+begin_src emacs-lisp :tangle no
+  (setq gc-cons-threshold 100000000)	     ;; 100 mb
   (setq read-process-output-max (* 1024 4024)) ;; 4mb
 #+end_src
 
@@ -1158,7 +1167,6 @@ Counsel Projectile
     :commands (lsp lsp-deferred)
    ;;  :hook
    ;; (lsp-mode . my/lsp/lsp-mode-setup)
-    :init
     :custom
     (lsp-headerline-breadcrumb-segments '(path-up-to-project file))
     (lsp-rust-analyzer-cargo-watch-command "clippy")
@@ -1172,12 +1180,13 @@ Counsel Projectile
     :config
     (lsp-enable-which-key-integration t)
     (setq lsp-headerline-breadcrumb-enable nil); anonying tabs
+    (lsp-log-io nil) ; if set to true can cause a performance hit
     (add-hook 'lsp-mode-hook 'lsp-ui-mode)
     (lsp-headerline-breadcrumb-mode -1)
     (flycheck-mode 1)
     :bind
       (:map lsp-mode-map
-            ("<tab>" . company-indent-or-complete-common)
+            ;; ("<tab>" . company-indent-or-complete-common); commented cuz tabs for yasnippet!
       )
   ) 
 #+end_src
@@ -1305,8 +1314,8 @@ Get treemacs-lsp
   (add-hook 'emacs-lisp-mode-hook 'flycheck-mode)
 #+end_src
 
-*** V
-#+begin_src emacs-lisp :tangle no
+*** COMMENT V
+#+begin_src emacs-lisp
   (use-package v-mode
     :defer t
     :preface
@@ -1357,7 +1366,7 @@ Get treemacs-lsp
     (haskell-mode . my/font/pretty-lambdas-haskell)
     :config
     (haskell-indentation-mode -1)
-   (add-hook 'before-save-hook 'lsp-format-buffer)
+   ;; (add-hook 'before-save-hook 'lsp-format-buffer)
     ;; :custom (haskell-stylish-on-save t)
     )
 #+end_src
@@ -1385,12 +1394,13 @@ Get treemacs-lsp
       ;; `M-x package-install [ret] company`
       (company-mode +1))
     :config
-  
+
     ;; aligns annotation to the right hand side
     (setq company-tooltip-align-annotations t)
-  
+
     ;; formats the buffer before saving
-    (add-hook 'before-save-hook 'tide-format-before-save)
+    ;; (add-hook 'before-save-hook 'tide-format-before-save)
+    (add-hook 'before-save-hook 'prettier-js)
   :hook(typescript-mode . setup-tide-mode)
   :hook(typescript-mode . lsp))
 #+end_src
@@ -1419,7 +1429,6 @@ lsp hooks setups
 *** Markdown
 Better Diff in header sizes
 #+begin_src emacs-lisp
-
   (eval-after-load 'markdown-mode
   '(custom-set-faces
    '(markdown-header-face-1 ((t (:inherit markdown-header-face :height 1.7))))
@@ -1433,14 +1442,14 @@ Better Diff in header sizes
   ;; (add-hook 'markdown-mode-hook 'outline-minor-mode)
 #+end_src
 
-*** Vue
+*** COMMENT Vue
 #+begin_src emacs-lisp
 (use-package vue-mode
     :hook (vue-mode . lsp)
     :hook (vue-mode . prettier-js-mode))
 #+end_src
 
-*** Scheme (guile)
+*** COMMENT Scheme (guile)
 #+begin_src emacs-lisp
   (use-package geiser
     :defer
@@ -1452,6 +1461,7 @@ Better Diff in header sizes
 
 #+begin_src emacs-lisp
   (use-package parinfer-rust-mode
+      :defer 4
       :hook emacs-lisp-mode scheme-mode
       :init
       (setq parinfer-rust-auto-download t))
@@ -1460,12 +1470,22 @@ Better Diff in header sizes
 *** C and cpp
 #+begin_src emacs-lisp
   (use-package cc-mode
+    :defer t
     :hook (cc-mode . lsp)
     :hook (c-mode . lsp)
     :hook (c++-mode . lsp))
 #+end_src
 
-*** python
+*** COMMENT Ruby
+#+begin_src emacs-lisp
+  (use-package ruby-mode
+    :hook
+    (ruby-mode . lsp)
+    (ruby-mode . (lambda ()
+           (add-hook 'before-save-hook 'lsp-format-buffer nil t))))
+#+end_src
+
+*** COMMENT python
 #+begin_src emacs-lisp
     (add-hook 'python-mode-hook 'lsp)
     (add-hook 'python-mode-hook 'prettify-symbols-mode)
@@ -1624,41 +1644,43 @@ from the local bibliography.  This is set internally by
 
 Folding
 #+begin_src emacs-lisp
-(use-package outshine
-  :config
-(setq LaTeX-section-list '(
-                           ("part" 0)
-                           ("chapter" 1)
-                           ("section" 2)
-                           ("subsection" 3)
-                           ("subsubsection" 4)
-                           ("paragraph" 5)
-                           ("subparagraph" 6)
-                           ("begin" 7)
-                           )
-      )
-(add-hook 'LaTeX-mode-hook #'(lambda ()
-                               (outshine-mode 1)
-                               (setq outline-level #'LaTeX-outline-level)
-                               (setq outline-regexp (LaTeX-outline-regexp t))
-                               (setq outline-heading-alist
-                                     (mapcar (lambda (x)
-                                               (cons (concat "\\" (nth 0 x)) (nth 1 x)))
-                                             LaTeX-section-list))))
+  (use-package outshine
+    :defer t
+    :config
+  (setq LaTeX-section-list '(
+                             ("part" 0)
+                             ("chapter" 1)
+                             ("section" 2)
+                             ("subsection" 3)
+                             ("subsubsection" 4)
+                             ("paragraph" 5)
+                             ("subparagraph" 6)
+                             ("begin" 7)
+                             )
+        )
+  (add-hook 'LaTeX-mode-hook #'(lambda ()
+                                 (outshine-mode 1)
+                                 (setq outline-level #'LaTeX-outline-level)
+                                 (setq outline-regexp (LaTeX-outline-regexp t))
+                                 (setq outline-heading-alist
+                                       (mapcar (lambda (x)
+                                                 (cons (concat "\\" (nth 0 x)) (nth 1 x)))
+                                               LaTeX-section-list))))
 
-  )
+    )
 
-    (general-define-key
-      :states '(normal visual)
-      :keymaps 'LaTeX-mode-map
-      "TAB"  '(outshine-cycle :which-key "outshine-cycle")
-  )
+      (general-define-key
+        :states '(normal visual)
+        :keymaps 'LaTeX-mode-map
+        "TAB"  '(outshine-cycle :which-key "outshine-cycle")
+    )
 
 #+end_src
 
 ivy bibtex
 #+begin_src emacs-lisp
   (use-package ivy-bibtex
+    :defer t
     :custom
     (bibtex-completion-bibliography
           '("~/Documents/refs.bib"))
@@ -1677,25 +1699,26 @@ ivy bibtex
 * Misc
 ** Restart Emacs
 #+begin_src emacs-lisp
-(use-package restart-emacs)
+  (use-package restart-emacs)
 #+end_src
 
 ** Server
 #+begin_src emacs-lisp
-(unless (server-running-p) (server-start))
+  (unless (server-running-p) (server-start))
+  ;; (add-hook 'server-after-make-frame-hook '(lambda () (load-theme (car custom-enabled-themes) t)))
 #+end_src
 
 ** Vterm
 #+begin_src emacs-lisp
   (use-package vterm
-      :defer 3
+      :commands vterm
       :ensure t)
 #+end_src
 
-** ranger
+** COMMENT ranger
 #+begin_src emacs-lisp
   (use-package ranger
-  :defer 3
+  :defer t
   :config (ranger-override-dired-mode t))
 #+end_src
 
@@ -1733,7 +1756,7 @@ ivy bibtex
                             `([,(cdr char-regexp) 0 font-shape-gstring]))))
 #+end_src
 
-* Elfeed org
+* COMMENT Elfeed org
  =;; (setq rmh-elfeed-org-files (list "~/Documents/private.el/elfeed.org"))=
 ** Elfeed-org
 #+begin_src emacs-lisp
@@ -1773,8 +1796,8 @@ ivy bibtex
 #+end_src
 
 * IRC
-** unsused 'erc'
-#+begin_src emacs-lisp :tangle no
+** COMMENT unsused 'erc'
+#+begin_src emacs-lisp
   (use-package erc
     :defer t
     :custom
@@ -1858,7 +1881,7 @@ ivy bibtex
      word-wrap t
      wrap-prefix "    "))
 #+end_src
-a
+
 
 *** znc stuff
 #+begin_src emacs-lisp
@@ -1964,6 +1987,7 @@ or don't include in git source :)
 * Startpage
 #+begin_src emacs-lisp
   (use-package dashboard
+    :after solaire-mode
     :init
     (dashboard-setup-startup-hook)
     :config
@@ -1974,10 +1998,15 @@ or don't include in git source :)
     ;; 1, 2 or 3 which displays one of the text banners
     ;; "path/to/your/image.png" or "path/to/your/text.txt" which
     ;;   displays whatever image/text you would prefer
-  
+
     ;; Content is not centered by default. To center, set
     (setq dashboard-center-content t)
-  
+    (setq dashboard-set-heading-icons t)
+    (setq dashboard-set-file-icons t)
+    (setq dashboard-items '((recents  . 5)
+                            (bookmarks . 5)
+                            (projects . 5)
+                            (agenda . 5)))
     (setq dashboard-set-init-info t)
     (setq dashboard-projects-switch-function 'counsel-projectile-switch-project-by-name))
 #+end_src
