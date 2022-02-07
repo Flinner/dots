@@ -128,6 +128,13 @@ Run =M-x= all-the-icons-install-fonts for the first time!
       :custom
   ((doom-modeline-height 15) (doom-modeline-icon t)))
 #+end_src
+
+buffers with dimmed colors
+#+begin_src emacs-lisp
+  (use-package solaire-mode
+  :init (solaire-global-mode +1))
+#+end_src
+
 Actuall Theme:
 #+begin_src emacs-lisp
   (use-package doom-themes
@@ -145,6 +152,7 @@ Actuall Theme:
     ;; '(flycheck-warning ((t (:background "#282828" :underline "#fabd2f"))))
     '(org-date ((t (:inherit fixed-pitch))))
     ;; '(ivy-posframe-border ((t (:background "#ffffff")))))
+
   )
 
     ;; Enable custom neotree theme (all-the-icons must be installed!)
@@ -154,12 +162,6 @@ Actuall Theme:
     (doom-themes-treemacs-config)
     ;; Corrects (and improves) org-mode's native fontification.
     (doom-themes-org-config))
-#+end_src
-
-buffers with dimmed colors
-#+begin_src emacs-lisp
-  (use-package solaire-mode
-  :init (solaire-global-mode +1))
 #+end_src
 
 #+begin_src emacs-lisp
