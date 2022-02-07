@@ -10,8 +10,9 @@ export CARGO_HOME="$XDG_DATA_HOME"/cargo
 export GOPATH="$XDG_DATA_HOME"/go
 export GOBIN="$XDG_DATA_HOME"/go
 export DOOM_PATH="$HOME/.emacs.d/bin"
+export YARN_PATH="$HOME/.yarn/bin"
 
-export PATH="$DOOM_PATH:$HOME/.local/bin:$HOME/bin:$CARGO_HOME/bin:$GOPATH:$PATH"
+export PATH="$DOOM_PATH:$HOME/.local/bin:$HOME/bin:$CARGO_HOME/bin:$YARN_PATH:$GOPATH:$PATH"
 
 # colored GCC warnings and errors
 export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'

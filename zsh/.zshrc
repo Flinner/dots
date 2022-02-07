@@ -40,7 +40,7 @@ zplugin snippet OMZ::plugins/fancy-ctrl-z/fancy-ctrl-z.plugin.zsh
 zplugin snippet OMZ::plugins/vi-mode/vi-mode.plugin.zsh 
 
 
-zplugin ice wait'1' lucid
+zplugin ice wait'2' lucid
 zplugin load zdharma-continuum/fast-syntax-highlighting  
 
 zplugin ice wait'0' lucid
@@ -63,6 +63,7 @@ autoload -Uz compinit
 compinit
 
 compdef _gnu_generic ytfzf
+compdef _gnu_generic emacs
 # insensitve completion
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 
@@ -190,7 +191,7 @@ alias ip='ip --color=auto'
 alias ytfzfd='YTFZF_PLAYER="youtube-dl --embed-subs --write-sub --sub-lang en" ytfzf'
 
 alias cargo-doc-server="python -m http.server -d target/doc/ -b 127.0.0.1"
-alias sc="bat ~/schedule.org"
+alias sc="feh ~/schedule.jpeg"
 
 #===============================================================================================
 
@@ -208,9 +209,11 @@ export CARGO_HOME="$XDG_DATA_HOME"/cargo
 export GOPATH="$XDG_DATA_HOME"/go
 export GOBIN="$XDG_DATA_HOME"/go
 export DOOM_PATH="$HOME/.emacs.d/bin"
+export YARN_PATH="$HOME/.yarn/bin"
 
-export PATH="$DOOM_PATH:$HOME/.local/bin:$HOME/bin:$CARGO_HOME/bin:$GOPATH:$PATH"
+export PATH="$DOOM_PATH:$HOME/.local/bin:$HOME/bin:$CARGO_HOME/bin:$YARN_PATH:$GOPATH:$PATH"
 
+export PATH="$HOME/.rbenv/bin:$PATH"
 
 
 # colored GCC warnings and errors
