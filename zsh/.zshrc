@@ -269,5 +269,7 @@ RPS1=" "
 eval "$(starship init zsh)"
 [ -f "/home/user/.ghcup/env" ] && source "/home/user/.ghcup/env" # ghcup-env
 
+# eval "$(rbenv init - zsh)"
+
 #~/bin/dennis
 #cutefetch 2> /dev/null
