@@ -61,6 +61,7 @@ remove warning by use-package
 #+begin_src emacs-lisp
 (custom-set-variables '(warning-suppress-types '((use-package))))
 #+end_src
+
 * Basic Configuration
 ** Better Defaults
 #+begin_src emacs-lisp 
@@ -179,8 +180,9 @@ Actuall Theme:
   (use-package olivetti
     :diminish
     :hook (text-mode . olivetti-mode)
+    :hook (prog-mode . olivetti-mode)
     :config
-    (setq olivetti-body-width 100))
+    (setq olivetti-body-width 120))
   
 #+end_src
 
@@ -205,7 +207,7 @@ DEPRECATED Disable for the following modes
 #+end_src
 ONLY IN PROG!
 #+begin_src emacs-lisp
- (add-hook 'prog-mode-hook 'display-line-numbers-mode)
+  ;; (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 #+end_src
  
 ** Undo
@@ -387,6 +389,7 @@ Capture
   "ot" '(vterm-other-window :which-key "Vterm in other window")
   "ob" '(bookmark-jump :which-key "Bookmark Jump")
   "oB" '(bookmark-set :which-key "Bookmark set")
+  "om" '(mu4e :which-key "mu4e")
   
   "oe" '(elfeed-dashboard :which-key "Bookmark set")
 #+end_src
@@ -429,6 +432,7 @@ Capture
 #+begin_src emacs-lisp
   "c"  '(:ignore t :which-key "code")
 
+  "cE" '(eval-defun :which-key "Eval Function at Point")
   "ce" '(eval-last-sexp :which-key "Eval Function")
   "cb" '(eval-buffer :which-key "Eval Buffer")
   "ca" '(lsp-execute-code-action :which-key "Code Action")
@@ -728,6 +732,17 @@ slow loading! defer it
     :hook (company-mode . company-box-mode))
 #+end_src
 
+*** lsp + yasnippet
+#+begin_src emacs-lisp
+(defun my-backends ()
+    (set (make-local-variable 'company-backends)
+        '((company-capf ;; I think this must come first?
+            :with
+            company-yasnippet
+            company-files
+            company-dabbrev-code))))
+#+end_src
+
 ** Prescient
 better sorting for ivy, company..
 #+begin_src emacs-lisp
@@ -760,6 +775,12 @@ better sorting for ivy, company..
     :after yasnippet
   )
 
+#+end_src
+
+** Helm
+dep for =org-books=
+#+begin_src emacs-lisp
+  (use-package helm :after org-books)
 #+end_src
 
 * Org-Mode
@@ -825,6 +846,14 @@ use-package
     (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch))
 #+end_src
 
+Templates
+#+begin_src emacs-lisp
+(use-package doct
+  :ensure t
+  ;;recommended: defer until calling doct
+  :commands (doct))
+#+end_src
+
 ** Appearance
 *** Symbols
 #+begin_src emacs-lisp
@@ -846,7 +875,7 @@ use-package
     (prettify-symbols-mode 1))
 #+end_src
 
-*** Visual Fill (center)
+*** COMMENT Visual Fill (center)
 #+begin_src emacs-lisp :tangle no
   (defun my/org-mode/org-mode-visual-fill ()
   (interactive)
@@ -885,9 +914,12 @@ Don't confirm, I know what I am doing
 *** Language List
 #+begin_src emacs-lisp
   (org-babel-do-load-languages
-    'org-babel-load-languages
-    '((emacs-lisp . t)
+      'org-babel-load-languages
+      '((emacs-lisp . t)
       (python . t)
+      (restclient . t)
+      (sql . t)
+      (mermaid . t)
       (octave . t)
       (scheme . t)
       (shell . t)))
@@ -900,21 +932,60 @@ Allow fast code insertion
 
   (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
   (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+  (add-to-list 'org-structure-template-alist '("re" . "src restclient"))
+  (add-to-list 'org-structure-template-alist '("sq" . "src sql"))
+  (add-to-list 'org-structure-template-alist '("sql" . "src sql"))
   (add-to-list 'org-structure-template-alist '("oc" . "src octave"))
   (add-to-list 'org-structure-template-alist '("py" . "src python"))
   (add-to-list 'org-structure-template-alist '("scm" . "src scheme"))
 #+end_src
 
+#+RESULTS:
+
+*** Mermaid graphs
+#+begin_src emacs-lisp
+  (use-package ob-mermaid
+   :after org)
+#+end_src
+
 ** Capture 
 *** Templates
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :results none
   (setq org-capture-templates
+   (doct `(
+           ("Consume: Read/watch" :keys "c"
+            :file ,(concat org-directory "todo.org")
+            :prepend t
+            :template ("* %{todo-state} %^{Description}"
+                       ":PROPERTIES:"
+                       ":Created: %U"
+                       ":END:"
+                       "%?")
+            :children (("Read"   :keys "r"
+                        :headline "Read"
+                        :todo-state "TODO")
+                       ("Watch" :keys "w"
+                          :headline "Watch"
+                          :todo-state "TODO")))
+           ("GTD" :keys "g"
+            :file ,(concat org-directory "todo.org")
+            :prepend t
+            :template ("* %{todo-state} %^{Description}"
+                       ":PROPERTIES:"
+                       ":Created: %U"
+                       ":END:"
+                       "%?")
+            :children (("distraction"   :keys "d"
+                        :headline "Distraction"
+                        :todo-state "TODO")
+                       ("placeholder" :keys "w"
+                          :headline "Watch"
+                          :todo-state "TODO"))))))
+#+end_src
+
         `(
           ("d" "Distraction" entry (file+headline ,(concat org-directory "distractions.org") "Inbox")
            "* %?\n%T")
-        ))
-#+end_src
-
 *** Utils
 launch with =emacsclient -e '(make-orgcapture-frame)'=
 #+begin_src emacs-lisp
@@ -1101,6 +1172,14 @@ launch with =emacsclient -e '(make-orgcapture-frame)'=
   )
 #+end_src
 
+** org-book
+#+begin_src emacs-lisp
+  (use-package org-books
+   :after org
+   :config 
+  (setq org-books-file "~/Documents/books/list.org"))
+#+end_src
+
 **  COMMENT Anki
 #+begin_src emacs-lisp
   (use-package anki-editor
@@ -1127,6 +1206,18 @@ launch with =emacsclient -e '(make-orgcapture-frame)'=
           (prog-mode . show-paren-mode)
           ;; (prog-mode . electric-pair-mode)
      ) 
+#+end_src
+
+#+begin_src emacs-lisp
+  ;; (use-package paredit :defer t)
+#+end_src
+
+#+begin_src emacs-lisp
+  (use-package parinfer-rust-mode
+      :defer 4
+      :hook emacs-lisp-mode scheme-mode clojure-mode
+      :init
+      (setq parinfer-rust-auto-download t))
 #+end_src
 
 *** Projectile
@@ -1174,8 +1265,10 @@ Counsel Projectile
     (lsp-eldoc-enable-hover nil)
     (lsp-ui-doc-show-with-mouse nil)
     (lsp-idle-delay 0.6)
+    (lsp-completion-provider :none) 
     (lsp-idle-delay 0.6)
     (lsp-rust-analyzer-server-display-inlay-hints t)
+    (lsp-rust-analyzer-display-parameter-hints t)
     ;(setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
     :config
     (lsp-enable-which-key-integration t)
@@ -1193,20 +1286,20 @@ Counsel Projectile
 
 Lsp UI
 #+begin_src emacs-lisp
-    (use-package lsp-ui
-        :ensure
-        :commands lsp-ui-mode
-        :custom
-        ;(lsp-ui-peek-always-show t)
-        (lsp-ui-doc-mode t)
-        ;(lsp-ui-sideline-show-hover t)
-             (lsp-ui-doc-enable nil)
-        :bind
-            (:map lsp-ui-mode-map
-            ("C-k" . lsp-ui-doc-focus-frame)
-        :map lsp-ui-doc-frame-mode-map
-            ("C-k" . lsp-ui-doc-unfocus-frame)
-      ))
+  (use-package lsp-ui
+      :ensure
+      :commands lsp-ui-mode
+      :custom
+      (lsp-ui-peek-always-show t)
+      (lsp-ui-doc-mode t)
+      (lsp-ui-sideline-show-hover t)
+      ;; (lsp-ui-doc-enable nil)
+      :bind
+          (:map lsp-ui-mode-map
+          ("C-c z" . lsp-ui-doc-focus-frame)
+      :map lsp-ui-doc-frame-mode-map
+          ("C-g" . lsp-ui-doc-unfocus-frame)
+    ))
 #+end_src
 
 *** lsp treemacs
@@ -1279,6 +1372,16 @@ Get treemacs-lsp
 #+end_src
 
 ** Language
+*** Clojure
+#+begin_src emacs-lisp
+  (use-package cider
+  :defer t
+  :bind (:map cider-mode-map
+        ([remap lsp-find-definition] . cider-find-var)
+        ([remap eval-defun] . cider-eval-list-at-point)
+        ([remap eval-last-sexp] . cider-eval-last-sexp)))
+#+end_src
+
 *** Rust
 #+begin_src emacs-lisp
   (use-package rustic
@@ -1294,11 +1397,16 @@ Get treemacs-lsp
     ;; (setq lsp-eldoc-hook nil)
     ;; (setq lsp-enable-symbol-highlighting nil)
     ;; (setq lsp-signature-auto-activate nil)
-  
+
     ;; comment to disable rustfmt on save
     (setq rustic-format-on-save t)
-    (add-hook 'rustic-mode-hook 'my/dev/rustic-mode-hook))
-  
+    (add-hook 'rustic-mode-hook 'my/dev/rustic-mode-hook)
+    ;; (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
+    ;; (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
+    (add-hook 'rustic-mode-hook 'lsp)
+    :custom
+    (rustic-rustfmt-config-alist '((edition . "2021"))))
+
   (defun my/dev/rustic-mode-hook ()
     ;; so that run C-c C-c C-r works without having to confirm, but don't try to
     ;; save rust buffers that are not file visiting. Once
@@ -1459,14 +1567,6 @@ Better Diff in header sizes
   (use-package geiser-guile)
 #+end_src
 
-#+begin_src emacs-lisp
-  (use-package parinfer-rust-mode
-      :defer 4
-      :hook emacs-lisp-mode scheme-mode
-      :init
-      (setq parinfer-rust-auto-download t))
-#+end_src
-
 *** C and cpp
 #+begin_src emacs-lisp
   (use-package cc-mode
@@ -1476,11 +1576,12 @@ Better Diff in header sizes
     :hook (c++-mode . lsp))
 #+end_src
 
-*** COMMENT Ruby
+*** Ruby
 #+begin_src emacs-lisp
   (use-package ruby-mode
     :hook
     (ruby-mode . lsp)
+    (ruby-mode . electric-pair-mode)
     (ruby-mode . (lambda ()
            (add-hook 'before-save-hook 'lsp-format-buffer nil t))))
 #+end_src
@@ -1705,7 +1806,7 @@ ivy bibtex
 ** Server
 #+begin_src emacs-lisp
   (unless (server-running-p) (server-start))
-  ;; (add-hook 'server-after-make-frame-hook '(lambda () (load-theme (car custom-enabled-themes) t)))
+  (add-hook 'server-after-make-frame-hook '(lambda () (set-cursor-color "#FFFFFF")))
 #+end_src
 
 ** Vterm
@@ -1769,6 +1870,7 @@ ivy bibtex
 ** Elfeed Dashboard
 #+begin_src emacs-lisp
   (use-package elfeed-dashboard
+    :after elfeed
     :commands elfeed-dashboard
     :config
     ;; (setq elfeed-dashboard-file "~/Documents/private.el/elfeed-dashboard.org")
@@ -1776,23 +1878,24 @@ ivy bibtex
     (advice-add 'elfeed-search-quit-window :after #'elfeed-dashboard-update-links)
     (evil-set-initial-state 'elfeed-dashboard-mode 'emacs)
   :hook (elfeed-dashboard-mode . (lambda () (variable-pitch-mode -1))))
-  
+
 #+end_src
 
 ** Visual
 #+begin_src emacs-lisp
     (use-package elfeed
+    :defer
     :config 
     (defun my/elfeed/visual ()
     (interactive)
-    	(set-face-attribute 'variable-pitch (selected-frame) :font (font-spec :family my/ui/varfont :size 13))
+        (set-face-attribute 'variable-pitch (selected-frame) :font (font-spec :family my/ui/varfont :size 13))
       (setq visual-fill-column-width 110
             visual-fill-column-center-text t
             fill-column 90)
       (visual-fill-column-mode 1)
       (visual-line-mode 1))
   :hook (elfeed-show-mode  . my/elfeed/visual))
-  
+
 #+end_src
 
 * IRC
@@ -1919,7 +2022,9 @@ ivy bibtex
        :vars
        `(
           (mu4e-bookmarks .
-            ,`((:name "Unread messages"  :query ,(concat "flag:unread AND NOT flag:trashed"  context-filter) :key ?u)
+            ,`(
+            (:name "All Unread messages"  :query ,"flag:unread AND NOT flag:trashed" :key ?a)
+            (:name "Unread messages"  :query ,(concat "flag:unread AND NOT flag:trashed"  context-filter) :key ?u)
             (:name "Today's messages"     :query ,(concat "date:today..now" context-filter)                   :key ?t)
             (:name "Last 7 days"          :query ,(concat "date:7d..now" context-filter) :hide-unread t       :key ?w)
             (:name "Messages with images" :query ,(concat "mime:image/*" context-filter)                      :key ?p)))
@@ -1944,6 +2049,7 @@ ivy bibtex
     (add-hook 'mu4e-view-mode-hook #'visual-line-mode) 
     (add-hook 'mu4e-compose-mode-hook 'flyspell-mode)
     :custom
+    (mu4e-change-filenames-when-moving t)
     (mu4e-html2text-command "iconv -c -t utf-8 | pandoc -f html -t plain")
     (mu4e-attachment-dir "~/Downloads")
     (mu4e-compose-signature-auto-include nil)
