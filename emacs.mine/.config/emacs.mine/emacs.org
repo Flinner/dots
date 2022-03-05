@@ -906,7 +906,7 @@ scale inline
 #+end_src
 
 ** Babel
-Don't confirm, I know what I am doing
+Don't confirm, I know what I am doing!
 #+begin_src emacs-lisp
   (setq org-confirm-babel-evaluate nil)
 #+end_src
@@ -917,9 +917,9 @@ Don't confirm, I know what I am doing
       'org-babel-load-languages
       '((emacs-lisp . t)
       (python . t)
-      (restclient . t)
+      ;(restclient . t)
       (sql . t)
-      (mermaid . t)
+      ;(mermaid . t)
       (octave . t)
       (scheme . t)
       (shell . t)))
@@ -950,10 +950,9 @@ Allow fast code insertion
 
 ** Capture 
 *** Templates
-#+begin_src emacs-lisp :results none
+#+begin_src emacs-lisp
   (setq org-capture-templates
-   (doct `(
-           ("Consume: Read/watch" :keys "c"
+   (doct `(("Consume: Read/watch" :keys "c"
             :file ,(concat org-directory "todo.org")
             :prepend t
             :template ("* %{todo-state} %^{Description}"
@@ -967,7 +966,24 @@ Allow fast code insertion
                        ("Watch" :keys "w"
                           :headline "Watch"
                           :todo-state "TODO")))
-           ("GTD" :keys "g"
+           ("Ideas" :keys "i"
+            :file ,(concat org-directory "todo.org")
+            :prepend t
+            :template ("* %{todo-state} %^{Description}"
+                       ":PROPERTIES:"
+                       ":Created: %U"
+                       ":END:"
+                       "%?")
+            :children (("Project"   :keys "p"
+                        :olp ("Ideas" "Project")
+                        :todo-state "")
+                       ("Blogs"   :keys "b"
+                        :olp ("Ideas" "Blog")
+                        :todo-state "")
+                       ("placeholder" :keys "w"
+                          :headline "Watch"
+                          :todo-state "TODO")))
+           ("GTD" :keys "t"
             :file ,(concat org-directory "todo.org")
             :prepend t
             :template ("* %{todo-state} %^{Description}"
@@ -1372,14 +1388,32 @@ Get treemacs-lsp
 #+end_src
 
 ** Language
+*** Arduino
+#+begin_src emacs-lisp
+  (use-package arduino-mode)
+#+end_src
+
 *** Clojure
 #+begin_src emacs-lisp
   (use-package cider
   :defer t
-  :bind (:map cider-mode-map
-        ([remap lsp-find-definition] . cider-find-var)
-        ([remap eval-defun] . cider-eval-list-at-point)
-        ([remap eval-last-sexp] . cider-eval-last-sexp)))
+  :config (require 'flycheck-clj-kondo)
+  :hook   (clojure-mode . zprint-format-on-save-mode)
+  :bind   (:map cider-mode-map
+          ([remap lsp-find-definition] . cider-find-var)
+          ([remap eval-defun] . cider-eval-list-at-point)
+          ([remap eval-last-sexp] . cider-eval-last-sexp)))
+#+end_src
+
+Auto format
+#+begin_src emacs-lisp
+  (use-package zprint-format
+  :after cider)
+#+end_src
+
+#+begin_src emacs-lisp
+  (use-package flycheck-clj-kondo
+   :after cider)
 #+end_src
 
 *** Rust
@@ -1546,7 +1580,7 @@ Better Diff in header sizes
    '(markdown-header-face-5 ((t (:inherit markdown-header-face :height 1.1))))
    '(markdown-header-face-6 ((t (:inherit markdown-header-face :height 1.0))))
   ))
-  (add-hook 'markdown-mode-hook 'my/org-mode/org-mode-visual-fill)
+  ;; (add-hook 'markdown-mode-hook 'my/org-mode/org-mode-visual-fill)
   ;; (add-hook 'markdown-mode-hook 'outline-minor-mode)
 #+end_src
 
