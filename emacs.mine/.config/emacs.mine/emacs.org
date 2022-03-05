@@ -105,6 +105,7 @@ Better Scrolling
 #+begin_src emacs-lisp
   (setq my/ui/monofont "Fira Code")
   (setq my/ui/varfont "Noto Serif")
+  (setq my/ui/arabicfont "Noto Kofi Arabic")
 #+end_src
 
 #+begin_src emacs-lisp
@@ -115,6 +116,8 @@ Better Scrolling
   (set-face-attribute 'Info-quoted nil :font my/ui/monofont :height 90)
 #+end_src
 
+emacs-client frames don't adhire to the font for some reason, need to
+run this hook:
 #+begin_src emacs-lisp
   (defun my/ui/font-check ()
     "Do font check, then remove self from `focus-in-hook'; need to run this just once."
@@ -123,8 +126,15 @@ Better Scrolling
     (set-face-attribute 'variable-pitch nil :font my/ui/varfont :height 90)
     ;; Info has a horrible mono font
     (set-face-attribute 'Info-quoted nil :font my/ui/monofont :height 90)
+    ;; Arabic
+    (when window-system (set-fontset-font "fontset-default" '(#x600 . #x6ff) my/ui/arabicfont))
     (remove-hook 'focus-in-hook #'my/ui/font-check))
   (add-hook 'focus-in-hook #'my/ui/font-check)
+#+end_src
+
+Arabic fonts :)
+#+begin_src emacs-lisp
+(when window-system (set-fontset-font "fontset-default" '(#x600 . #x6ff) my/ui/arabicfont))
 #+end_src
 
 ** Theme
@@ -667,7 +677,7 @@ Ivy Rich for having =M-x= description and keybinds
     :init (ivy-rich-mode 1))
 #+end_src
 Ivy floating
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
   (use-package ivy-posframe
     :after ivy
     :diminish
@@ -1334,7 +1344,10 @@ Lsp UI
 
 *** Flycheck
 #+begin_src emacs-lisp
-  (use-package flycheck :ensure)
+(use-package flycheck :ensure
+:custom-face (flycheck-warning ((t (:underline (:color "#fabd2f" :style line :position line)))))
+             (flycheck-error ((t (:underline (:color "#fb4934" :style line :position line)))))
+             (flycheck-info ((t (:underline (:color "#83a598" :style line :position line))))))
 #+end_src
 
 *** Origami Mode (Folding)
