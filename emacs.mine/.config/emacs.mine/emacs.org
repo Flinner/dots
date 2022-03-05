@@ -1420,6 +1420,7 @@ Get treemacs-lsp
   :defer t
   :config (require 'flycheck-clj-kondo)
   :hook   (clojure-mode . zprint-format-on-save-mode)
+          (clojure-mode . flycheck-mode)
   :bind   (:map cider-mode-map
           ([remap lsp-find-definition] . cider-find-var)
           ([remap eval-defun] . cider-eval-list-at-point)
