@@ -384,14 +384,22 @@ Capture
 **** Open (o)
 #+begin_src emacs-lisp
   "o"  '(:ignore t :which-key "Open")
-  
+
   "oT" '(vterm :which-key "Vterm in current window")
-  "ot" '(vterm-other-window :which-key "Vterm in other window")
+  ;"ot" '(vterm-other-window :which-key "Vterm in other window")
   "ob" '(bookmark-jump :which-key "Bookmark Jump")
   "oB" '(bookmark-set :which-key "Bookmark set")
+
   "om" '(mu4e :which-key "mu4e")
-  
+  "ot" '(telega :which-key "Telega")
+
   "oe" '(elfeed-dashboard :which-key "Bookmark set")
+#+end_src
+
+**** Insert (i)
+#+begin_src emacs-lisp
+  "i"  '(:ignore t :which-key "Insert")
+  "ie" '(emoji-insert :which-key "Emoji")
 #+end_src
 
 **** Buffers (b)
@@ -2112,6 +2120,25 @@ or don't include in git source :)
 #+begin_src emacs-lisp
 (eval-after-load 'mu4e
   (load "~/Documents/passwords/mu4e-context.el"))
+#+end_src
+
+* Telega
+#+begin_src emacs-lisp
+    (use-package telega
+    :defer t
+    :init
+        (defun my/telega/olivetti () (setq-local olivetti-body-width 80))
+        (defun my/telega/company-backends ()
+            (setq-local company-backends
+                (append '(telega-company-username telega-company-botcmd )
+                        company-backends)))
+    :hook (telega-chat-mode . olivetti-mode)
+          (telega-chat-mode . my/telega/olivetti)
+          (telega-chat-mode . my/telega/company-backends)
+    ;; installed telegram-tdlib from AUR
+    :custom (telega-server-libs-prefix "/usr")
+            (telega-chat-bidi-display-reordering 'right-to-left))
+
 #+end_src
 
 * Buffers and Windows
