@@ -271,7 +271,7 @@ Single Esc to Quit, instead of *three*
 
 ** General.el
 Eval First and Last at least block!
-E: honestly I have no clue wtf that meant, but I will keep it
+Edit: honestly I have no clue wtf that meant, or why I wrote it, but I will keep it
 *** use-package
 #+begin_src emacs-lisp
   (use-package general
@@ -1022,16 +1022,18 @@ Allow fast code insertion
            "* %?\n%T")
 *** Utils
 launch with =emacsclient -e '(make-orgcapture-frame)'=
+From: https://yiufung.net/post/anki-org/
 #+begin_src emacs-lisp
   (defun make-orgcapture-frame ()
       "Create a new frame and run org-capture."
       (interactive)
-      (make-frame '((name . "org-capture") (window-system . x)))
+      ;(make-frame '((name . "org-capture") (window-system . x))); window-system breaks for some reason :(
+      (make-frame '((name . "org-capture")))
       (select-frame-by-name "org-capture")
       (counsel-org-capture)
-      (delete-other-windows)
-      )
+      (delete-other-windows)) 
 #+end_src
+
 
 ** Agenda
 *** T/ODOs
@@ -1629,6 +1631,8 @@ Better Diff in header sizes
     :defer t
     :hook (cc-mode . lsp)
     :hook (c-mode . lsp)
+          (c-mode . (lambda ()
+              (add-hook 'before-save-hook 'lsp-format-buffer nil t)))
     :hook (c++-mode . lsp))
 #+end_src
 
