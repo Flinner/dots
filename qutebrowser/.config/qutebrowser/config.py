@@ -2365,6 +2365,7 @@ config.bind('ey', 'yank inline [[{url}][{title}]]')
 # config.bind('<Shift-Tab>', 'prompt-item-focus prev', mode='prompt')
 # config.bind('<Tab>', 'prompt-item-focus next', mode='prompt')
 # config.bind('<Up>', 'prompt-item-focus prev', mode='prompt')
+config.bind('<Ctrl-o>', 'prompt-open-download zathura {}', mode='prompt')
 
 ## Bindings for register mode
 # config.bind('<Escape>', 'mode-leave', mode='register')
