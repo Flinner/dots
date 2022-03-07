@@ -1913,7 +1913,7 @@ ivy bibtex
                             `([,(cdr char-regexp) 0 font-shape-gstring]))))
 #+end_src
 
-* COMMENT Elfeed org
+* Elfeed org
  =;; (setq rmh-elfeed-org-files (list "~/Documents/private.el/elfeed.org"))=
 ** Elfeed-org
 #+begin_src emacs-lisp
@@ -1926,7 +1926,6 @@ ivy bibtex
 ** Elfeed Dashboard
 #+begin_src emacs-lisp
   (use-package elfeed-dashboard
-    :after elfeed
     :commands elfeed-dashboard
     :config
     ;; (setq elfeed-dashboard-file "~/Documents/private.el/elfeed-dashboard.org")
@@ -1936,21 +1935,57 @@ ivy bibtex
   :hook (elfeed-dashboard-mode . (lambda () (variable-pitch-mode -1))))
 
 #+end_src
-
-** Visual
+** Helper Functions
+From: https://old.reddit.com/r/emacs/comments/hbdlv8/elfeed_mpv_youtube/fv9yhb2/
 #+begin_src emacs-lisp
-    (use-package elfeed
-    :defer
-    :config 
-    (defun my/elfeed/visual ()
-    (interactive)
-        (set-face-attribute 'variable-pitch (selected-frame) :font (font-spec :family my/ui/varfont :size 13))
-      (setq visual-fill-column-width 110
-            visual-fill-column-center-text t
-            fill-column 90)
-      (visual-fill-column-mode 1)
-      (visual-line-mode 1))
-  :hook (elfeed-show-mode  . my/elfeed/visual))
+  (defun my/elfeed/visit-entry-dwim (&optional arg)
+  (interactive "P")
+  (if arg
+      (elfeed-search-browse-url)
+    (-let [entry (if (eq major-mode 'elfeed-show-mode) elfeed-show-entry (elfeed-search-selected :single))]
+      (if (s-matches? (rx "https://www.youtube.com/watch" (1+ any))
+                      (elfeed-entry-link entry))
+          (let* ((quality (completing-read "Max height resolution (0 for unlimited): " '("0" "480" "720" "1080")))
+                 (format (if (= 0 (string-to-number quality)) "" (format "--ytdl-format=[height<=?%s]" quality))))
+            (message "Opening %s with height ≤ %s with mpv..."
+                     (elfeed-entry-link entry) quality)
+            (elfeed-untag entry 'unread)
+            (start-process "elfeed-mpv" nil "mpv" format (elfeed-entry-link entry))
+            (elfeed-search-update :force))
+        (if (eq major-mode 'elfeed-search-mode)
+            (elfeed-search-browse-url)
+          (elfeed-show-visit))))))
+#+end_src
+
+I wrote that, neat isn't it? :P
+#+begin_src emacs-lisp
+    (defun my/elfeed/toggle-read ()
+      (interactive)
+      (elfeed-search-set-filter      (if (s-contains? "+unread" elfeed-search-filter)
+                                     (s-replace-regexp " ?\\+unread" "" elfeed-search-filter)
+                                     (concat elfeed-search-filter " +unread"))))
+#+end_src
+
+** Visual and binds
+#+begin_src emacs-lisp
+  (use-package elfeed
+      :defer t
+      :config 
+      ;; (defun my/elfeed/visual ()
+      ;; (interactive)
+      ;;     (set-face-attribute 'variable-pitch (selected-frame) :font (font-spec :family my/ui/varfont :size 13))
+      ;;   (setq visual-fill-column-width 110
+      ;;         visual-fill-column-center-text t
+      ;;         fill-column 90)
+      ;;   (visual-fill-column-mode 1)
+      ;;   (visual-line-mode 1))
+
+      (evil-define-key 'normal elfeed-search-mode-map
+           "O" 'my/elfeed/visit-entry-dwim
+           "tr" 'my/elfeed/toggle-read)
+
+    :hook ;(elfeed-show-mode  . my/elfeed/visual)
+          (elfeed-show-mode  . olivetti-mode))
 
 #+end_src
 
