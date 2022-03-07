@@ -1963,11 +1963,12 @@ From: https://old.reddit.com/r/emacs/comments/hbdlv8/elfeed_mpv_youtube/fv9yhb2/
 
 I wrote that, neat isn't it? :P
 #+begin_src emacs-lisp
-    (defun my/elfeed/toggle-read ()
-      (interactive)
-      (elfeed-search-set-filter      (if (s-contains? "+unread" elfeed-search-filter)
-                                     (s-replace-regexp " ?\\+unread" "" elfeed-search-filter)
-                                     (concat elfeed-search-filter " +unread"))))
+  (defun my/elfeed/toggle-read ()
+    (interactive)
+    (elfeed-search-set-filter
+     (if (s-contains? "+unread" elfeed-search-filter)
+         (s-replace-regexp " ?\\+unread" "" elfeed-search-filter)
+      (concat elfeed-search-filter " +unread"))))
 #+end_src
 
 ** Visual and binds
