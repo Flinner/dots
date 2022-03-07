@@ -2186,7 +2186,8 @@ or don't include in git source :)
           (telega-chat-mode . my/telega/company-backends)
     ;; installed telegram-tdlib from AUR
     :custom (telega-server-libs-prefix "/usr")
-            (telega-chat-bidi-display-reordering 'right-to-left))
+            (telega-chat-bidi-display-reordering 'right-to-left)
+            (telega-emoji-use-images nil))
 
 #+end_src
 
@@ -2226,3 +2227,4 @@ or don't include in git source :)
     (setq dashboard-set-init-info t)
     (setq dashboard-projects-switch-function 'counsel-projectile-switch-project-by-name))
 #+end_src
+
