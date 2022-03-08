@@ -403,7 +403,7 @@ Capture
   "om" '(mu4e :which-key "mu4e")
   "ot" '(telega :which-key "Telega")
 
-  "oe" '(elfeed-dashboard :which-key "Bookmark set")
+  "oe" '(elfeed-dashboard :which-key "Elfeed Dashboard")
 #+end_src
 
 **** Insert (i)
