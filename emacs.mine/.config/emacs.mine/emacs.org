@@ -1939,6 +1939,7 @@ ivy bibtex
   :hook (elfeed-dashboard-mode . (lambda () (variable-pitch-mode -1))))
 
 #+end_src
+
 ** Helper Functions
 From: https://old.reddit.com/r/emacs/comments/hbdlv8/elfeed_mpv_youtube/fv9yhb2/
 #+begin_src emacs-lisp
@@ -1963,12 +1964,19 @@ From: https://old.reddit.com/r/emacs/comments/hbdlv8/elfeed_mpv_youtube/fv9yhb2/
 
 I wrote that, neat isn't it? :P
 #+begin_src emacs-lisp
-  (defun my/elfeed/toggle-read ()
+  (defun my/elfeed/toggle-search-tag (tag)
     (interactive)
-    (elfeed-search-set-filter
-     (if (s-contains? "+unread" elfeed-search-filter)
-         (s-replace-regexp " ?\\+unread" "" elfeed-search-filter)
-      (concat elfeed-search-filter " +unread"))))
+     ;example: tag = "unread"
+      (elfeed-search-set-filter
+       ;s-contains matches agains "+unread"; i.e (concat "+" tag) => "+unread"
+       (if (s-contains? (concat "+" tag) elfeed-search-filter)
+       ;regex will be " ?\\+unread"
+           (s-replace-regexp (concat " ?\\+" tag) "" elfeed-search-filter)
+       ;concat will be " +unread"
+           (concat elfeed-search-filter (concat " +" tag)))))
+
+  (defun my/elfeed/toggle-search-unread () (interactive) (my/elfeed/toggle-search-tag  "unread" ))
+  (defun my/elfeed/toggle-search-to_read () (interactive) (my/elfeed/toggle-search-tag "to_read"))
 #+end_src
 
 ** Visual and binds
@@ -1987,7 +1995,9 @@ I wrote that, neat isn't it? :P
 
       (evil-define-key 'normal elfeed-search-mode-map
            "O" 'my/elfeed/visit-entry-dwim
-           "tr" 'my/elfeed/toggle-read)
+           ;"tr" 'my/elfeed/toggle-read
+           "tr" 'my/elfeed/toggle-search-unread
+           "tt" 'my/elfeed/toggle-search-to_read)
 
     :hook ;(elfeed-show-mode  . my/elfeed/visual)
           (elfeed-show-mode  . olivetti-mode))
