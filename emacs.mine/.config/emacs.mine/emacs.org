@@ -294,6 +294,10 @@ Edit: honestly I have no clue wtf that meant, or why I wrote it, but I will keep
   (defun my/keybind/config ()
     (interactive)
     (counsel-find-file "emacs" "~/.config/"))
+
+  (defun my/keybind/capture-inbox ()
+    (interactive)
+    (org-capture  nil "gi"))
 #+end_src
 
 ***  leader-keys
@@ -354,7 +358,7 @@ Edit: honestly I have no clue wtf that meant, or why I wrote it, but I will keep
   "fD" '(dired-jump :which-key "dired current")
 #+end_src
 
-**** Roam and Org (r/C)
+**** Roam and Org, Capture, Inbox(r/C/I)
 #+begin_src emacs-lisp
   "r"  '(:ignore t :which-key "Roam+Org")
   
@@ -397,7 +401,8 @@ Edit: honestly I have no clue wtf that meant, or why I wrote it, but I will keep
 #+end_src
 Capture
 #+begin_src emacs-lisp
-  "C"  '(org-capture :which-key "Org-Capture")
+      "C"  '(org-capture :which-key "Org-Capture")
+      "I"  '(my/keybind/capture-inbox :which-key "Capture Inbox")
 #+end_src
 
 **** Open (o)
@@ -815,11 +820,12 @@ dep for =org-books=
 #+begin_src emacs-lisp
   (setq org-directory "~/Documents/gtd/"
     org-roam-directory "~/Documents/roam/"
-    org-agenda-files (list org-directory (concat org-roam-directory "life.org"))
+    org-agenda-files (list org-directory)
     rmh-elfeed-org-files (list "~/Documents/private.el/elfeed.org")
     elfeed-dashboard-file "~/Documents/private.el/elfeed-dashboard.org"
     org-preview-latex-image-directory  "~/.cache/ltx/ltximg"
     org-my-anki-file (concat org-roam-directory "anki.org")
+    org-refile-targets (list (concat org-directory "tasks.org"))
   )
 #+end_src
 
@@ -903,6 +909,7 @@ Templates
 #+end_src
 
 *** COMMENT Visual Fill (center)
+I know use olivetti mode, this code block is ignored!
 #+begin_src emacs-lisp :tangle no
   (defun my/org-mode/org-mode-visual-fill ()
   (interactive)
@@ -980,7 +987,7 @@ Allow fast code insertion
 #+begin_src emacs-lisp
   (setq org-capture-templates
    (doct `(("Consume: Read/watch" :keys "c"
-            :file ,(concat org-directory "todo.org")
+            :file ,(concat org-directory "inbox.org")
             :prepend t
             :template ("* %{todo-state} %^{Description}"
                        ":PROPERTIES:"
@@ -994,7 +1001,7 @@ Allow fast code insertion
                           :headline "Watch"
                           :todo-state "TODO")))
            ("Ideas" :keys "i"
-            :file ,(concat org-directory "todo.org")
+            :file ,(concat org-directory "inbox.org")
             :prepend t
             :template ("* %{todo-state} %^{Description}"
                        ":PROPERTIES:"
@@ -1010,17 +1017,17 @@ Allow fast code insertion
                        ("placeholder" :keys "w"
                           :headline "Watch"
                           :todo-state "TODO")))
-           ("GTD" :keys "t"
-            :file ,(concat org-directory "todo.org")
+           ("GTD" :keys "g"
+            :file ,(concat org-directory "inbox.org")
             :prepend t
             :template ("* %{todo-state} %^{Description}"
                        ":PROPERTIES:"
                        ":Created: %U"
                        ":END:"
                        "%?")
-            :children (("distraction"   :keys "d"
-                        :headline "Distraction"
-                        :todo-state "TODO")
+            :children (("Inbox"   :keys "i"
+                        :headline "Inbox"
+                        :todo-state "")
                        ("placeholder" :keys "w"
                           :headline "Watch"
                           :todo-state "TODO"))))))
@@ -1043,13 +1050,11 @@ From: https://yiufung.net/post/anki-org/
       (delete-other-windows)) 
 #+end_src
 
-
 ** Agenda
 *** T/ODOs
 #+begin_src emacs-lisp
    (setq org-todo-keywords '((sequence "TODO(t)" "|" "DONE(d)")
                             (sequence "BACKLOG(b)" "STARTED(s)" "WAITING(w)" "|")
-                            (sequence "CLASS(l)" "|" "FUN(f)" )
                             (sequence "|" "CANCELED(c)")))
 #+end_src
 
@@ -1210,11 +1215,12 @@ From: https://yiufung.net/post/anki-org/
   
 #+end_src
 
-** org-download
+** org-download and clip-link
 #+begin_src emacs-lisp
     (use-package org-download
-        :after org
-  )
+        :after org)
+    (use-package org-cliplink
+        :after org)
 #+end_src
 
 ** org-book
