@@ -186,6 +186,15 @@ Actuall Theme:
     (doom-themes-org-config))
 #+end_src
 
+Transperancy!
+#+begin_src emacs-lisp
+  ;; for the first frame
+  (set-frame-parameter nil 'alpha-background 0.9)
+  ;; for other frames
+  (add-hook 'server-after-make-frame-hook
+      (lambda nil  (set-frame-parameter nil 'alpha-background 0.9)))
+#+end_src
+
 #+begin_src emacs-lisp
   (use-package olivetti
     :diminish
