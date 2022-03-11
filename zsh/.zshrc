@@ -69,6 +69,7 @@ zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 
 
 setopt HIST_IGNORE_ALL_DUPS  # do not put duplicated command into history list
+setopt HIST_IGNORE_SPACE # Remove commands from history when the first character is a space
 setopt HIST_SAVE_NO_DUPS  # do not save duplicated command
 setopt HIST_REDUCE_BLANKS  # remove unnecessary blanks
 setopt INC_APPEND_HISTORY_TIME  # append command to history file immediately after execution
