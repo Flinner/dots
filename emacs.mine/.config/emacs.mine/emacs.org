@@ -413,6 +413,7 @@ Capture
   ;"ot" '(vterm-other-window :which-key "Vterm in other window")
   "ob" '(bookmark-jump :which-key "Bookmark Jump")
   "oB" '(bookmark-set :which-key "Bookmark set")
+  "op" '(list-processes :which-key "List Proccess")
 
   "om" '(mu4e :which-key "mu4e")
   "ot" '(telega :which-key "Telega")
@@ -1474,6 +1475,7 @@ Auto format
     ;; comment to disable rustfmt on save
     (setq rustic-format-on-save t)
     (add-hook 'rustic-mode-hook 'my/dev/rustic-mode-hook)
+    ;; (add-hook 'rustic-mode-hook 'electric-pair-mode)
     ;; (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
     ;; (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
     (add-hook 'rustic-mode-hook 'lsp)
@@ -1932,6 +1934,12 @@ ivy bibtex
                             `([,(cdr char-regexp) 0 font-shape-gstring]))))
 #+end_src
 
+** Typing break
+take breaks every hour!
+#+begin_src emacs-lisp
+  (setq type-break-mode 't)
+#+end_src
+
 * Elfeed org
  =;; (setq rmh-elfeed-org-files (list "~/Documents/private.el/elfeed.org"))=
 ** Elfeed-org
@@ -2257,4 +2265,5 @@ or don't include in git source :)
     (setq dashboard-set-init-info t)
     (setq dashboard-projects-switch-function 'counsel-projectile-switch-project-by-name))
 #+end_src
+
 
