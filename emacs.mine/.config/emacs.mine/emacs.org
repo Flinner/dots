@@ -664,6 +664,17 @@ Capture
   (evil-snipe-mode +1))
 #+end_src
 
+*** Evil numbers
+#+begin_src emacs-lisp
+  (use-package evil-numbers
+  :config
+    (evil-define-key '(normal visual) 'global (kbd "C-c +") 'evil-numbers/inc-at-pt)
+    (evil-define-key '(normal visual) 'global (kbd "C-c -") 'evil-numbers/dec-at-pt)
+    (evil-define-key '(normal visual) 'global (kbd "C-c C-+") 'evil-numbers/inc-at-pt-incremental)
+    (evil-define-key '(normal visual) 'global (kbd "C-c C--") 'evil-numbers/dec-at-pt-incremental)
+  )
+#+end_src
+
 * Completions
 ** ivy
 #+begin_src emacs-lisp
@@ -672,7 +683,7 @@ Capture
     :diminish
     :bind (("C-s" . swiper); TODO: move to Keybinds
            :map ivy-minibuffer-map
-           ("TAB" . ivy-alt-done)	
+           ("TAB" . ivy-alt-done)
            ("C-l" . ivy-alt-done)
            ("C-j" . ivy-next-line)
            ("C-k" . ivy-previous-line)
@@ -734,7 +745,7 @@ slow loading! defer it
   :config
   (which-key-mode)
   (setq which-key-idle-delay 1
-	which-key-max-display-columns 5))
+   which-key-max-display-columns 5))
 #+end_src
 
 ** Company Mode
@@ -827,7 +838,7 @@ dep for =org-books=
     elfeed-dashboard-file "~/Documents/private.el/elfeed-dashboard.org"
     org-preview-latex-image-directory  "~/.cache/ltx/ltximg"
     org-my-anki-file (concat org-roam-directory "anki.org")
-    org-refile-targets (list (concat org-directory "tasks.org"))
+    org-refile-targets '((org-agenda-files . (:level . 1)))
   )
 #+end_src
 
@@ -1316,7 +1327,7 @@ Counsel Projectile
 
 *** lsp performance
 #+begin_src emacs-lisp :tangle no
-  (setq gc-cons-threshold 100000000)	     ;; 100 mb
+  (setq gc-cons-threshold 100000000)           ;; 100 mb
   (setq read-process-output-max (* 1024 4024)) ;; 4mb
 #+end_src
 
@@ -1948,12 +1959,6 @@ ivy bibtex
     (dolist (char-regexp ligatures)
       (set-char-table-range composition-function-table (car char-regexp)
                             `([,(cdr char-regexp) 0 font-shape-gstring]))))
-#+end_src
-
-** Typing break
-take breaks every hour!
-#+begin_src emacs-lisp
-  (setq type-break-mode 't)
 #+end_src
 
 * Elfeed org
