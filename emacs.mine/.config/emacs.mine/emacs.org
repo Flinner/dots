@@ -275,6 +275,7 @@ Single Esc to Quit, instead of *three*
 ** Function keys
 #+begin_src emacs-lisp
   (global-set-key (kbd "M-<f8>") '(lambda () (interactive) (org-agenda  nil "a")))
+  (global-set-key (kbd "<f8>"  ) '(lambda () (interactive) (org-agenda  nil "a")))
   (global-set-key (kbd "M-<f6>") 'elfeed-dashboard)
 #+end_src
 
@@ -432,11 +433,11 @@ Capture
   "b"  '(:ignore t :which-key "buffers")
 
   "bs" '(save-buffer :which-key "Save Buffer")
-  "bk" '(kill-this-buffer :which-key "Kill Buffer")
+  "bk" '(kill-current-buffer :which-key "Kill Buffer")
   "bl" '(evil-switch-to-windows-last-buffer :which-key "Last Buffer")
   "bi" '(ibuffer :which-key "Ibuffer")
-  "br" '(revert-buffer :which-key "Ibuffer")
-  "bb" '(switch-to-buffer :which-key "Ibuffer")
+  "br" '(revert-buffer :which-key "Revert Buffer")
+  "bb" '(switch-to-buffer :which-key "Switch to buffer")
 #+end_src
 
 **** Windows (w)
@@ -841,43 +842,44 @@ Modes To Start
 #+end_src
 use-package
 #+begin_src emacs-lisp
-  (use-package org
-    :defer t
-    :hook (org-mode . my/org-mode/org-mode-setup)
-    (org-mode . my/org-mode/load-prettify-symbols); symbols
-    (org-mode . auto-fill-mode)
-    :config
-    (require 'org-tempo)
-    (require 'org-habit)
-    (setq geiser-default-implementation  'guile)
-    (setq org-ellipsis " ⤵")
-    (setq org-agenda-start-with-log-mode t)
-    (setq org-highlight-latex-and-related '(latex))
-    (setq org-log-done 'time)
-    (setq org-log-into-drawer t)
-    (dolist (face '((org-document-title . 2.0)
-                    (org-level-1 . 1.2)
-                    (org-level-2 . 1.1)
-                    (org-level-3 . 1.05)
-                    (org-level-4 . 1.0)
-                    (org-level-5 . 1.1)
-                    (org-level-6 . 1.1)
-                    (org-level-7 . 1.1)
-                    (org-level-8 . 1.1)))
-      ;; (set-face-attribute (car face) nil :font my/ui/varfont :weight 'regular :height (cdr face)))
-      (set-face-attribute (car face) nil :font my/ui/varfont :weight 'regular :height (cdr face)))
-  ;)
+    (use-package org
+      :defer t
+      :hook (org-mode . my/org-mode/org-mode-setup)
+      (org-mode . my/org-mode/load-prettify-symbols); symbols
+      (org-mode . auto-fill-mode)
+      :config
+      (require 'org-tempo)
+      (require 'org-habit)
+      (setq geiser-default-implementation  'guile)
+      (setq org-ellipsis " ⤵")
+      (setq org-agenda-start-with-log-mode t)
+      (setq org-highlight-latex-and-related '(latex))
+      (setq org-log-done 'time)
+      (setq org-log-into-drawer t)
+      (dolist (face '((org-document-title . 2.0)
+                      (org-level-1 . 1.2)
+                      (org-level-2 . 1.1)
+                      (org-level-3 . 1.05)
+                      (org-level-4 . 1.0)
+                      (org-level-5 . 1.1)
+                      (org-level-6 . 1.1)
+                      (org-level-7 . 1.1)
+                      (org-level-8 . 1.1)))
+        ;; (set-face-attribute (car face) nil :font my/ui/varfont :weight 'regular :height (cdr face)))
+        (set-face-attribute (car face) nil :font my/ui/varfont :weight 'regular :height (cdr face)))
+    ;)
 
 
-  (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
-    ;; Ensure that anything that should be fixed-pitch in Org files appears that way
-    (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
-    (set-face-attribute 'org-code nil   :inherit '(shadow fixed-pitch))
-    (set-face-attribute 'org-table nil   :inherit '(shadow fixed-pitch))
-    (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
-    (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
-    (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
-    (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch))
+    (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
+      ;; Ensure that anything that should be fixed-pitch in Org files appears that way
+      (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
+      (set-face-attribute 'org-code nil   :inherit '(shadow fixed-pitch))
+      (set-face-attribute 'org-table nil   :inherit '(shadow fixed-pitch))
+      (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
+      (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
+      (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
+      (set-face-attribute 'org-todo nil :background "#444527" )
+      (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch))
 #+end_src
 
 Templates
@@ -1055,7 +1057,6 @@ From: https://yiufung.net/post/anki-org/
 *** T/ODOs
 #+begin_src emacs-lisp
    (setq org-todo-keywords '((sequence "TODO(t)" "|" "DONE(d)")
-                            (sequence "BACKLOG(b)" "STARTED(s)" "WAITING(w)" "|")
                             (sequence "|" "CANCELED(c)")))
 #+end_src
 
@@ -1072,61 +1073,76 @@ From: https://yiufung.net/post/anki-org/
       (evil-set-initial-state 'org-agenda-mode 'normal)
       (evil-define-key 'normal org-agenda-mode-map
         (kbd "<RET>") 'org-agenda-goto
-        ;; (kbd "\t") 'org-agenda-goto
-  
+        ;;;; (kbd "\t") 'org-agenda-goto
+
         "q" 'org-agenda-quit
         "r" 'org-agenda-redo
         "S" 'org-save-all-org-buffers
+
+        ;;;; Clocking
+        "c" nil
+        "ci" 'org-agenda-clock-in
+        "co" 'org-agenda-clock-out
+        "cx" 'org-agenda-clock-cancel
+        "cR" 'org-agenda-clockreport-mode
+
+        ;;;; Properties
+        "s" 'org-agenda-schedule
+        "d" 'org-agenda-deadline
+        "p" 'org-agenda-priority
+        "t" 'org-agenda-todo
+        ":" 'org-agenda-set-tags
+        "e" 'org-agenda-set-effort
+
+        ;;;; Movement
+        "j"  'org-agenda-next-line
+        "k"  'org-agenda-previous-line
+        "f" 'org-agenda-later
+        "b" 'org-agenda-earlier
+        "J" 'org-agenda-next-date-line
+        "K" 'org-agenda-previous-date-line
+        "." 'org-agenda-goto-today
+
+        ;;;; View toggles
+        "vt" 'org-agenda-toggle-time-grid
+        "vw" 'org-agenda-week-view
+        "vd" 'org-agenda-day-view
+        "vl" 'org-agenda-log-mode
+        "F" 'org-agenda-follow-mode
+
+        ;;;; Other
+        "C" 'org-capture
+        "g/" 'org-agenda-filter-by-tag
+
+        ;;;; cool but inactive
         ;; "gj" 'org-agenda-goto-date
         ;; "gJ" 'org-agenda-clock-goto
         ;; "gm" 'org-agenda-bulk-mark
         ;; "go" 'org-agenda-open-link
-        "s" 'org-agenda-schedule
         ;; "+" 'org-agenda-priority-up
-        "p" 'org-agenda-priority
         ;; "-" 'org-agenda-priority-down
         ;; "y" 'org-agenda-todo-yesterday
         ;; "n" 'org-agenda-add-note
-        "t" 'org-agenda-todo
-        ":" 'org-agenda-set-tags
         ;; ";" 'org-timer-set-timer
         ;; "I" 'helm-org-task-file-headings
         ;; "i" 'org-agenda-clock-in-avy
         ;; "O" 'org-agenda-clock-out-avy
         ;; "u" 'org-agenda-bulk-unmark
         ;; "x" 'org-agenda-exit
-        "j"  'org-agenda-next-line
-        "k"  'org-agenda-previous-line
-        "vt" 'org-agenda-toggle-time-grid
         ;; "va" 'org-agenda-archives-mode
-        "vw" 'org-agenda-week-view
-        "vd" 'org-agenda-day-view
-        ;; "vl" 'org-agenda-log-mode
-        ;; "vc" 'org-agenda-show-clocking-issues
-        "g/" 'org-agenda-filter-by-tag
+        ;;"vc" 'org-agenda-show-clocking-issues
         ;; "o" 'delete-other-windows
         ;; "gh" 'org-agenda-holiday
         ;; "gv" 'org-agenda-view-mode-dispatch
-        "f" 'org-agenda-later
-        "b" 'org-agenda-earlier
-        "c" 'org-capture
-        "e" 'org-agenda-set-effort
         "n" nil  ; evil-search-next
         ;; "{" 'org-agenda-manipulate-query-add-re
         ;; "}" 'org-agenda-manipulate-query-subtract-re
         ;; "A" 'org-agenda-toggle-archive-tag
-        "." 'org-agenda-goto-today
         ;; "0" 'evil-digit-argument-or-evil-beginning-of-line
         ;; "<" 'org-agenda-filter-by-category
         ;; ">" 'org-agenda-date-prompt
-        "F" 'org-agenda-follow-mode
-        "d" 'org-agenda-deadline
         ;; "H" 'org-agenda-holidays
-        "J" 'org-agenda-next-date-line
-        "K" 'org-agenda-previous-date-line
         ;; "L" 'org-agenda-recenter
-        "P" 'org-agenda-show-priority
-        ;; "R" 'org-agenda-clockreport-mode
         ;; "Z" 'org-agenda-sunrise-sunset
         ;; "T" 'org-agenda-show-tags
         ;; "X" 'org-agenda-clock-cancel
