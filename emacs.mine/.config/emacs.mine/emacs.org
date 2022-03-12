@@ -2207,6 +2207,15 @@ I wrote that, neat isn't it? :P
 
 #+end_src
 
+** Send email
+#+begin_src emacs-lisp
+(setq sendmail-program "/usr/bin/msmtp"
+      message-sendmail-f-is-evil t
+      message-sendmail-extra-arguments '("--read-envelope-from")
+      send-mail-function 'smtpmail-send-it
+      message-send-mail-function 'message-send-mail-with-sendmail)
+#+end_src
+
 ** Email List here!
 #+begin_src emacs-lisp :tangle no
   (setq mu4e-contexts `(
