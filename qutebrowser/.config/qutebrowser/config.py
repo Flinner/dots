@@ -878,7 +878,7 @@ c.content.cookies.store = True
 ## QtWebEngine, writing the clipboard as response to a user interaction
 ## is always allowed.
 ## Type: Bool
-# c.content.javascript.can_access_clipboard = False
+c.content.javascript.can_access_clipboard = True
 
 ## Allow JavaScript to close tabs.
 ## Type: Bool
@@ -1914,7 +1914,7 @@ c.content.javascript.enabled = False
 ##   - never: Always hide the tab bar.
 ##   - multiple: Hide the tab bar if only one tab is open.
 ##   - switching: Show the tab bar when switching tabs.
-# c.tabs.show = 'always'
+c.tabs.show = 'multiple'
 
 ## Duration (in milliseconds) to show the tab bar before hiding it when
 ## tabs.show is set to 'switching'.
@@ -2021,8 +2021,10 @@ c.content.javascript.enabled = False
 ## the search engine name to the search term, e.g. `:open google
 ## qutebrowser`.
 ## Type: Dict
-c.url.searchengines = {'DEFAULT': 'https://duckduckgo.com/?q={}',
-                        'wa':"https://wiki.archlinux.org/?search={}", 
+c.url.searchengines = {'DEFAULT': 'https://searx.neocities.org/?q={}',
+                        'wa':"https://wiki.archlinux.org/?search={}",
+                        'go':"http://google.com/search?q={}",
+                        'ddg':"https://duckduckgo.com/?q={}",
                        }
 
 ## Page(s) to open at the start.
@@ -2050,7 +2052,7 @@ c.url.searchengines = {'DEFAULT': 'https://duckduckgo.com/?q={}',
 ## that main window transparency negatively affects performance.  Note
 ## this setting only affects windows opened after setting it.
 ## Type: Bool
-# c.window.transparent = False
+c.window.transparent = True
 
 ## Default zoom level.
 ## Type: Perc
@@ -2260,6 +2262,8 @@ config.bind('ey', 'yank inline [[{url}][{title}]]')
 # config.bind('yy', 'yank')
 # config.bind('{{', 'navigate prev -t')
 # config.bind('}}', 'navigate next -t')
+config.bind(';m', 'hint links spawn mpv {hint-url}')
+config.bind(';M', 'spawn mpv {url}')
 
 ## Bindings for caret mode
 # config.bind('$', 'move-to-end-of-line', mode='caret')
