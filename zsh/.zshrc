@@ -2,16 +2,25 @@
  # INIT #
  ########
 #===============================================================================================
+declare -A ZINIT
+# zinit, don't pollute my home!
+ZINIT[BIN_DIR]="$HOME/.local/share/zinit/zinit.git"
+ZINIT[HOME_DIR]="$HOME/.local/share/zinit"
+ZINIT[MAN_DIR]="$HOME/.local/share/zinit/man"
+ZINIT[ZCOMPDUMP_PATH]="$HOME/.cache/zinit/.zcompdump"
+
+ZDOTDIR="$HOME/.cache/zsh/"
+
 ### Added by Zinit's installer
-if [[ ! -f $HOME/.zinit/bin/zinit.zsh ]]; then
+if [[ ! -f "${ZINIT[BIN_DIR]}/zinit.zsh" ]]; then
     print -P "%F{33}▓▒░ %F{220}Installing %F{33}DHARMA%F{220} Initiative Plugin Manager (%F{33}zdharma/zinit%F{220})…%f"
-    command mkdir -p "$HOME/.zinit" && command chmod g-rwX "$HOME/.zinit"
-    command git clone https://github.com/zdharma-continuum/zinit "$HOME/.zinit/bin" && \
+    command mkdir -p $ZINIT[HOME_DIR] && command chmod g-rwX $ZINIT[HOME_DIR]
+    command git clone https://github.com/zdharma-continuum/zinit $ZINIT[BIN_DIR] && \
         print -P "%F{33}▓▒░ %F{34}Installation successful.%f%b" || \
         print -P "%F{160}▓▒░ The clone has failed.%f%b"
 fi
 
-source "$HOME/.zinit/bin/zinit.zsh"
+source "${ZINIT[BIN_DIR]}/zinit.zsh"
 autoload -Uz _zinit
 (( ${+_comps} )) && _comps[zinit]=_zinit
 
@@ -74,6 +83,11 @@ setopt HIST_SAVE_NO_DUPS  # do not save duplicated command
 setopt HIST_REDUCE_BLANKS  # remove unnecessary blanks
 setopt INC_APPEND_HISTORY_TIME  # append command to history file immediately after execution
 setopt EXTENDED_HISTORY  # record command start time
+setopt CORRECT           # Correct spelling of commands
+setopt CORRECT_ALL       # Correct spelling of arguments
+SAVEHIST=1000
+HISTSIZE=1000
+HISTFILE="$HOME/.local/share/zsh/zsh_history"
 #===============================================================================================
 
 ############
@@ -117,11 +131,6 @@ select-word-style bash
 
 
 
-SAVEHIST=1000
-HISTSIZE=1000
-HISTFILE=~/.zsh_history
-setopt CORRECT
-setopt CORRECT_ALL
 #zle -N zle-line-init
 #zle -N zle-line-finish
 #zle -N zle-keymap-select
@@ -214,8 +223,6 @@ export YARN_PATH="$HOME/.yarn/bin"
 
 export PATH="$DOOM_PATH:$HOME/.local/bin:$HOME/bin:$CARGO_HOME/bin:$YARN_PATH:$GOPATH:$PATH"
 
-export PATH="$HOME/.rbenv/bin:$PATH"
-
 
 # colored GCC warnings and errors
 export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
@@ -269,8 +276,6 @@ RPS1=" "
 #zplugin ice wait'!0' lucid pick"async.zsh" src"pure.zsh"; zplugin light sindresorhus/pure
 eval "$(starship init zsh)"
 [ -f "/home/user/.ghcup/env" ] && source "/home/user/.ghcup/env" # ghcup-env
-
-# eval "$(rbenv init - zsh)"
 
 #~/bin/dennis
 #cutefetch 2> /dev/null

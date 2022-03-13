@@ -2023,7 +2023,7 @@ I wrote that, neat isn't it? :P
   (defun my/elfeed/toggle-search-to_read () (interactive) (my/elfeed/toggle-search-tag "to_read"))
 #+end_src
 
-** Visual and binds
+** Visual, binds, directory
 #+begin_src emacs-lisp
   (use-package elfeed
       :defer t
@@ -2042,7 +2042,8 @@ I wrote that, neat isn't it? :P
            ;"tr" 'my/elfeed/toggle-read
            "tr" 'my/elfeed/toggle-search-unread
            "tt" 'my/elfeed/toggle-search-to_read)
-
+    :custom
+    (elfeed-db-directory  "~/.local/share/elfeed")
     :hook ;(elfeed-show-mode  . my/elfeed/visual)
           (elfeed-show-mode  . olivetti-mode))
 
