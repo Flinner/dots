@@ -1738,13 +1738,13 @@ AucTex
                 ("C-c C-e" . cdlatex-environment))
 
     :hook
-    ;; (LaTeX-mode . olivetti-mode)
-    ;; (LaTeX-mode . TeX-PDF-mode)
-    ;; (LaTeX-mode . company-mode)
-    ;; (LaTeX-mode . flyspell-mode)
-    ;; (LaTeX-mode . xenops-mode)
-    ;; (LaTeX-mode . flycheck-mode)
+    ;; (LaTeX-mode . olivetti-mode);; already set as a text-mode-hook
+    ;; (LaTeX-mode . TeX-PDF-mode) ;; what does it do?
+    ;; (LaTeX-mode . company-mode) ;; already enabled globaly
+    ;; (LaTeX-mode . xenops-mode)  ;; svgs too lagy :(
+    ;; (LaTeX-mode . flycheck-mode);; already enabled with lsp
     ;; (LaTeX-mode . LaTeX-math-mode)
+    (LaTeX-mode . flyspell-mode)
     (LaTeX-mode . turn-on-reftex)
     (LaTeX-mode . TeX-source-correlate-mode)
     (LaTeX-mode . try/latex-mode-setup)
@@ -1757,6 +1757,9 @@ AucTex
     (setq-default TeX-master nil)
     (setq-default TeX-command-default "LatexMK")
     (setq TeX-save-query nil)
+
+    ;; this is becuase i set $out_dir = '/tmp/tex' in `.latexmkrc`
+    (setq-default TeX-output-dir "/tmp/tex")
 
     (setq reftex-plug-into-AUCTeX t)
 
