@@ -7,7 +7,8 @@ pgrep -x sxhkd > /dev/null || sxhkd &
 pgrep ~/bin/wm/bspswallow || ~/bin/wm/bspswallow &
 
 
-bspc monitor -d I II III IV V VI VII
+# not sure if I can count using Roman Numerals :)
+bspc monitor -d I II III IV V VI VII VIII IX X
 
 #bspc config ignore_ewmh_fullscreen all
 bspc config ignore_ewmh_focus true
@@ -28,9 +29,9 @@ bspc config pointer_follows_focus true
 
 # bspc rule -a Gimp desktop='^8' state=floating follow=on 
 #bspc rule -a Chromium desktop='^1' 
-bspc rule -a Thunderbird desktop='^6' 
-bspc rule -a Dino desktop='^6' 
-bspc rule -a KeePassXC desktop='^6' 
+bspc rule -a Thunderbird desktop='^8' 
+bspc rule -a Dino desktop='^8' 
+bspc rule -a KeePassXC desktop='^8' 
 bspc rule -a Peek state=floating 
 bspc rule -a Connman-gtk state=floating 
 bspc rule -a mplayer2 state=floating 
