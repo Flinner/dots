@@ -2165,7 +2165,7 @@ I wrote that, neat isn't it? :P
 
 #+end_src
 
-* Email 
+* Email (mu4e)
 ** Contexts
 #+begin_src emacs-lisp
   ;; assumed Maildir layout
@@ -2233,7 +2233,7 @@ I wrote that, neat isn't it? :P
 
 #+end_src
 
-** Send email
+** Send email (msmtp)
 #+begin_src emacs-lisp
 (setq sendmail-program "/usr/bin/msmtp"
       message-sendmail-f-is-evil t
@@ -2244,6 +2244,9 @@ I wrote that, neat isn't it? :P
 
 ** Email List here!
 #+begin_src emacs-lisp :tangle no
+  ;; This is a sample, it doesn't get included in init.el
+  ;; I put mine at location specified in the  next code block
+  ;; any number of email can be used ofc
   (setq mu4e-contexts `(
     ,(my-make-mu4e-context
             "maildir-context" "Full Name"
@@ -2258,6 +2261,35 @@ or don't include in git source :)
 #+begin_src emacs-lisp
 (eval-after-load 'mu4e
   (load "~/Documents/passwords/mu4e-context.el"))
+#+end_src
+
+** Other fixes
+
+see: [[https://github.com/djcb/mu/issues/1136][djcb/mu#1136 Shouldn't set flag T after moving to trash]]. Deleting
+should only move to trash, not delete entirely from the server
+
+#+begin_src emacs-lisp
+(setf (alist-get 'trash mu4e-marks)
+      (list :char '("d" . "▼")
+            :prompt "dtrash"
+            :dyn-target (lambda (target msg)
+                          (mu4e-get-trash-folder msg))
+            :action (lambda (docid msg target)
+                      ;; Here's the main difference to the regular trash mark,
+                      ;; no +T before -N so the message is not marked as
+                      ;; IMAP-deleted:
+                      (mu4e--server-move docid (mu4e--mark-check-target target) "-N"))))
+
+#+end_src
+
+#+begin_src emacs-lisp
+  (setq mu4e-completing-read-function 'completing-read);; Use Helm
+  (setq message-kill-buffer-on-exit t) ;; Why would I want to leave my message open after I've sent it?
+#+end_src
+
+Breaking change betweeen =mu4e-alert= and =mu= :(
+#+begin_src emacs-lisp
+  (defvaralias 'mu4e~context-current  'mu4e--context-current)
 #+end_src
 
 * Telega
