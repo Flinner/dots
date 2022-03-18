@@ -302,6 +302,17 @@ Edit: honestly I have no clue wtf that meant, or why I wrote it, but I will keep
   (defun my/keybind/capture-inbox ()
     (interactive)
     (org-capture  nil "gi"))
+  
+  (defun my/counsel-insert-file-path ()
+    "Insert relative file path using counsel minibuffer"
+    (interactive)
+    (unless (featurep 'counsel) (require 'counsel))
+    (ivy-read "Insert filename: " 'read-file-name-internal
+                :matcher #'counsel--find-file-matcher
+                :action
+                (lambda (x)
+                (insert (file-relative-name x)))))
+
 #+end_src
 
 ***  leader-keys
@@ -429,6 +440,7 @@ Capture
 #+begin_src emacs-lisp
   "i"  '(:ignore t :which-key "Insert")
   "ie" '(emoji-insert :which-key "Emoji")
+  "if" '(my/counsel-insert-file-path :which-key "Insert Relative path")
 #+end_src
 
 **** Buffers (b)
