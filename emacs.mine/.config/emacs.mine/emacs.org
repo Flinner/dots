@@ -385,6 +385,7 @@ Edit: honestly I have no clue wtf that meant, or why I wrote it, but I will keep
   "rr" '(org-roam-db-sync :which-key "Roam Sync")
   "ri" '(org-roam-node-insert :which-key "Node  Insert")
   "rI" '(org-id-get-create :which-key "Org Id get/create")
+  "rT" '(counsel-org-tag :which-key "Org Id get/create")
   
   
   ;; Dailies
@@ -1752,19 +1753,20 @@ AucTex
                 ("C-c C-e" . cdlatex-environment))
 
     :hook
-    ;; (LaTeX-mode . olivetti-mode);; already set as a text-mode-hook
-    ;; (LaTeX-mode . TeX-PDF-mode) ;; what does it do?
-    ;; (LaTeX-mode . company-mode) ;; already enabled globaly
-    ;; (LaTeX-mode . xenops-mode)  ;; svgs too lagy :(
-    ;; (LaTeX-mode . flycheck-mode);; already enabled with lsp
-    ;; (LaTeX-mode . LaTeX-math-mode)
     (LaTeX-mode . flyspell-mode)
+    (LaTeX-mode . flycheck-mode)
     (LaTeX-mode . turn-on-reftex)
     (LaTeX-mode . TeX-source-correlate-mode)
     (LaTeX-mode . try/latex-mode-setup)
     (LaTeX-mode . turn-on-cdlatex)
+        ;; (LaTeX-mode . TeX-fold-mode)
     (LaTeX-mode . lsp)
-
+        ;; (LaTeX-mode . olivetti-mode);; already set as a text-mode-hook
+        ;; (LaTeX-mode . TeX-PDF-mode) ;; what does it do?
+        ;; (LaTeX-mode . company-mode) ;; already enabled globaly
+        ;; (LaTeX-mode . xenops-mode)  ;; svgs too lagy :(
+        ;; (LaTeX-mode . flycheck-mode);; already enabled with lsp
+        ;; (LaTeX-mode . LaTeX-math-mode)
     :config
     ;; (setq TeX-auto-save t)
     (setq TeX-parse-self t)
@@ -1773,6 +1775,7 @@ AucTex
     (setq TeX-save-query nil)
 
     ;; this is becuase i set $out_dir = '/tmp/tex' in `.latexmkrc`
+    ;; and I want to enable forward synctex. don't use it if you don't do like me...
     (setq-default TeX-output-dir "/tmp/tex")
 
     (setq reftex-plug-into-AUCTeX t)
@@ -1803,39 +1806,6 @@ AucTex
 
 Custom functions
 #+begin_src emacs-lisp
-(defun try/TeX-command-save-buffer-and-run-all ()
-    "Save the buffer and run TeX-command-run-all"
-    (interactive)
-    (let (TeX-save-query) (TeX-save-document (TeX-master-file)))
-    (TeX-command-run-all nil))
-
-;; copied ivy-bibtex and modified it to cite action
-(defun try/ivy-bibtex-cite (&optional arg local-bib)
-  "Search BibTeX entries using ivy.
-
-With a prefix ARG the cache is invalidated and the bibliography
-reread.
-
-If LOCAL-BIB is non-nil, display that the BibTeX entries are read
-from the local bibliography.  This is set internally by
-`ivy-bibtex-with-local-bibliography'."
-  (interactive "P")
-  (when arg
-    (bibtex-completion-clear-cache))
-  (bibtex-completion-init)
-  (let* ((candidates (bibtex-completion-candidates))
-          (key (bibtex-completion-key-at-point))
-          (preselect (and key
-                          (cl-position-if (lambda (cand)
-                                            (member (cons "=key=" key)
-                                                    (cdr cand)))
-                                          candidates))))
-    (ivy-read (format "Insert citation %s: " (if local-bib " (local)" ""))
-              candidates
-              :preselect preselect
-              :caller 'ivy-bibtex
-              :history 'ivy-bibtex-history
-              :action 'ivy-bibtex-insert-citation)))
 
 (defun try/latex-mode-setup ()
   (require 'company-reftex)
@@ -1844,25 +1814,13 @@ from the local bibliography.  This is set internally by
         (require 'company-math)
 (setq-local company-backends
       
-    (append '(
-                              (company-reftex-labels
-                                company-reftex-citations)
+    (append '((company-reftex-labels company-reftex-citations)
               (company-math-symbols-unicode company-math-symbols-latex company-latex-commands)
               (company-auctex-macros company-auctex-symbols company-auctex-environments)
-              company-ispell
-              )
+              company-ispell)
             company-backends)))
 
 
-(defun try/counsel-insert-file-path ()
-  "Insert relative file path using counsel minibuffer"
-  (interactive)
-  (unless (featurep 'counsel) (require 'counsel))
-  (ivy-read "Insert filename: " 'read-file-name-internal
-            :matcher #'counsel--find-file-matcher
-            :action
-            (lambda (x)
-              (insert (file-relative-name x)))))
 
 
 #+end_src
@@ -1979,6 +1937,15 @@ ivy bibtex
     (dolist (char-regexp ligatures)
       (set-char-table-range composition-function-table (car char-regexp)
                             `([,(cdr char-regexp) 0 font-shape-gstring]))))
+#+end_src
+
+** Key freq
+#+begin_src emacs-lisp
+  (use-package keyfreq
+   :defer 10
+   :custom
+      (keyfreq-mode 1)
+      (keyfreq-autosave-mode 1))
 #+end_src
 
 * Elfeed org
@@ -2294,21 +2261,24 @@ Breaking change betweeen =mu4e-alert= and =mu= :(
 
 * Telega
 #+begin_src emacs-lisp
-    (use-package telega
-    :defer t
-    :init
-        (defun my/telega/olivetti () (setq-local olivetti-body-width 80))
-        (defun my/telega/company-backends ()
-            (setq-local company-backends
-                (append '(telega-company-username telega-company-botcmd )
-                        company-backends)))
-    :hook (telega-chat-mode . olivetti-mode)
-          (telega-chat-mode . my/telega/olivetti)
-          (telega-chat-mode . my/telega/company-backends)
-    ;; installed telegram-tdlib from AUR
-    :custom (telega-server-libs-prefix "/usr")
-            (telega-chat-bidi-display-reordering 'right-to-left)
-            (telega-emoji-use-images nil))
+  (use-package telega
+  :defer t
+  :init
+      (defun my/telega/olivetti () (setq-local olivetti-body-width 80))
+      (defun my/telega/company-backends ()
+          (setq-local company-backends
+              (append '(telega-company-username telega-company-botcmd )
+                      company-backends)))
+  :hook (telega-chat-mode . olivetti-mode)
+        (telega-chat-mode . my/telega/olivetti)
+        (telega-chat-mode . my/telega/company-backends)
+  ;; installed telegram-tdlib from AUR
+  :config
+  (telega-mode-line-mode)
+  (telega-notifications-mode)
+  :custom (telega-server-libs-prefix "/usr")
+          (telega-chat-bidi-display-reordering 'right-to-left)
+          (telega-emoji-use-images nil))
 
 #+end_src
 
