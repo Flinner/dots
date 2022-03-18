@@ -1102,7 +1102,6 @@ From: https://yiufung.net/post/anki-org/
         ;;;; (kbd "\t") 'org-agenda-goto
 
         "q" 'org-agenda-quit
-        "r" 'org-agenda-redo
         "S" 'org-save-all-org-buffers
 
         ;;;; Clocking
@@ -1117,6 +1116,7 @@ From: https://yiufung.net/post/anki-org/
         "d" 'org-agenda-deadline
         "p" 'org-agenda-priority
         "t" 'org-agenda-todo
+        "T" 'counsel-org-tag
         ":" 'org-agenda-set-tags
         "e" 'org-agenda-set-effort
 
@@ -1134,10 +1134,13 @@ From: https://yiufung.net/post/anki-org/
         "vw" 'org-agenda-week-view
         "vd" 'org-agenda-day-view
         "vl" 'org-agenda-log-mode
+        "vr" 'org-agenda-redo
         "F" 'org-agenda-follow-mode
 
         ;;;; Other
         "C" 'org-capture
+        "R" 'org-agenda-refile
+        "A" 'org-agenda-archive
         "g/" 'org-agenda-filter-by-tag
 
         ;;;; cool but inactive
@@ -1163,7 +1166,6 @@ From: https://yiufung.net/post/anki-org/
         "n" nil  ; evil-search-next
         ;; "{" 'org-agenda-manipulate-query-add-re
         ;; "}" 'org-agenda-manipulate-query-subtract-re
-        ;; "A" 'org-agenda-toggle-archive-tag
         ;; "0" 'evil-digit-argument-or-evil-beginning-of-line
         ;; "<" 'org-agenda-filter-by-category
         ;; ">" 'org-agenda-date-prompt
