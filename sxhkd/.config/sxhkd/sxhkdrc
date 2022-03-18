@@ -70,9 +70,13 @@ super + g
     #tdrop -ma -w 75% -x 12% -y "$PANEL_HEIGHT"  alacritty  -o background_opacity=0.6 --command ~/bin/wm/editor-everywhere
 
 #======================== scripts and  other =====
-#Lockscreen
+# Lockscreen + lock keepassxc
 super + {Home}
   {~/bin/wm/lockscreen}
+
+# lockscreen only
+super + {End}
+  {i3lock -i "$HOME/Pictures/wall2.png" -f}
 
 #=============================
 
@@ -83,8 +87,8 @@ super + {Home}
 #================WM=============================
 
 # Show Help
-#super + slash
-	#~/bin/wm/sxhkd-help
+super + slash
+	~/bin/wm/sxhkd-help
 
 # quit/restart bspwm
 super + alt + {q,r}
