@@ -43,6 +43,7 @@ bspc rule -a Screenkey manage=off
 bspc rule -a wmpin sticky=on
 
 bspc rule -a Floating state=floating
+bspc rule -a \*:\*:org-capture state=floating
 
 ~/bin/autostart 
 xsetroot -cursor_name left_ptr &
