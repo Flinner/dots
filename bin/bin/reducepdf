@@ -35,4 +35,4 @@ do
     esac
 done
 
-gs -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=$SETTINGS -sOutputFile=$2 $1 
+gs -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=$SETTINGS -sOutputFile="$2" "$1"
