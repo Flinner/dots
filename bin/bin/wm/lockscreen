@@ -1,11 +1,78 @@
 #!/bin/bash
-#img=$(mktemp /tmp/XXXXXXXXXX.png)
-qdbus org.keepassxc.KeePassXC.MainWindow /keepassxc org.keepassxc.MainWindow.lockAllDatabases &
-img="$HOME/Pictures/wall.png"
-# Take a screenshot of current desktop
-#import -window root $img 
-## Pixelate the screenshot
-#convert $img -blur 9,9 $img
-i3lock -i "$img" -f
-#rm $img
 
+
+unset LOCK_KEEPASSXC
+unset LOCK_DESKTOP
+unset IMAGE_PATH
+
+main(){
+  handle_args "$@"
+
+
+  [[ -n $LOCK_KEEPASSXC ]] && {
+    lock_keepassxc ; # can't know if is locked for sure
+    notify-send "KeePassXC locked!" &
+  }
+
+  [[ -n $LOCK_DESKTOP ]] &&
+    lock_with_i3lock &&
+    notify-send "locked with i3lock" &
+}
+
+handle_args(){
+  POSITIONAL_ARGS=()
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      -k|--lock-keepassxc)
+        LOCK_KEEPASSXC=1
+        shift # past argument
+        ;;
+      -l|--lock-desktop)
+        LOCK_DESKTOP=1
+        shift # past argument
+        ;;
+      -i|--image)
+        IMAGE_PATH="$2"
+        shift # past argument
+        shift # past value
+        ;;
+      -h|--help)
+        echo_help
+        shift # past argument
+        exit 0
+        ;;
+      -*|--*)
+        echo "Unknown option $1"
+        echo_help
+        exit 1
+        ;;
+      *)
+        POSITIONAL_ARGS+=("$1") # save positional arg
+        shift # past argument
+        ;;
+    esac
+  done
+  set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
+}
+
+
+
+
+lock_with_i3lock() {
+  i3lock -i "$IMAGE_PATH" -f
+}
+
+lock_keepassxc(){
+  qdbus org.keepassxc.KeePassXC.MainWindow /keepassxc org.keepassxc.MainWindow.lockAllDatabases &
+}
+
+echo_help(){
+  printf "Usage: lockscreen [OPTIONS...]\n"
+  printf "\tOPTIONS:\n"
+  printf "\t --help, -h      \t show this message\n"
+  printf "\t --image, -i [IMAGE] \t path to the image to be passed to i3lock\n"
+  printf "\t --lock-keepassxc, -k\t lock keepassxc\n"
+  printf "\t --lock-desktop, -k\t lock desktop with i3lock\n"
+}
+
+main "$@"

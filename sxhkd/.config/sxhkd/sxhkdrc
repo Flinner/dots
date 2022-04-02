@@ -71,12 +71,12 @@ super + g
 
 #======================== scripts and  other =====
 # Lockscreen + lock keepassxc
-super + {Home}
-  {~/bin/wm/lockscreen}
+super + Home
+  ~/bin/wm/lockscreen --lock-keepassxc --lock-desktop --image ~/Pictures/wall.png
 
 # lockscreen only
-super + {End}
-  {i3lock -i "$HOME/Pictures/wall2.png" -f}
+super + End
+  ~/bin/wm/lockscreen --lock-desktop --image ~/Pictures/wall2.png
 
 #=============================
 
