@@ -20,14 +20,31 @@ source ~/.fehbg
 #dbus-launch emacs --daemon &
 #other
 (sleep 1 && picom --config "$HOME/.config/picom.conf" )&
-(sleep 1 && keynav)&
+#(sleep 1 && keynav)&
 (sleep 0 && ~/bin/keyboard ) &
+killall wired
 (sleep 1 && wired ) &
 (sleep 3 && optimus-manager-qt) &
 (sleep 3 && flameshot) &
+
 (sleep 4 && keepassxc) &
+(sleep 6 && bspc rule -r KeePassXC ) &
+
 (sleep 5 && syncthing -no-browser) &
 (sleep 5 && thunderbird ) &
+(sleep 7 && bspc rule -r Thunderbird ) &
+
+# kill current session and if there is ones waiting to start lol
+killall goimapnotify
+(sleep 55 && killall goimapnotify) &
+
+# start watching all mail dirs
+for imapnotify_config in ~/Documents/passwords/*_imapnotify.json; do
+  LOG_FILE=$(sed 's#/#_#g' <<< "$imapnotify_config" )
+  (sleep 60 && goimapnotify -conf "$imapnotify_config" &> ~/.cache/"$LOG_FILE") &
+done
+
+
 #ibus-daemon &
 #uim-toolbar-gtk3-systray & #uim Japanses Input
 
