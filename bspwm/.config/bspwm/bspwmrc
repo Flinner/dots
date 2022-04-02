@@ -29,9 +29,12 @@ bspc config pointer_follows_focus true
 
 # bspc rule -a Gimp desktop='^8' state=floating follow=on 
 #bspc rule -a Chromium desktop='^1' 
+
+# these 2 rules are removed after the program starts, in ~/bin/autostart
 bspc rule -a Thunderbird desktop='^8' 
-bspc rule -a Dino desktop='^8' 
 bspc rule -a KeePassXC desktop='^8' 
+
+bspc rule -a Dino desktop='^8' 
 bspc rule -a Peek state=floating 
 bspc rule -a Connman-gtk state=floating 
 bspc rule -a mplayer2 state=floating 
