@@ -203,6 +203,7 @@ Transperancy!
     :diminish
     :hook (text-mode . olivetti-mode)
     :hook (prog-mode . olivetti-mode)
+    :hook (Info-mode . olivetti-mode)
     :config
     (setq olivetti-body-width 120))
   
@@ -277,7 +278,7 @@ Single Esc to Quit, instead of *three*
 
 ** Function keys
 #+begin_src emacs-lisp
-  (global-set-key (kbd "M-<f8>") '(lambda () (interactive) (org-agenda  nil "a")))
+  (global-set-key (kbd "M-<f8>") '(lambda () (interactive) (org-agenda  nil "n")))
   (global-set-key (kbd "<f8>"  ) '(lambda () (interactive) (org-agenda  nil "a")))
   (global-set-key (kbd "M-<f6>") 'elfeed-dashboard)
 #+end_src
@@ -720,7 +721,7 @@ Ivy Rich for having =M-x= description and keybinds
     :init (ivy-rich-mode 1))
 #+end_src
 Ivy floating
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package ivy-posframe
     :after ivy
     :diminish
@@ -1136,6 +1137,7 @@ From: https://yiufung.net/post/anki-org/
         "vd" 'org-agenda-day-view
         "vl" 'org-agenda-log-mode
         "vr" 'org-agenda-redo
+        "r" 'org-agenda-redo;; often used
         "F" 'org-agenda-follow-mode
 
         ;;;; Other
@@ -1396,6 +1398,7 @@ Lsp UI
           ("C-c z" . lsp-ui-doc-focus-frame)
       :map lsp-ui-doc-frame-mode-map
           ("C-g" . lsp-ui-doc-unfocus-frame)
+          ("C-c z" . lsp-ui-doc-unfocus-frame)
     ))
 #+end_src
 
@@ -1431,6 +1434,23 @@ Lsp UI
 *** TODO Forge
 #+begin_src emacs-lisp
   ;(use-package forge)
+#+end_src
+
+*** Git gutter
+#+begin_src emacs-lisp
+  (use-package git-gutter
+    :hook (prog-mode . git-gutter-mode)
+    :config
+    (setq git-gutter:update-interval 0.02))
+  
+  (use-package git-gutter-fringe
+      :config
+      (define-fringe-bitmap 'git-gutter-fr:added [224] nil nil '(center repeated))
+      (define-fringe-bitmap 'git-gutter-fr:modified [224] nil nil '(center repeated))
+      (define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240] nil nil 'bottom)
+      :ensure t)
+
+
 #+end_src
 
 ** Treemacs
@@ -1747,6 +1767,7 @@ AucTex
     (bibtex-dialect 'biblatex)
     :mode
     ("\\.tex\\'" . latex-mode)
+  ;; also see evil-define-key in :config
     :bind (:map LaTeX-mode-map
                 ("TAB" . cdlatex-tab)
                 ("'" . cdlatex-math-modify)
@@ -1768,6 +1789,14 @@ AucTex
         ;; (LaTeX-mode . flycheck-mode);; already enabled with lsp
         ;; (LaTeX-mode . LaTeX-math-mode)
     :config
+
+    ;; pressing "$" while selecting text will cycle between \(\) and \[\] environment
+    ;; where does \[\] come from? I have no clue! 
+    ;;  I only defined \(\) lol
+  (setq TeX-electric-math (quote ("\\(" . "\\)")))
+  (evil-define-key 'visual 'LaTeX-mode-map
+    "$" 'TeX-insert-dollar)
+
     ;; (setq TeX-auto-save t)
     (setq TeX-parse-self t)
     (setq-default TeX-master nil)
@@ -1800,8 +1829,9 @@ AucTex
     ;; latexmk
     (require 'auctex-latexmk)
     (auctex-latexmk-setup)
-    (setq auctex-latexmk-inherit-TeX-PDF-mode t))
+    (setq auctex-latexmk-inherit-TeX-PDF-mode t)
 
+  )
 #+end_src
 
 Custom functions
@@ -1895,6 +1925,9 @@ ivy bibtex
 #+begin_src emacs-lisp
   (use-package vterm
       :commands vterm
+      :custom
+       ; claimed to be faster: https://teddit.net/r/emacs/comments/tpey9g/making_vterm_snappy_by_setting_vtermtimerdelay_to/
+        (vterm-timer-delay nil)
       :ensure t)
 #+end_src
 
@@ -2135,47 +2168,49 @@ I wrote that, neat isn't it? :P
 * Email (mu4e)
 ** Contexts
 #+begin_src emacs-lisp
-  ;; assumed Maildir layout
-  ;; ~/Maildir/Account0/{Inbox,Sent,Trash}
-  ;; ~/Maildir/Account1/{Inbox,Sent,Trash}
-  ;; where Account0 is context name
-  (defun my-make-mu4e-context (context-name full-name mail-address signature)
-    "Return a mu4e context named CONTEXT-NAME with :match-func matching
-  folder name CONTEXT-NAME in Maildir. The context's `user-mail-address',
-  `user-full-name' and `mu4e-compose-signature' is set to MAIL-ADDRESS
-  FULL-NAME and SIGNATURE respectively.
-  Special folders are set to context specific folders."
-    (let ((dir-name (concat "/" context-name))
-          (context-filter (concat " maildir:/" context-name "/")))
-      (make-mu4e-context
-       :name context-name
-       ;; we match based on the maildir of the message
-       ;; this matches maildir /Arkham and its sub-directories
-       :match-func
-       `(lambda (msg)
-          (when msg
-            (string-match-p
-           ,(concat "^" dir-name)
-           (mu4e-message-field msg :maildir))))
-       :vars
-       `(
-          (mu4e-bookmarks .
-            ,`(
-            (:name "All Unread messages"  :query ,"flag:unread AND NOT flag:trashed" :key ?a)
-            (:name "Unread messages"  :query ,(concat "flag:unread AND NOT flag:trashed"  context-filter) :key ?u)
-            (:name "Today's messages"     :query ,(concat "date:today..now" context-filter)                   :key ?t)
-            (:name "Last 7 days"          :query ,(concat "date:7d..now" context-filter) :hide-unread t       :key ?w)
-            (:name "Messages with images" :query ,(concat "mime:image/*" context-filter)                      :key ?p)))
+    ;; assumed Maildir layout
+    ;; ~/Maildir/Account0/{Inbox,Sent,Trash}
+    ;; ~/Maildir/Account1/{Inbox,Sent,Trash}
+    ;; where Account0 is context name
+    (defun my-make-mu4e-context (context-name full-name mail-address signature)
+      "Return a mu4e context named CONTEXT-NAME with :match-func matching
+    folder name CONTEXT-NAME in Maildir. The context's `user-mail-address',
+    `user-full-name' and `mu4e-compose-signature' is set to MAIL-ADDRESS
+    FULL-NAME and SIGNATURE respectively.
+    Special folders are set to context specific folders."
+      (let ((dir-name (concat "/" context-name))
+            (context-filter (concat " maildir:/" context-name "/")))
+        (make-mu4e-context
+         :name context-name
+         ;; we match based on the maildir of the message
+         ;; this matches maildir /Arkham and its sub-directories
+         :match-func
+         `(lambda (msg)
+            (when msg
+              (string-match-p
+             ,(concat "^" dir-name)
+             (mu4e-message-field msg :maildir))))
+         :vars
+         `(
+            (mu4e-bookmarks .
+              ,`(
+              (:name "All Unread messages"  :query ,"flag:unread AND NOT flag:trashed AND NOT flag:list" :key ?a)
+              (:name "Unread messages"  :query ,(concat "flag:unread AND NOT flag:trashed"  context-filter) :key ?u)
+              (:name "Today's messages"     :query ,(concat "date:today..now" context-filter)                   :key ?t)
+              (:name "Last 7 days"          :query ,(concat "date:7d..now" context-filter) :hide-unread t       :key ?w)
+              (:name "Messages with images" :query ,(concat "mime:image/*" context-filter)                      :key ?p)
+              (:name "Lists"     :query ,(concat "flag:list" context-filter)                   :key ?b)
+                  ))
 
-         (user-mail-address    .   ,mail-address)
-         ;; (mu4e-maildir         .   ,(concat "~/.mail" dir-name))
-         (user-full-name       .   ,full-name)
-         (mu4e-sent-folder     .   ,(concat dir-name "/Sent"))
-         (mu4e-drafts-folder   .   ,(concat dir-name "/Drafts"))
-         (mu4e-trash-folder    .   ,(concat dir-name "/Trash"))
-         (mu4e-refile-folder   .   ,(concat dir-name "/Archive"))
-         (mu4e-compose-signature . ,signature)))))
-  ;;Fixing duplicate UID errors when using mbsync and mu4e
+           (user-mail-address    .   ,mail-address)
+           ;; (mu4e-maildir         .   ,(concat "~/.mail" dir-name))
+           (user-full-name       .   ,full-name)
+           (mu4e-sent-folder     .   ,(concat dir-name "/Sent"))
+           (mu4e-drafts-folder   .   ,(concat dir-name "/Drafts"))
+           (mu4e-trash-folder    .   ,(concat dir-name "/Trash"))
+           (mu4e-refile-folder   .   ,(concat dir-name "/Archive"))
+           (mu4e-compose-signature . ,signature)))))
+    ;;Fixing duplicate UID errors when using mbsync and mu4e
 #+end_src
 
 ** Package
@@ -2185,6 +2220,7 @@ I wrote that, neat isn't it? :P
     :config
     ;; (add-to-list 'mu4e-view-actions '("view in browser" . mu4e-view-action))
     (add-hook 'mu4e-view-mode-hook #'visual-line-mode) 
+    (add-hook'mu4e-main-mode-hook 'olivetti-mode)
     (add-hook 'mu4e-compose-mode-hook 'flyspell-mode)
     :custom
     (mu4e-change-filenames-when-moving t)
