@@ -85,6 +85,7 @@ setopt INC_APPEND_HISTORY_TIME  # append command to history file immediately aft
 setopt EXTENDED_HISTORY  # record command start time
 setopt CORRECT           # Correct spelling of commands
 setopt CORRECT_ALL       # Correct spelling of arguments
+setopt INTERACTIVE_COMMENTS # can have comments at the prompt
 SAVEHIST=1000
 HISTSIZE=1000
 HISTFILE="$HOME/.local/share/zsh/zsh_history"
@@ -201,7 +202,6 @@ alias ip='ip --color=auto'
 alias ytfzfd='YTFZF_PLAYER="youtube-dl --embed-subs --write-sub --sub-lang en" ytfzf'
 
 alias cargo-doc-server="python -m http.server -d target/doc/ -b 127.0.0.1"
-alias sc="feh ~/schedule.jpeg"
 
 #===============================================================================================
 
