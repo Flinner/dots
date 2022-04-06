@@ -2167,83 +2167,77 @@ I wrote that, neat isn't it? :P
 #+end_src
 
 * Email (mu4e)
-** Contexts
-#+begin_src emacs-lisp
-    ;; assumed Maildir layout
-    ;; ~/Maildir/Account0/{Inbox,Sent,Trash}
-    ;; ~/Maildir/Account1/{Inbox,Sent,Trash}
-    ;; where Account0 is context name
-    (defun my-make-mu4e-context (context-name full-name mail-address signature)
-      "Return a mu4e context named CONTEXT-NAME with :match-func matching
-    folder name CONTEXT-NAME in Maildir. The context's `user-mail-address',
-    `user-full-name' and `mu4e-compose-signature' is set to MAIL-ADDRESS
-    FULL-NAME and SIGNATURE respectively.
-    Special folders are set to context specific folders."
-      (let ((dir-name (concat "/" context-name))
-            (context-filter (concat " maildir:/" context-name "/")))
-        (make-mu4e-context
-         :name context-name
-         ;; we match based on the maildir of the message
-         ;; this matches maildir /Arkham and its sub-directories
-         :match-func
-         `(lambda (msg)
-            (when msg
-              (string-match-p
-             ,(concat "^" dir-name)
-             (mu4e-message-field msg :maildir))))
-         :vars
-         `(
-            (mu4e-bookmarks .
-              ,`(
-              (:name "All Unread messages"  :query ,"flag:unread AND NOT flag:trashed AND NOT flag:list" :key ?a)
-              (:name "Unread messages"  :query ,(concat "flag:unread AND NOT flag:trashed"  context-filter) :key ?u)
-              (:name "Today's messages"     :query ,(concat "date:today..now" context-filter)                   :key ?t)
-              (:name "Last 7 days"          :query ,(concat "date:7d..now" context-filter) :hide-unread t       :key ?w)
-              (:name "Messages with images" :query ,(concat "mime:image/*" context-filter)                      :key ?p)
-              (:name "Lists"     :query ,(concat "flag:list" context-filter)                   :key ?b)
-                  ))
-
-           (user-mail-address    .   ,mail-address)
-           ;; (mu4e-maildir         .   ,(concat "~/.mail" dir-name))
-           (user-full-name       .   ,full-name)
-           (mu4e-sent-folder     .   ,(concat dir-name "/Sent"))
-           (mu4e-drafts-folder   .   ,(concat dir-name "/Drafts"))
-           (mu4e-trash-folder    .   ,(concat dir-name "/Trash"))
-           (mu4e-refile-folder   .   ,(concat dir-name "/Archive"))
-           (mu4e-compose-signature . ,signature)))))
-    ;;Fixing duplicate UID errors when using mbsync and mu4e
-#+end_src
-
 ** Package
 #+begin_src emacs-lisp
   (use-package mu4e
+    :demand
     ;; :ensure-system-package mu
-    :config
-    ;; (add-to-list 'mu4e-view-actions '("view in browser" . mu4e-view-action))
-    (add-hook 'mu4e-view-mode-hook #'visual-line-mode) 
-    (add-hook'mu4e-main-mode-hook 'olivetti-mode)
-    (add-hook 'mu4e-compose-mode-hook 'flyspell-mode)
+    :bind   (:map mu4e-main-mode-map
+             ([remap revert-buffer] . mu4e-update-index))
     :custom
-    (mu4e-change-filenames-when-moving t)
-    (mu4e-html2text-command "iconv -c -t utf-8 | pandoc -f html -t plain")
-    (mu4e-attachment-dir "~/Downloads")
-    (mu4e-compose-signature-auto-include nil)
-    (mu4e-get-mail-command "mbsync -a")
+      (mu4e-change-filenames-when-moving t)
+      (mu4e-html2text-command "iconv -c -t utf-8 | pandoc -f html -t plain")
+      (mu4e-attachment-dir "~/Downloads")
+      (mu4e-compose-signature-auto-include t)
+      (mu4e-get-mail-command "mbsync -a")
 
-    (mu4e-update-interval 300)
-    (mu4e-use-fancy-chars t)
-    (mu4e-view-show-addresses t)
-    (mu4e-view-show-images t))
-
+      (mu4e-update-interval 300)
+      (mu4e-use-fancy-chars t)
+      (mu4e-view-show-addresses t)
+      (mu4e-view-show-images t)
+    :config
+      ;; (add-to-list 'mu4e-view-actions '("view in browser" . mu4e-view-action))
+      (add-hook 'mu4e-view-mode-hook #'visual-line-mode) 
+      (add-hook'mu4e-main-mode-hook 'olivetti-mode)
+      (add-hook 'mu4e-compose-mode-hook 'flyspell-mode)
+  )
 #+end_src
 
-** Send email (msmtp)
+** Contexts
 #+begin_src emacs-lisp
-(setq sendmail-program "/usr/bin/msmtp"
-      message-sendmail-f-is-evil t
-      message-sendmail-extra-arguments '("--read-envelope-from")
-      send-mail-function 'smtpmail-send-it
-      message-send-mail-function 'message-send-mail-with-sendmail)
+  ;; assumed Maildir layout
+  ;; ~/Maildir/Account0/{Inbox,Sent,Trash}
+  ;; ~/Maildir/Account1/{Inbox,Sent,Trash}
+  ;; where Account0 is context name
+  (defun my-make-mu4e-context (context-name full-name mail-address signature)
+    "Return a mu4e context named CONTEXT-NAME with :match-func matching
+  folder name CONTEXT-NAME in Maildir. The context's `user-mail-address',
+  `user-full-name' and `mu4e-compose-signature' is set to MAIL-ADDRESS
+  FULL-NAME and SIGNATURE respectively.
+  Special folders are set to context specific folders."
+    (let ((dir-name (concat "/" context-name))
+          (context-filter (concat " maildir:/" context-name "/")))
+      (make-mu4e-context
+       :name context-name
+       ;; we match based on the maildir of the message
+       ;; this matches maildir /Arkham and its sub-directories
+       :match-func
+       `(lambda (msg)
+          (when msg
+            (string-match-p
+           ,(concat "^" dir-name)
+           (mu4e-message-field msg :maildir))))
+       :vars
+       `(
+          (mu4e-bookmarks .
+            ,`(
+            (:name "All Unread messages"  :query ,"flag:unread AND NOT flag:trashed AND NOT flag:list" :key ?a)
+            (:name "Unread messages"  :query ,(concat "flag:unread AND NOT flag:trashed"  context-filter) :key ?u)
+            (:name "Today's messages"     :query ,(concat "date:today..now" context-filter)                   :key ?t)
+            (:name "Last 7 days"          :query ,(concat "date:7d..now" context-filter) :hide-unread t       :key ?w)
+            (:name "Messages with images" :query ,(concat "mime:image/*" context-filter)                      :key ?p)
+            (:name "Lists"     :query ,(concat "flag:list" context-filter)                   :key ?b)
+                ))
+
+         (user-mail-address    .   ,mail-address)
+         ;; (mu4e-maildir         .   ,(concat "~/.mail" dir-name))
+         (user-full-name       .   ,full-name)
+         (mu4e-sent-folder     .   ,(concat dir-name "/Sent"))
+         (mu4e-drafts-folder   .   ,(concat dir-name "/Drafts"))
+         (mu4e-trash-folder    .   ,(concat dir-name "/Trash"))
+         (mu4e-refile-folder   .   ,(concat dir-name "/Archive"))
+         (mu4e-compose-signature . ,signature)))))
+  ;;Fixing duplicate UID errors when using mbsync and mu4e
 #+end_src
 
 ** Email List here!
@@ -2292,8 +2286,19 @@ should only move to trash, not delete entirely from the server
 #+end_src
 
 Breaking change betweeen =mu4e-alert= and =mu= :(
+
+(I don't use =mu4e-alert= anymore, but will keep this cuz y not?)
 #+begin_src emacs-lisp
   (defvaralias 'mu4e~context-current  'mu4e--context-current)
+#+end_src
+
+** Send email (msmtp)
+#+begin_src emacs-lisp
+(setq sendmail-program "/usr/bin/msmtp"
+      message-sendmail-f-is-evil t
+      message-sendmail-extra-arguments '("--read-envelope-from")
+      send-mail-function 'smtpmail-send-it
+      message-send-mail-function 'message-send-mail-with-sendmail)
 #+end_src
 
 * Telega
