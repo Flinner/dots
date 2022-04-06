@@ -1795,7 +1795,8 @@ AucTex
     ;;  I only defined \(\) lol
   (setq TeX-electric-math (quote ("\\(" . "\\)")))
   (evil-define-key 'visual 'LaTeX-mode-map
-    "$" 'TeX-insert-dollar)
+    "$" 'TeX-insert-dollar
+    "'" 'cdlatex-math-modify)
 
     ;; (setq TeX-auto-save t)
     (setq TeX-parse-self t)
@@ -2354,5 +2355,6 @@ Breaking change betweeen =mu4e-alert= and =mu= :(
     (setq dashboard-set-init-info t)
     (setq dashboard-projects-switch-function 'counsel-projectile-switch-project-by-name))
 #+end_src
+
 
 
