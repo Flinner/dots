@@ -106,9 +106,9 @@ Better Scrolling
 
 ** Fonts
 #+begin_src emacs-lisp
-  (setq my/ui/monofont "Fira Code")
+  (setq my/ui/monofont "FiraCode Nerd Font")
   (setq my/ui/varfont "Noto Serif")
-  (setq my/ui/arabicfont "Noto Kofi Arabic")
+  (setq my/ui/arabicfont "Noto Kufi Arabic")
 #+end_src
 
 #+begin_src emacs-lisp
