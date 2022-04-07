@@ -2320,6 +2320,7 @@ Breaking change betweeen =mu4e-alert= and =mu= :(
   (telega-notifications-mode)
   :custom (telega-server-libs-prefix "/usr")
           (telega-chat-bidi-display-reordering 'right-to-left)
+          (telega-sticker-size '(10 . 24))
           (telega-emoji-use-images nil))
 
 #+end_src
