@@ -2,17 +2,19 @@
 #+PROPERTY: header-args:emacs-lisp :tangle ~/.config/emacs.mine/init.el :mkdirp yes
 #+startup: content
 * README:
-run the following
+After the first run that installs things, run the following
 #+begin_src emacs-lisp :tangle no
+  ; code-block not tangled
   (all-the-icons-install-fonts)
   (fira-code-mode-set-font)
 #+end_src
 
 * Performance
 #+begin_src emacs-lisp
-  (setq gc-cons-threshold-original gc-cons-threshold) ;; unused
+  ;;lsp performance improvement
+  (setq gc-cons-threshold-original gc-cons-threshold) 
   (setq gc-cons-threshold (* 1024 1024 100))
-  (setq read-process-output-max (* 1024 4024)) ;; 4mb
+  (setq read-process-output-max (* 1024 4024))
 #+end_src
 
 * Packaging
@@ -97,7 +99,7 @@ Emacs Backups trashing local dir!
       )
 #+end_src
 Better Scrolling
-#+begin_src elisp
+#+begin_src emacs-lisp
   (setq scroll-conservatively 10)
   (setq scroll-margin 3)
   (use-package smooth-scrolling
@@ -105,6 +107,7 @@ Better Scrolling
 #+end_src
 
 ** Fonts
+Setting fonts here as vars to stay sane
 #+begin_src emacs-lisp
   (setq my/ui/monofont "FiraCode Nerd Font")
   (setq my/ui/varfont "Noto Serif")
@@ -146,6 +149,7 @@ Run =M-x= all-the-icons-install-fonts for the first time!
   (use-package all-the-icons)
 #+end_src
 
+The status line
 #+begin_src emacs-lisp
     (use-package doom-modeline
       :ensure t
@@ -198,6 +202,7 @@ Transperancy!
       (lambda nil  (set-frame-parameter nil 'alpha-background 0.9)))
 #+end_src
 
+Center text in the frame, looks nice ;)
 #+begin_src emacs-lisp
   (use-package olivetti
     :diminish
@@ -210,8 +215,11 @@ Transperancy!
 #+end_src
 
 ** Line Numbers
+I don't use line numbers anymore, chad.png
+ 
 DEPRECATED Enable Globally
 #+begin_src emacs-lisp :tangle no
+  ; this block has ":tangle no"
   (global-display-line-numbers-mode 0)
 #+end_src
 
@@ -234,6 +242,7 @@ ONLY IN PROG!
 #+end_src
  
 ** Undo
+Self explanatory
 #+begin_src emacs-lisp
   (use-package undo-fu)
 #+end_src
@@ -694,6 +703,7 @@ Capture
 
 * Completions
 ** ivy
+Better Completions
 #+begin_src emacs-lisp
   (use-package ivy
     :defer t
@@ -757,7 +767,7 @@ Ivy floating
 slow loading! defer it
 #+begin_src emacs-lisp
 (use-package which-key
-  :defer 5
+  :defer 10
   :diminish which-key-mode
   :config
   (which-key-mode)
@@ -828,14 +838,14 @@ better sorting for ivy, company..
 
 ** Yasnippet
 #+begin_src emacs-lisp
-    (use-package yasnippet
-      :defer 4
-      :config
-      (yas-global-mode))
+  (use-package yasnippet
+    :defer 9
+    :config
+    (yas-global-mode))
 
-    (use-package yasnippet-snippets
-    :after yasnippet
-  )
+  (use-package yasnippet-snippets
+    :defer t
+    :after yasnippet)
 
 #+end_src
 
@@ -910,7 +920,7 @@ use-package
       (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch))
 #+end_src
 
-Templates
+Capture Templates
 #+begin_src emacs-lisp
 (use-package doct
   :ensure t
@@ -1008,7 +1018,8 @@ Allow fast code insertion
 #+RESULTS:
 
 *** Mermaid graphs
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
+  ; :tangle no
   (use-package ob-mermaid
    :after org)
 #+end_src
@@ -1064,9 +1075,6 @@ Allow fast code insertion
                           :todo-state "TODO"))))))
 #+end_src
 
-        `(
-          ("d" "Distraction" entry (file+headline ,(concat org-directory "distractions.org") "Inbox")
-           "* %?\n%T")
 *** Utils
 launch with =emacsclient -e '(make-orgcapture-frame)'=
 From: https://yiufung.net/post/anki-org/
@@ -1280,6 +1288,7 @@ From: https://yiufung.net/post/anki-org/
 #+end_src
 
 **  COMMENT Anki
+Stopped using this, I just use Anki like a normal person
 #+begin_src emacs-lisp
   (use-package anki-editor
     :after org
@@ -1313,7 +1322,6 @@ From: https://yiufung.net/post/anki-org/
 
 #+begin_src emacs-lisp
   (use-package parinfer-rust-mode
-      :defer 4
       :hook emacs-lisp-mode scheme-mode clojure-mode
       :init
       (setq parinfer-rust-auto-download t))
@@ -1335,6 +1343,7 @@ From: https://yiufung.net/post/anki-org/
 Counsel Projectile
 #+begin_src emacs-lisp 
   (use-package counsel-projectile
+    :defer 9
     :config (counsel-projectile-mode))
 #+end_src
 
@@ -1410,7 +1419,7 @@ Lsp UI
 
 *** Flycheck
 #+begin_src emacs-lisp
-(use-package flycheck :ensure
+(use-package flycheck
 :custom-face (flycheck-warning ((t (:underline (:color "#fabd2f" :style line :position line)))))
              (flycheck-error ((t (:underline (:color "#fb4934" :style line :position line)))))
              (flycheck-info ((t (:underline (:color "#83a598" :style line :position line))))))
@@ -1426,7 +1435,7 @@ Lsp UI
 *** Magit
 #+begin_src emacs-lisp
     (use-package magit
-      :defer t
+      :commands (magit)
       :custom
       (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 #+end_src
@@ -1457,7 +1466,7 @@ Lsp UI
 use-package
 #+begin_src emacs-lisp
   (use-package treemacs
-    :defer t
+    :commands (treemacs)
     :init
     (setq treemacs-follow-after-init t
           treemacs-is-never-other-window t
@@ -1492,12 +1501,13 @@ Get treemacs-lsp
 #+end_src
 
 ** Language
-*** Arduino
+*** COMMENT Arduino
 #+begin_src emacs-lisp
-  (use-package arduino-mode)
+  (use-package arduino-mode
+     :defer t)
 #+end_src
 
-*** Clojure
+*** COMMENT Clojure
 #+begin_src emacs-lisp
   (use-package cider
   :defer t
@@ -1718,7 +1728,7 @@ Better Diff in header sizes
     :hook (c++-mode . lsp))
 #+end_src
 
-*** Ruby
+*** COMMENT Ruby
 #+begin_src emacs-lisp
   (use-package ruby-mode
     :hook
@@ -2115,7 +2125,7 @@ I wrote that, neat isn't it? :P
       (znc-all))) 
 #+end_src
 
-** circe
+** COMMENT circe
 *** Setup
 #+begin_src emacs-lisp
   (use-package circe
@@ -2304,7 +2314,7 @@ Breaking change betweeen =mu4e-alert= and =mu= :(
 * Telega
 #+begin_src emacs-lisp
   (use-package telega
-  :defer t
+  :commands (telega)
   :init
       (defun my/telega/olivetti () (setq-local olivetti-body-width 80))
       (defun my/telega/company-backends ()
