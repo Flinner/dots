@@ -330,7 +330,8 @@ Edit: honestly I have no clue wtf that meant, or why I wrote it, but I will keep
 #+begin_src emacs-lisp
   :config
   (general-create-definer my/leader-keys
-    :keymaps '(normal insert visual emacs)
+    :keymaps 'override
+    :states '(normal insert visual emacs)
     :prefix "SPC"
     :global-prefix "C-SPC")
 
