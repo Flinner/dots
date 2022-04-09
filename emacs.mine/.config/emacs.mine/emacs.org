@@ -154,6 +154,8 @@ The status line
     (use-package doom-modeline
       :ensure t
       :init (doom-modeline-mode 1)
+      :config
+      (display-battery-mode 1)
       :custom
   ((doom-modeline-height 15) (doom-modeline-icon t)))
 #+end_src
@@ -365,6 +367,7 @@ Edit: honestly I have no clue wtf that meant, or why I wrote it, but I will keep
   "hv" '(counsel-describe-variable :which-key "Describe Variable")
   "hF" '(counsel-describe-face :which-key "Describe Face")
   "hi" '(info :which-key "info")
+  "hm" '(woman :which-key "woman")
 #+end_src
 
 **** search (s)
@@ -2126,31 +2129,66 @@ I wrote that, neat isn't it? :P
       (znc-all))) 
 #+end_src
 
-** COMMENT circe
+** circe
+*** Secrets :^)
+#+begin_src emacs-lisp :tangle no
+    ;; Doesn't tangle!
+    ;; loaded in use-package (block below)
+    (load "~/Documents/passwords/circe-networks.el")
+
+   ; example content
+  (add-to-list 'circe-networks `("chat.name/username" :host "irc.example.com" :port 69
+                                 :tls t
+                                 :nick "nicky"
+                                 :pass ,(secrets-get-secret "local" "hehe :^)")
+                                 :user "username")) 
+#+end_src
+
+*** Helper Functions!
+#+begin_src emacs-lisp
+  (defun my/circe/clear ()
+    "Clear the buffer"
+    (interactive)
+    (circe-command-CLEAR))
+
+  (defun my/circe/build-helm-sources (server-buf)
+    "Builds helm candidates for a single server"
+    (helm-build-sync-source (buffer-name server-buf)
+      :candidates
+      (cons (cons (buffer-name server-buf) server-buf)
+            (cl-loop for buf in
+                     (with-current-buffer server-buf (circe-server-channel-buffers))
+                     collect (cons (buffer-name buf) buf)))
+      :action (list (cons "Switch to circe" #'switch-to-buffer))))
+
+
+  (defun my/circe/helm-buffers ()
+    "Switch between circe buffers using helm"
+    (interactive)
+    (helm :sources
+          (cl-loop for server-buf in (circe-server-buffers)
+                   collect (my/circe/build-helm-sources server-buf))
+          :buffer "*helm circe*"))
+
+#+end_src
+
 *** Setup
 #+begin_src emacs-lisp
   (use-package circe
     :defer t
     :preface
-    (defun my/circe/clear ()
-      (interactive)
-      (circe-command-CLEAR))
     :config
-    (add-to-list 'circe-networks `("flinner's znc" :host "flinner.my.to" :port 6697
-                                   :tls t
-                                   ;; :sasl-strict t 
-                                   :nick ,my/secret/znc/flinner.my.to/username
-                                   ;; :sasl-username ,my/secret/znc/flinner.my.to/sassl-username
-                                   ;; :sasl-password ,my/secret/znc/flinner.my.to/secret
-                                   :pass ,my/secret/znc/flinner.my.to/secret
-                                   :user ,my/secret/znc/flinner.my.to/username
-                                   ))
+    ;(add-to-list 'circe-networks `())
+    ;; adding to list happens here!
+    (load "~/Documents/passwords/circe-networks.el")
     (setq circe-color-nicks-min-constrast-ratio 4.5
           circe-color-nicks-everywhere t)
     :hook (circe-channel-mode . enable-circe-color-nicks)
     :custom
     (circe-format-say "{nick:-16s} {body}")
     ;; :bind(("C-l" . my/circe/clear))
+    :bind (:map circe-mode-map
+                ([remap counsel-projectile-find-file] . my/circe/helm-buffers))
   )
 #+end_src
  
