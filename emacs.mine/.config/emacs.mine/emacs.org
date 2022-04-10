@@ -467,7 +467,9 @@ Capture
   "bl" '(evil-switch-to-windows-last-buffer :which-key "Last Buffer")
   "bi" '(ibuffer :which-key "Ibuffer")
   "br" '(revert-buffer :which-key "Revert Buffer")
-  "bb" '(switch-to-buffer :which-key "Switch to buffer")
+  "bb" '(helm-buffers-list :which-key "Switch to buffer")
+  
+  "bc" '(my/circe/helm-buffers :which-key "Circe Helm")
 #+end_src
 
 **** Windows (w)
@@ -848,15 +850,15 @@ better sorting for ivy, company..
     (yas-global-mode))
 
   (use-package yasnippet-snippets
-    :defer t
     :after yasnippet)
 
 #+end_src
 
 ** Helm
-dep for =org-books=
 #+begin_src emacs-lisp
-  (use-package helm :after org-books)
+  (use-package helm
+      :defer t
+      :config (helm-autoresize-mode 1))
 #+end_src
 
 * Org-Mode
@@ -2156,9 +2158,13 @@ I wrote that, neat isn't it? :P
     (helm-build-sync-source (buffer-name server-buf)
       :candidates
       (cons (cons (buffer-name server-buf) server-buf)
-            (cl-loop for buf in
-                     (with-current-buffer server-buf (circe-server-channel-buffers))
-                     collect (cons (buffer-name buf) buf)))
+            (cl-loop for buf in (with-current-buffer server-buf (circe-server-channel-buffers))
+                     collect (cons
+                              (let ((buf-name (buffer-name buf)))
+                                (concat buf-name
+                                        ; add " ***" if buffer has new messagse
+                                        (if (member buf-name tracking-buffers) " ***" "")))
+                              buf)))
       :action (list (cons "Switch to circe" #'switch-to-buffer))))
 
 
@@ -2193,19 +2199,24 @@ I wrote that, neat isn't it? :P
 #+end_src
  
 #+begin_src emacs-lisp
-  (setq
-   ;; lui-time-stamp-position 'right-margin
-   lui-fill-type nil)
-  
-  (add-hook 'lui-mode-hook 'my-lui-setup)
-  (defun my-lui-setup ()
     (setq
-     fringes-outside-margins t
-     right-margin-width 5
-     word-wrap t
-     wrap-prefix "    "))
-#+end_src
+     lui-time-stamp-position 'right-margin
+     lui-flyspell-p t
+     lui-fill-type nil
+     ;Display your own nickname instead of >>> in the channel buffers when you're talking.
+     circe-format-self-say "<{nick}> {body}"
+  )
 
+    (add-hook 'lui-mode-hook 'my-lui-setup)
+    (defun my-lui-setup ()
+      (setf (cdr (assoc 'continuation fringe-indicator-alist)) nil)
+      (olivetti-mode 1)
+      (setq
+       fringes-outside-margins t
+       right-margin-width 5
+       word-wrap t
+       wrap-prefix "    "))
+#+end_src
 
 *** znc stuff
 #+begin_src emacs-lisp
