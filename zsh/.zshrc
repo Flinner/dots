@@ -158,7 +158,9 @@ ip.me () { curl eth0.me ; curl ipv6.icanhazip.com } # or ip.me
   [ ! -z "$1" ] && file=$1 || file=$(find . -maxdepth 2 -type f | fzf)
   [ -z "$file" ] && return
   echo "file=@$file"
-  curl -F "file=@$file" 0x0.st | xclip -sel clip
+  _URL=$(curl -F "file=@$file" 0x0.st)
+  echo "$_URL" | xclip -sel clip 
+  echo "$_URL"
 }
 
 # curl with cache
