@@ -2196,6 +2196,7 @@ I wrote that, neat isn't it? :P
     :defer t
     :preface
     :config
+    (enable-lui-track)
     ;(add-to-list 'circe-networks `())
     ;; adding to list happens here!
     (load "~/Documents/passwords/circe-networks.el")
@@ -2225,7 +2226,7 @@ I wrote that, neat isn't it? :P
       (olivetti-mode 1)
       (setq
        fringes-outside-margins t
-       right-margin-width 5
+       right-margin-width 0
        word-wrap t
        wrap-prefix "    "))
 #+end_src
