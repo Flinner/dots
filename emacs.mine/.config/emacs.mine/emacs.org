@@ -450,6 +450,7 @@ Capture
 
   "om" '(mu4e :which-key "mu4e")
   "ot" '(telega :which-key "Telega")
+  "oc" '(circe :which-key "Circe")
 
   "oe" '(elfeed-dashboard :which-key "Elfeed Dashboard")
 #+end_src
@@ -459,6 +460,7 @@ Capture
   "i"  '(:ignore t :which-key "Insert")
   "ie" '(emoji-insert :which-key "Emoji")
   "if" '(my/counsel-insert-file-path :which-key "Insert Relative path")
+  "ik" '(helm-show-kill-ring :which-key "Insert from Kill ring")
 #+end_src
 
 **** Buffers (b)
@@ -473,6 +475,7 @@ Capture
   "bb" '(helm-buffers-list :which-key "Switch to buffer")
   
   "bc" '(my/circe/helm-buffers :which-key "Circe Helm")
+  "bt" '(telega-switch-buffer :which-key "Telega buffers")
 #+end_src
 
 **** Windows (w)
@@ -2167,15 +2170,15 @@ I wrote that, neat isn't it? :P
     (helm-build-sync-source (buffer-name server-buf)
       :candidates
       (cons (cons (buffer-name server-buf) server-buf)
-            (cl-loop for buf in (with-current-buffer server-buf (circe-server-channel-buffers))
+            (cl-loop for buf in (with-current-buffer server-buf (circe-server-chat-buffers))
                      collect (cons
                               (let ((buf-name (buffer-name buf)))
                                 (concat buf-name
                                         ; add " ***" if buffer has new messagse
                                         (if (member buf-name tracking-buffers) " ***" "")))
                               buf)))
-      :action (list (cons "Switch to circe" #'switch-to-buffer))))
-
+      :action (list (cons "Switch to circe" #'switch-to-buffer)
+                    (cons "Kill buffer" #'kill-buffer))))
 
   (defun my/circe/helm-buffers ()
     "Switch between circe buffers using helm"
