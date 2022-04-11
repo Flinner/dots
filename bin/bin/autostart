@@ -31,7 +31,8 @@ killall wired
 (sleep 6 && bspc rule -r KeePassXC ) &
 
 (sleep 5 && syncthing -no-browser) &
-(sleep 5 && thunderbird ) &
+#(sleep 5 && thunderbird ) &
+(sleep 5 && davmail ) &
 (sleep 7 && bspc rule -r Thunderbird ) &
 
 # kill current session and if there is ones waiting to start lol
