@@ -1416,7 +1416,7 @@ Lsp UI
       :custom
       (lsp-ui-peek-always-show t)
       (lsp-ui-doc-mode t)
-      (lsp-ui-sideline-show-hover t)
+      (lsp-ui-sideline-show-hover nil)
       ;; (lsp-ui-doc-enable nil)
       :bind
           (:map lsp-ui-mode-map
@@ -1626,6 +1626,10 @@ Auto format
 
 *** Haskell
 #+begin_src emacs-lisp
+  (use-package haskell-mode :defer t)
+#+end_src
+
+#+begin_src emacs-lisp
   (use-package lsp-haskell
     :defer t
     :preface
@@ -1640,8 +1644,8 @@ Auto format
     (haskell-mode . my/font/pretty-lambdas-haskell)
     :config
     (haskell-indentation-mode -1)
-   ;; (add-hook 'before-save-hook 'lsp-format-buffer)
-    ;; :custom (haskell-stylish-on-save t)
+    (add-hook 'before-save-hook 'lsp-format-buffer)
+    :custom (haskell-stylish-on-save t)
     )
 #+end_src
 
