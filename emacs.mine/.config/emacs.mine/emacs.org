@@ -78,7 +78,10 @@ remove warning by use-package
   (setq visible-bell nil)           ; Set up the visible bell
   (column-number-mode)              ; Display Column Number in the modline
   (setq use-dialog-box nil)         ; I don't like to confirm anything with a mouse!
-  (defalias 'yes-or-no-p 'y-or-n-p) ; I don't want to type (yes) everytime!, 'y' is enough
+  (defalias 'yes-or-no-p 'y-or-n-p) ; I don't want to type 'yes' everytime!, 'y' is enough
+
+  (setq comp-deferred-compilation-deny-list '()) ;; turn off bytecompiler warnings
+  (setq native-comp-async-report-warnings-errors nil)
 
 #+end_src
 Emacs Backups trashing local dir!
@@ -344,7 +347,7 @@ Edit: honestly I have no clue wtf that meant, or why I wrote it, but I will keep
 #+begin_src emacs-lisp
   (my/leader-keys
   "." '(counsel-find-file :which-key "find file")
-  "SPC" '(projectile-find-file :which-key "projectile find file")
+  "SPC" '(counsel-projectile-find-file :which-key "projectile find file")
   "/" '(counsel-projectile-rg :which-key "projects")
   "," '(counsel-rg :which-key "rg")
   "u" '(universal-argument :which-key "universal arg")
@@ -880,6 +883,7 @@ Modes To Start
 #+begin_src emacs-lisp
   (defun my/org-mode/org-mode-setup ()
   (interactive)
+    (flyspell-mode 1)
     (org-indent-mode)
     (variable-pitch-mode 0)
     (visual-line-mode 1))
@@ -923,6 +927,8 @@ use-package
       (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
       (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
       (set-face-attribute 'org-todo nil :background "#444527" )
+      (set-face-attribute 'org-done nil :strike-through t)
+      (set-face-attribute 'org-headline-done nil :strike-through t)
       (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch))
 #+end_src
 
@@ -1314,11 +1320,12 @@ Stopped using this, I just use Anki like a normal person
 * Development
 ** General
 *** Brackets setup
+
 #+begin_src emacs-lisp
   (use-package rainbow-delimiters
     :hook (prog-mode . rainbow-delimiters-mode)
           (prog-mode . show-paren-mode)
-          ;; (prog-mode . electric-pair-mode)
+          (prog-mode . electric-pair-mode)
      ) 
 #+end_src
 
@@ -1796,6 +1803,7 @@ AucTex
     (LaTeX-mode . TeX-source-correlate-mode)
     (LaTeX-mode . try/latex-mode-setup)
     (LaTeX-mode . turn-on-cdlatex)
+    (LaTeX-mode . origami-mode)
         ;; (LaTeX-mode . TeX-fold-mode)
     (LaTeX-mode . lsp)
         ;; (LaTeX-mode . olivetti-mode);; already set as a text-mode-hook
@@ -2003,9 +2011,9 @@ ivy bibtex
 ** Elfeed-org
 #+begin_src emacs-lisp
   (use-package elfeed-org
-    :commands elfeed
+    :after elfeed
     :config (elfeed-org))
-  
+
 #+end_src
 
 ** Elfeed Dashboard
@@ -2074,6 +2082,7 @@ I wrote that, neat isn't it? :P
       ;;   (visual-fill-column-mode 1)
       ;;   (visual-line-mode 1))
 
+      (elfeed-org)
       (evil-define-key 'normal elfeed-search-mode-map
            "O" 'my/elfeed/visit-entry-dwim
            ;"tr" 'my/elfeed/toggle-read
