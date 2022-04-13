@@ -1288,7 +1288,16 @@ From: https://yiufung.net/post/anki-org/
                                                      (:tag "WATCH")
                                                      (:tag "TO_BLOG"))
                                      :sort '(todo)
-                                     :title "Goals"))  
+                                     :title "Goals"))
+                         (cons "Orphans"
+                                (list :buffers-files #'org-agenda-files
+                                      :query '(and (not (todo))
+                                                   (not (done))
+                                                   (not (effort))
+                                                   (not (tags "NOT_ORPHAN"))
+                                                   (not (scheduled))
+                                                   (not (deadline))
+                                                   (parent))))
                          (cons "Quick Picks"
                                (list :buffers-files #'org-agenda-files
                                      :query '(and (not (done))
