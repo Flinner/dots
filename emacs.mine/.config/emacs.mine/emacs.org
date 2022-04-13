@@ -293,7 +293,7 @@ Single Esc to Quit, instead of *three*
 ** Function keys
 #+begin_src emacs-lisp
   (global-set-key (kbd "M-<f8>") '(lambda () (interactive) (org-agenda  nil "n")))
-  (global-set-key (kbd "<f8>"  ) '(lambda () (interactive) (org-agenda  nil "a")))
+  (global-set-key (kbd "<f8>"  ) '(lambda () (interactive) (org-ql-view "Overview: Agenda-like")))
   (global-set-key (kbd "M-<f6>") 'elfeed-dashboard)
 #+end_src
 
@@ -1107,7 +1107,7 @@ From: https://yiufung.net/post/anki-org/
 ** Agenda
 *** T/ODOs
 #+begin_src emacs-lisp
-   (setq org-todo-keywords '((sequence "TODO(t)" "|" "DONE(d)")
+   (setq org-todo-keywords '((sequence "TODAY(y)" "TODO(t)" "NOW(o)" "NEXT(n)" "|" "DONE(d)")
                             (sequence "|" "CANCELED(c)")))
 #+end_src
 
@@ -1165,10 +1165,11 @@ From: https://yiufung.net/post/anki-org/
 
         ;;;; Other
         "C" 'org-capture
-        "R" 'org-agenda-refile
+        "R" 'my/org-agenda/process-inbox-item
         "A" 'org-agenda-archive
         "g/" 'org-agenda-filter-by-tag
-
+        "gr" 'org-ql-view-refresh
+        "gh" 'helm-org-ql-views
         ;;;; cool but inactive
         ;; "gj" 'org-agenda-goto-date
         ;; "gJ" 'org-agenda-clock-goto
@@ -1212,6 +1213,107 @@ From: https://yiufung.net/post/anki-org/
   (setq org-habit-graph-column 80   ; prevent overwriting title
         org-habit-show-all-today t) ; show even if DONE
 #+end_src
+
+*** org SUPER agenda
+#+begin_src emacs-lisp
+  (use-package org-super-agenda
+   :after org-agenda
+   :config
+   (setq org-agenda-span 'day); a week is too much
+   (setq org-super-agenda-groups
+         '((:log t :order 99); logs at bottom
+           (:name "Today" ; today is what
+                   :time-grid t    ; Items that appear on the time grid
+                   :todo "TODAY"
+                   :scheduled today)
+           (:name "Overdue"
+                   :deadline past
+                   :scheduled past)
+           (:name "Deadlines"
+                   :deadline t)
+           (:name "To Refile"
+                   :tag ("INBOX"))))
+  
+   (org-super-agenda-mode 1)
+
+  :hook (org-agenda-mode . origami-mode)
+        ;(org-agenda-mode . org-super-agenda-mode); need this sadly
+        (org-agenda-mode . olivetti-mode)
+        (org-agenda-mode . olivetti-mode)
+  ;(evil-define-key '(normal visual) 'org-super-agenda-header-map "j" 'org-agenda-next-line)
+  ;; evil doesn't work on headers, bruh
+   :bind (:map org-super-agenda-header-map
+           ([tab] . origami-toggle-node)
+           ("j" . org-agenda-next-line)
+           ("k" . org-agenda-previous-line)
+           ("h" . evil-backward-char)
+           ("l" . evil-forward-char)))
+#+end_src
+
+*** org-ql
+#+begin_src emacs-lisp
+(use-package helm-org-ql :after org-ql)
+#+end_src
+
+#+begin_src emacs-lisp
+  ; TODO: tasks not in inbox, and have no schedule/effort/etc
+  (use-package org-ql
+   :config
+     (setq org-ql-views (list (cons "Overview: Agenda-like"
+                               (list :buffers-files #'org-agenda-files
+                                     :query '(and (not (done))
+                                                  (or (deadline auto)
+                                                      (scheduled :to today)
+                                                      (ts-active :on today)
+                                                      (todo "TODAY")))
+                                     :sort '(priority date todo)
+                                     :super-groups 'org-super-agenda-groups
+                                     :title "Agenda-like"))
+                         (cons "To Refile"
+                               (list :buffers-files #'org-agenda-files
+                                     :query '(parent (tags "INBOX"))
+                                     :super-groups 'org-super-agenda-groups
+                                     :title "Inbox"))
+                         (cons "Goals"
+                               (list :buffers-files #'org-agenda-files
+                                     :query '(todo "LNOW" "LNEXT")
+                                     :super-groups '((:todo "LNOW")
+                                                     (:todo "LNEXT"))
+                                     :sort '(todo)
+                                     :title "Goals"))  
+                         (cons "Consoom and Create"
+                               (list :buffers-files #'org-agenda-files
+                                     :query '(parent (tags "READ" "WATCH" "TO_BLOG"))
+                                     :super-groups '((:tag "READ")
+                                                     (:tag "WATCH")
+                                                     (:tag "TO_BLOG"))
+                                     :sort '(todo)
+                                     :title "Goals"))  
+                         (cons "Quick Picks"
+                               (list :buffers-files #'org-agenda-files
+                                     :query '(and (not (done))
+                                                  (effort <= 10))
+                                     :sort '(todo)
+                                     :super-groups 'org-super-agenda-groups
+                                     :title "Quick Picks"))))))
+
+
+#+end_src
+
+*** Helper functions
+Stolen from: [[https://blog.jethro.dev/posts/processing_inbox/][Org-mode Workflow Part 2: Processing the Inbox · Jethro Kuan]]
+#+begin_src emacs-lisp
+  (defun my/org-agenda/process-inbox-item ()
+    "Process a single item in the org-agenda."
+    (interactive)
+    (org-with-wide-buffer
+     (org-agenda-set-tags)
+     ;(org-agenda-priority)
+     (org-agenda-set-effort)
+     (org-agenda-refile nil nil t)))
+
+#+end_src
+
 
 ** org-pomodoro
 #+begin_src emacs-lisp
