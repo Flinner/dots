@@ -1295,7 +1295,7 @@ From: https://yiufung.net/post/anki-org/
                                                   (effort <= 10))
                                      :sort '(todo)
                                      :super-groups 'org-super-agenda-groups
-                                     :title "Quick Picks"))))))
+                                     :title "Quick Picks")))))
 
 
 #+end_src
