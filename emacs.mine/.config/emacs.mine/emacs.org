@@ -2364,11 +2364,12 @@ I wrote that, neat isn't it? :P
       (mu4e-use-fancy-chars t)
       (mu4e-view-show-addresses t)
       (mu4e-view-show-images t)
-    :config
-      ;; (add-to-list 'mu4e-view-actions '("view in browser" . mu4e-view-action))
-      (add-hook 'mu4e-view-mode-hook #'visual-line-mode) 
-      (add-hook'mu4e-main-mode-hook 'olivetti-mode)
-      (add-hook 'mu4e-compose-mode-hook 'flyspell-mode)
+    :hook
+      (mu4e-view-mode . visual-line-mode) 
+      (mu4e-view-mode . olivetti-mode) 
+      (mu4e-main-mode . olivetti-mode)
+      (mu4e-compose-mode . flyspell-mode)
+      (mu4e-context-changed . mu4e-update-index)
   )
 #+end_src
 
@@ -2402,11 +2403,21 @@ I wrote that, neat isn't it? :P
             ,`(
             (:name "All Unread messages"  :query ,"flag:unread AND NOT flag:trashed AND NOT flag:list" :key ?a)
             (:name "Unread messages"  :query ,(concat "flag:unread AND NOT flag:trashed"  context-filter) :key ?u)
+            (:name "Inbox"            :query ,(concat "maildir:/Inbox/"  context-filter) :key ?i)
             (:name "Today's messages"     :query ,(concat "date:today..now" context-filter)                   :key ?t)
             (:name "Last 7 days"          :query ,(concat "date:7d..now" context-filter) :hide-unread t       :key ?w)
-            (:name "Messages with images" :query ,(concat "mime:image/*" context-filter)                      :key ?p)
+            (:name "Messages with attachments" :query ,(concat "mime:application/*" context-filter)           :key ?p)
             (:name "Lists"     :query ,(concat "flag:list" context-filter)                   :key ?b)
-                ))
+                )
+           )
+         (mu4e-maildir-shortcuts . ,`(
+                               (:maildir ,(concat dir-name "/Inbox") :key ?i)
+                               (:maildir ,(concat dir-name "/Sent") :key ?s)
+                               (:maildir ,(concat dir-name "/Archive") :key ?a)
+                               (:maildir ,(concat dir-name "/Drafts") :key ?d)
+                               (:maildir ,(concat dir-name "/Junk") :key ?j)
+                               (:maildir ,(concat dir-name "/Trash") :key ?t)
+            ))
 
          (user-mail-address    .   ,mail-address)
          ;; (mu4e-maildir         .   ,(concat "~/.mail" dir-name))
@@ -2471,6 +2482,12 @@ Breaking change betweeen =mu4e-alert= and =mu= :(
   (defvaralias 'mu4e~context-current  'mu4e--context-current)
 #+end_src
 
+I prefer text/plain, over everything >:)
+#+begin_src emacs-lisp
+(with-eval-after-load "mm-decode"
+  (add-to-list 'mm-discouraged-alternatives "text/richtext")
+  (add-to-list 'mm-discouraged-alternatives "text/html"))
+#+end_src
 ** Send email (msmtp)
 #+begin_src emacs-lisp
 (setq sendmail-program "/usr/bin/msmtp"
