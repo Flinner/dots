@@ -33,6 +33,8 @@ bspc config pointer_follows_focus true
 # these 2 rules are removed after the program starts, in ~/bin/autostart
 bspc rule -a Thunderbird desktop='^8' 
 bspc rule -a KeePassXC desktop='^8' 
+# the confirm dialog
+bspc rule -a "KeePassXC:Confirm Auto-Type:*" sticky=on
 
 bspc rule -a Dino desktop='^8' 
 bspc rule -a Peek state=floating 

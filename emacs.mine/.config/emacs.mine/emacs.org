@@ -395,6 +395,8 @@ Edit: honestly I have no clue wtf that meant, or why I wrote it, but I will keep
   "r"  '(:ignore t :which-key "Roam+Org")
   
   "ra"  '(org-agenda :which-key "Agenda")
+  "rA"  '(cfw:open-org-calendar :which-key "Calendar")
+  "rh" '(helm-org-ql-views :which-key "org-ql views")
   
   "rD" '(deft :which-key "Deft")
   "rf" '(org-roam-node-find :which-key "Find Note")
@@ -556,6 +558,7 @@ Capture
           )
     :config
     (evil-mode 1)
+  
     (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
     (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
     (define-key evil-normal-state-map "u" 'undo-fu-only-undo)
@@ -571,11 +574,11 @@ Capture
     (define-key evil-normal-state-map "\C-b" 'evil-backward-char)
     (define-key evil-insert-state-map "\C-b" 'evil-backward-char)
     (define-key evil-visual-state-map "\C-b" 'evil-backward-char)
-  
+
     (define-key evil-insert-state-map "\C-d" 'evil-delete-char)
-  
+
     (define-key evil-normal-state-map "\C-i" 'evil-jump-forward)
-  
+
     (define-key evil-normal-state-map "\C-n" 'evil-next-line)
     (define-key evil-insert-state-map "\C-n" 'evil-next-line)
     (define-key evil-visual-state-map "\C-n" 'evil-next-line)
@@ -588,18 +591,18 @@ Capture
     (define-key evil-normal-state-map "\C-y" 'yank)
     (define-key evil-insert-state-map "\C-y" 'yank)
     (define-key evil-visual-state-map "\C-y" 'yank)
-  
+
     (define-key evil-normal-state-map "K" 'lsp-ui-doc-glance); TODO: all modes
     (define-key evil-visual-state-map "\C-y" 'yank)
                                           ;(define-key evil-insert-state-map "\C-k" 'kill-line)
     (define-key evil-normal-state-map "Q" 'call-last-kbd-macro)
     (define-key evil-visual-state-map "Q" 'call-last-kbd-macro)
     ;; (define-key evil-normal-state-map (kbd "TAB") 'evil-undefine)
-  
+
     ;; Use visual line motions even outside of visual-line-mode buffers
     (evil-global-set-key 'motion "j" 'evil-next-visual-line)
     (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
-  
+
     (evil-set-initial-state 'messages-buffer-mode 'normal)
     (evil-set-initial-state 'dashboard-mode 'normal))
 #+end_src
@@ -872,7 +875,8 @@ better sorting for ivy, company..
 #+begin_src emacs-lisp
   (setq org-directory "~/Documents/gtd/"
     org-roam-directory "~/Documents/roam/"
-    org-agenda-files (list org-directory)
+    org-books-file (concat org-roam-directory "book_list.org")
+    org-agenda-files (list org-directory org-books-file)
     rmh-elfeed-org-files (list "~/Documents/private.el/elfeed.org")
     elfeed-dashboard-file "~/Documents/private.el/elfeed-dashboard.org"
     org-preview-latex-image-directory  "~/.cache/ltx/ltximg"
@@ -1107,7 +1111,7 @@ From: https://yiufung.net/post/anki-org/
 ** Agenda
 *** T/ODOs
 #+begin_src emacs-lisp
-   (setq org-todo-keywords '((sequence "TODAY(y)" "TODO(t)" "NOW(o)" "NEXT(n)" "|" "DONE(d)")
+   (setq org-todo-keywords '((sequence "TODO(t)" "NOW(o)" "NEXT(n)" "|" "DONE(d)")
                             (sequence "|" "CANCELED(c)")))
 #+end_src
 
@@ -1224,8 +1228,9 @@ From: https://yiufung.net/post/anki-org/
          '((:log t :order 99); logs at bottom
            (:name "Today" ; today is what
                    :time-grid t    ; Items that appear on the time grid
-                   :todo "TODAY"
                    :scheduled today)
+           (:name "Now" ; today is what
+                   :todo "NOW")
            (:name "Overdue"
                    :deadline past
                    :scheduled past)
@@ -1233,11 +1238,11 @@ From: https://yiufung.net/post/anki-org/
                    :deadline t)
            (:name "To Refile"
                    :tag ("INBOX"))))
-  
+
    (org-super-agenda-mode 1)
 
   :hook (org-agenda-mode . origami-mode)
-        ;(org-agenda-mode . org-super-agenda-mode); need this sadly
+        (org-agenda-mode . org-super-agenda-mode); need this sadly
         (org-agenda-mode . olivetti-mode)
         (org-agenda-mode . olivetti-mode)
   ;(evil-define-key '(normal visual) 'org-super-agenda-header-map "j" 'org-agenda-next-line)
@@ -1259,28 +1264,34 @@ From: https://yiufung.net/post/anki-org/
   ; TODO: tasks not in inbox, and have no schedule/effort/etc
   (use-package org-ql
    :config
-     (setq org-ql-views (list (cons "Overview: Agenda-like"
+     (setq org-ql-views (list
+                         (cons "Agenda:Today"
                                (list :buffers-files #'org-agenda-files
                                      :query '(and (not (done))
                                                   (or (deadline auto)
                                                       (scheduled :to today)
-                                                      (ts-active :on today)
-                                                      (todo "TODAY")))
+                                                      (todo "NOW")
+                                                      (ts-active :on today)))
                                      :sort '(priority date todo)
                                      :super-groups 'org-super-agenda-groups
-                                     :title "Agenda-like"))
+                                     :title "Overview: Today"))
                          (cons "To Refile"
                                (list :buffers-files #'org-agenda-files
-                                     :query '(parent (tags "INBOX"))
-                                     :super-groups 'org-super-agenda-groups
+                                     :query '(or
+                                              (parent (tags "INBOX"))
+                                              (done))
+                                     :super-groups '((:name "Done" :todo "DONE")
+                                                     (:name "Canceled" :todo "CANCELED")
+                                                     (:name "Inbox" :anything))
                                      :title "Inbox"))
-                         (cons "Goals"
+                         (cons "Plans"
                                (list :buffers-files #'org-agenda-files
-                                     :query '(todo "LNOW" "LNEXT")
-                                     :super-groups '((:todo "LNOW")
-                                                     (:todo "LNEXT"))
-                                     :sort '(todo)
-                                     :title "Goals"))  
+                                     :query '(and
+                                               (parent (tags "PLAN"))
+                                               (not (done)))
+                                     :super-groups '((:auto-outline-path))
+                                     :sort '(priority  date todo)
+                                     :title "Plans"))
                          (cons "Consoom and Create"
                                (list :buffers-files #'org-agenda-files
                                      :query '(parent (tags "READ" "WATCH" "TO_BLOG"))
@@ -1291,10 +1302,10 @@ From: https://yiufung.net/post/anki-org/
                                      :title "Goals"))
                          (cons "Orphans"
                                 (list :buffers-files #'org-agenda-files
-                                      :query '(and (not (todo))
+                                      :query '(and ;(not (todo))
                                                    (not (done))
                                                    (not (effort))
-                                                   (not (tags "NOT_ORPHAN"))
+                                                   (not (tags "NOT_ORPHAN" "INBOX"))
                                                    (not (scheduled))
                                                    (not (deadline))
                                                    (parent))))
@@ -1323,6 +1334,23 @@ Stolen from: [[https://blog.jethro.dev/posts/processing_inbox/][Org-mode Workflo
 
 #+end_src
 
+*** Calfw calendar
+#+begin_src emacs-lisp
+  (use-package calfw :after org)
+  (use-package calfw-org
+      :after calfw
+      :config
+    ; looks nice
+    (setq cfw:fchar-junction ?╬
+        cfw:fchar-vertical-line ?║
+        cfw:fchar-horizontal-line ?═
+        cfw:fchar-left-junction ?╠
+        cfw:fchar-right-junction ?╣
+        cfw:fchar-top-junction ?╦
+        cfw:fchar-top-left-corner ?╔
+        cfw:fchar-top-right-corner ?╗)
+     (evil-set-initial-state 'cfw:details-mode 'emacs))
+#+end_src
 
 ** org-pomodoro
 #+begin_src emacs-lisp
@@ -1349,6 +1377,7 @@ Stolen from: [[https://blog.jethro.dev/posts/processing_inbox/][Org-mode Workflo
     :config
     ;; side window
     ;(require 'org-roam-protocol)
+    (org-roam-db-autosync-mode)
     (add-to-list 'display-buffer-alist
                  '("\\*org-roam\\*"
                    (display-buffer-in-side-window)
@@ -1408,9 +1437,7 @@ Stolen from: [[https://blog.jethro.dev/posts/processing_inbox/][Org-mode Workflo
 ** org-book
 #+begin_src emacs-lisp
   (use-package org-books
-   :after org
-   :config 
-  (setq org-books-file "~/Documents/books/list.org"))
+   :after org )
 #+end_src
 
 **  COMMENT Anki
@@ -1449,9 +1476,16 @@ Stopped using this, I just use Anki like a normal person
 
 #+begin_src emacs-lisp
   (use-package parinfer-rust-mode
-      :hook emacs-lisp-mode scheme-mode clojure-mode
+      :hook
+        (emacs-lisp-mode . parinfer-rust-mode)
+        (scheme-mode . parinfer-rust-mode)
+        (clojure-mode . parinfer-rust-mode)
+         ;tabs break parinfer rust mode
+        (parinfer-rust-mode . (lambda () (setq indent-tabs-mode nil)));
       :init
-      (setq parinfer-rust-auto-download t))
+      (setq parinfer-rust-auto-download t
+           ; this variable is only available on my fork
+            parinfer-rust-disable-troublesome-modes t))
 #+end_src
 
 *** Projectile
@@ -1918,6 +1952,7 @@ AucTex
     (LaTeX-mode . flyspell-mode)
     (LaTeX-mode . flycheck-mode)
     (LaTeX-mode . turn-on-reftex)
+    (LaTeX-mode . auto-fill-mode)
     (LaTeX-mode . TeX-source-correlate-mode)
     (LaTeX-mode . try/latex-mode-setup)
     (LaTeX-mode . turn-on-cdlatex)
@@ -2318,6 +2353,7 @@ I wrote that, neat isn't it? :P
     (setq circe-color-nicks-min-constrast-ratio 4.5
           circe-color-nicks-everywhere t)
     :hook (circe-channel-mode . enable-circe-color-nicks)
+          (circe-channel-mode . (lambda () (smooth-scrolling-mode -1)))
     :custom
     (circe-format-say "{nick:-16s} {body}")
     ;; :bind(("C-l" . my/circe/clear))
@@ -2332,7 +2368,7 @@ I wrote that, neat isn't it? :P
      lui-flyspell-p t
      lui-fill-type nil
      ;Display your own nickname instead of >>> in the channel buffers when you're talking.
-     circe-format-self-say "<{nick}> {body}"
+     circe-format-self-say "{nick:-15s} {body}"
   )
 
     (add-hook 'lui-mode-hook 'my-lui-setup)
