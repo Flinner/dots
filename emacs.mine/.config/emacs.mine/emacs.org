@@ -2159,6 +2159,25 @@ ivy bibtex
       (keyfreq-autosave-mode 1))
 #+end_src
 
+** Polybar
+*** org clock
+#+begin_src emacs-lisp
+  (defun my/polybar/org-clock ()
+    "Gets polybar formatted message"
+    (let ((message nil)
+            (icon nil)
+            (icon-color nil))
+        (if (org-clock-is-active)
+            (setq message (substring-no-properties (org-clock-get-clock-string))
+                    icon ""
+                    icon-color "#BA68C8")
+            (setq message ""
+                    icon ""
+                    icon-color "#FDD835"))
+        (concat "%{F" icon-color "}" icon  "%{F-}" message)))
+
+#+end_src
+
 * Elfeed org
  =;; (setq rmh-elfeed-org-files (list "~/Documents/private.el/elfeed.org"))=
 ** Elfeed-org
