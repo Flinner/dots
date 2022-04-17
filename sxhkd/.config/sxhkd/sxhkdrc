@@ -130,7 +130,7 @@ super + shift + r
 
 # program launcher
 super + bracketleft
- 	uwu.py
+ 	rofi -show emoji
 
 
 #
