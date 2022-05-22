@@ -14,8 +14,10 @@ XF86MonBrightnessDown
   amixer -q sset 'Master' {2%-, 2%+,0}
 
 #next, Pause/unpause mpd
-{XF86AudioStop, XF86AudioNext,XF86AudioPlay, XF86AudioPrev}
-  mpc {stop, next,toggle,prev}
+#{XF86AudioStop, XF86AudioNext,XF86AudioPlay, XF86AudioPrev}
+  #mpc {stop, next,toggle,prev}
+XF86AudioPlay
+  ~/bin/pause-mpv
 
 #Mail, Browser
 {XF86Mail,XF86HomePage}
