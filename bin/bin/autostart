@@ -21,6 +21,8 @@ source ~/.fehbg
 #other
 (sleep 1 && picom --config "$HOME/.config/picom.conf" )&
 #(sleep 1 && keynav)&
+# warped > keynav
+(sleep 1 && warpd)&
 (sleep 0 && ~/bin/keyboard ) &
 killall wired
 (sleep 1 && wired ) &
