@@ -1,3 +1,7 @@
 # format with playlist_index
 -o "%(playlist_index)s-%(title)s.%(ext)s"
+--write-subs
+--embed-subs
+--write-auto-subs
+#--sub-langs all,-live_chat
 
