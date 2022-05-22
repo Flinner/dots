@@ -105,7 +105,9 @@ function zle-keymap-select zle-line-init zle-line-finish
       viins|main) print -n '\033[6 q';; # block cursor
   esac
 }
+# Quit with jk or ESC
 bindkey jk vi-cmd-mode
+bindkey '\e' vi-cmd-mode
 
 # exit on partianl command with Ctrl-D
 exit_zsh() { exit }
