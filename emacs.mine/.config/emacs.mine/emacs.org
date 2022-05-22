@@ -257,6 +257,12 @@ Self explanatory
 (setq org-roam-v2-ack t) ; anonying startup message
 #+end_src
 
+** Tab Width
+*8* Spaces for a single tab is too much
+#+begin_src emacs-lisp
+(setq-default tab-width 4)
+#+end_src
+
 * Auth!
 should i really be commiting this? :>
 ** auth sources
@@ -445,7 +451,8 @@ Capture
   "o"  '(:ignore t :which-key "Open")
 
   "oT" '(vterm :which-key "Vterm in current window")
-  ;"ot" '(vterm-other-window :which-key "Vterm in other window")
+  ; use C-t
+  ;"ot" '(vterm-toggle :which-key "Vterm in other window")
   "ob" '(bookmark-jump :which-key "Bookmark Jump")
   "oB" '(bookmark-set :which-key "Bookmark set")
   "op" '(list-processes :which-key "List Proccess")
@@ -558,7 +565,7 @@ Capture
           )
     :config
     (evil-mode 1)
-  
+
     (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
     (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
     (define-key evil-normal-state-map "u" 'undo-fu-only-undo)
@@ -574,6 +581,7 @@ Capture
     (define-key evil-normal-state-map "\C-b" 'evil-backward-char)
     (define-key evil-insert-state-map "\C-b" 'evil-backward-char)
     (define-key evil-visual-state-map "\C-b" 'evil-backward-char)
+
 
     (define-key evil-insert-state-map "\C-d" 'evil-delete-char)
 
@@ -797,6 +805,7 @@ slow loading! defer it
       :defer 5
       :diminish company-mode
       :custom
+      (company-tooltip-minimum-width 40) ;reduce flicker due to changing width
       (global-company-mode t)
       (company-idle-delay 0.3) ;; how long to wait until popup
       (company-minimum-prefix-length 1) ;; The minimum prefix length for idle completion.
@@ -1073,7 +1082,7 @@ Allow fast code insertion
                         :olp ("Ideas" "Project")
                         :todo-state "")
                        ("Blogs"   :keys "b"
-                        :olp ("Ideas" "Blog")
+                        :olp ("Blog")
                         :todo-state "")
                        ("placeholder" :keys "w"
                           :headline "Watch"
@@ -1593,6 +1602,10 @@ Lsp UI
 #+end_src
 
 ** Git
+#+begin_src emacs-lisp
+   (setq vc-handled-backends '(Git))
+#+end_src
+
 *** Magit
 #+begin_src emacs-lisp
     (use-package magit
@@ -1601,6 +1614,12 @@ Lsp UI
       (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 #+end_src
 
+Magit TODOs!
+#+begin_src emacs-lisp
+  (use-package magit-todos
+         :after magit
+         :config (magit-todos-mode 1))
+#+end_src
 *** TODO Forge
 #+begin_src emacs-lisp
   ;(use-package forge)
@@ -1831,9 +1850,9 @@ Auto format
 svelte
 #+begin_src emacs-lisp
   (use-package svelte-mode
-        :config
-        (add-hook 'before-save-hook 'lsp-format-buffer)
-      :hook (svelte-mode . lsp))
+      :hook (svelte-mode . lsp)
+            (svelte-mode . (lambda ()
+              (add-hook 'before-save-hook 'lsp-format-buffer nil t))))
 #+end_src
 
 prettier
@@ -1913,6 +1932,9 @@ Better Diff in header sizes
 AucTex
 #+begin_src emacs-lisp
   ;; latexmk
+  (use-package magic-latex-buffer
+    :custom (magic-latex-buffer 1)
+    :defer t)
   (use-package auctex-latexmk
   :defer t)
   ;; company
@@ -2087,6 +2109,37 @@ ivy bibtex
 (setq verilog-linter "verilator --lint-only")
 #+end_src
 
+*** Bash
+#+begin_src emacs-lisp
+  (use-package flymake-shellcheck
+    :commands flymake-shellcheck-load
+    :init
+    (add-hook 'sh-mode-hook 'flymake-shellcheck-load))
+
+#+end_src
+
+** Tramp
+#+begin_src emacs-lisp
+  ; moved to Git
+  ; https://emacs.stackexchange.com/questions/16489/tramp-is-unbearably-slow-osx-ssh
+  ; (setq vc-handled-backends '(Git))
+    (setq tramp-backup-directory-alist backup-directory-alist)
+  (setq vc-ignore-dir-regexp
+      (format "\\(%s\\)\\|\\(%s\\)"
+              vc-ignore-dir-regexp
+              tramp-file-name-regexp))
+  (setq vc-handled-backends '(Git))
+  ;https://libredd.it/r/emacs/comments/320cvb/projectile_slows_tramp_mode_to_a_crawl_is_there_a/
+(add-hook 'find-file-hook
+          (lambda ()
+            (when (file-remote-p default-directory)
+              (setq-local projectile-mode-line "Projectile"
+                          vc-handled-backends '()))))
+              
+
+
+#+end_src
+
 * Misc
 ** Restart Emacs
 #+begin_src emacs-lisp
@@ -2103,10 +2156,20 @@ ivy bibtex
 #+begin_src emacs-lisp
   (use-package vterm
       :commands vterm
+      ;; :bind (:map vterm-mode-map
+      ;;         ("C-t" . vterm-toggle))
+      :config
+      ;;Toggle vterm
+      (evil-define-key '(normal visual insert) 'vterm-mode-map (kbd "C-t") 'vterm-toggle)
+
       :custom
        ; claimed to be faster: https://teddit.net/r/emacs/comments/tpey9g/making_vterm_snappy_by_setting_vtermtimerdelay_to/
         (vterm-timer-delay nil)
       :ensure t)
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package vterm-toggle)
 #+end_src
 
 ** COMMENT ranger
@@ -2172,10 +2235,17 @@ ivy bibtex
                     icon ""
                     icon-color "#BA68C8")
             (setq message ""
-                    icon ""
+                    icon ""; "";; I want it to be empty
                     icon-color "#FDD835"))
         (concat "%{F" icon-color "}" icon  "%{F-}" message)))
 
+#+end_src
+
+** Gemini
+#+begin_src emacs-lisp
+  (use-package elpher
+      :defer t
+      :hook (elpher-mode . olivetti-mode) )
 #+end_src
 
 * Elfeed org
@@ -2563,25 +2633,28 @@ I prefer text/plain, over everything >:)
 
 * Telega
 #+begin_src emacs-lisp
-  (use-package telega
-  :commands (telega)
-  :init
-      (defun my/telega/olivetti () (setq-local olivetti-body-width 80))
-      (defun my/telega/company-backends ()
-          (setq-local company-backends
-              (append '(telega-company-username telega-company-botcmd )
-                      company-backends)))
-  :hook (telega-chat-mode . olivetti-mode)
-        (telega-chat-mode . my/telega/olivetti)
-        (telega-chat-mode . my/telega/company-backends)
-  ;; installed telegram-tdlib from AUR
-  :config
-  (telega-mode-line-mode)
-  (telega-notifications-mode)
-  :custom (telega-server-libs-prefix "/usr")
-          (telega-chat-bidi-display-reordering 'right-to-left)
-          (telega-sticker-size '(10 . 24))
-          (telega-emoji-use-images nil))
+    (use-package telega
+    :init
+        (defun my/telega/olivetti () (setq-local olivetti-body-width 80))
+        (defun my/telega/company-backends ()
+            (setq-local company-backends
+                (append '(telega-company-username telega-company-botcmd telega-company-emoji)
+                        company-backends)))
+    :hook (telega-chat-mode . olivetti-mode)
+          (telega-chat-mode . my/telega/olivetti)
+          (telega-chat-mode . my/telega/company-backends)
+    ;; installed telegram-tdlib from AUR
+    :config
+    (telega-mode-line-mode)
+    (telega-appindicator-mode)
+    (telega-notifications-mode)
+    :custom (telega-server-libs-prefix "/usr")
+            (telega-chat-bidi-display-reordering 'right-to-left)
+            (telega-sticker-size '(10 . 24))
+            (telega-emoji-use-images nil)
+            (telega-symbol-checkmark "🄌")
+            (telega-symbol-heavy-checkmark "⬤")
+  )
 
 #+end_src
 
