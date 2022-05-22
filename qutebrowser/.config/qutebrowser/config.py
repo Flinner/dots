@@ -15,7 +15,8 @@
 config.load_autoconfig(True)
 
 # ORG MODE
-config.bind("ec", "open javascript:location.href='org-protocol://roam-ref?template=r&ref='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title)")
+config.bind("ye", "open javascript:location.href='org-protocol://roam-ref?template=r&ref='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title)")
+config.bind("yc", 'jseval --file cite.js')
 
 ## Aliases for commands. The keys of the given dictionary are the
 ## aliases, while the values are the commands they map to.
