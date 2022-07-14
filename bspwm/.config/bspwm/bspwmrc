@@ -34,7 +34,8 @@ bspc config pointer_follows_focus true
 bspc rule -a Thunderbird desktop='^8' 
 bspc rule -a KeePassXC desktop='^8' 
 # the confirm dialog
-bspc rule -a "KeePassXC:Confirm Auto-Type:*" sticky=on
+bspc rule -a "KeePassXC:*:Confirm Auto-Type" sticky=on
+bspc rule -a "Dragon-drag-and-drop" sticky=on
 
 bspc rule -a Dino desktop='^8' 
 bspc rule -a Peek state=floating 

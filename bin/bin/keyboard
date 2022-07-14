@@ -3,6 +3,8 @@ setxkbmap -option ctrl:swapcaps
 setxkbmap -option altwin:swap_lalt_lwin 
 setxkbmap -model pc105 -layout us,ar -variant ,qwerty -option grp:shifts_toggle 
 
+xset r rate 300 50
+
 # touchpad touch
 idd=$(xinput --list | grep 'Touchpad' | awk '{print $6}'| cut -d'=' -f2)
 #xinput set-prop $idd 343 1

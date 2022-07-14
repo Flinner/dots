@@ -26,7 +26,7 @@ source ~/.fehbg
 (sleep 0 && ~/bin/keyboard ) &
 killall wired
 (sleep 1 && wired ) &
-(sleep 3 && optimus-manager-qt) &
+#(sleep 3 && optimus-manager-qt) &
 (sleep 3 && flameshot) &
 
 (sleep 4 && keepassxc) &
@@ -34,12 +34,17 @@ killall wired
 
 (sleep 5 && syncthing -no-browser) &
 #(sleep 5 && thunderbird ) &
-(sleep 5 && davmail ) &
 (sleep 7 && bspc rule -r Thunderbird ) &
+
+# Kill all davail instances before launching a single one
+kill $(pgrep --full "davmail")
+(sleep 5 && davmail ) &
 
 # kill current session and if there is ones waiting to start lol
 killall goimapnotify
 (sleep 55 && killall goimapnotify) &
+
+(sleep 6 && notify-send "STARTUP MSG" "Don't Forget to unlock keepassXC!") &
 
 # start watching all mail dirs
 # moved to file
