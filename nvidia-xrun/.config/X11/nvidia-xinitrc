@@ -5,6 +5,9 @@ usermodmap=$HOME/.Xmodmap
 sysresources=/etc/X11/xinit/.Xresources
 sysmodmap=/etc/X11/xinit/.Xmodmap
 
+# https://forum.archlabslinux.com/t/polybar-mirrored-laptop-hdmi-monitor-i3-workspaces-issue/3398
+# Polybar has issues, so just disconnect internal monitor
+~/bin/disconnect-internal-monitor.sh
 
 eval `ssh-agent -s`
 # merge in defaults and keymaps

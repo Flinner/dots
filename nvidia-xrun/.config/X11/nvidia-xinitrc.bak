@@ -37,5 +37,6 @@ fi
 if [ $# -gt 0 ]; then
     $*
 else
-    dbus-launch /usr/bin/bspwm
+    /usr/bin/bspwm
 fi
+
