@@ -2024,7 +2024,10 @@ c.tabs.show = 'multiple'
 ## Type: Dict
 c.url.searchengines = {'DEFAULT': 'https://searx.neocities.org/?q={}',
                         'wa':"https://wiki.archlinux.org/?search={}",
+                        'aur':
+                       "https://aur.archlinux.org/packages?O=0&SeB=nd&K={}&outdated=&SB=p&SO=d&PP=50&submit=Go",
                         'go':"http://google.com/search?q={}",
+                        'ar':"http://web.archive.org/web/*/{}",
                         'ddg':"https://duckduckgo.com/?q={}",
                        }
 
