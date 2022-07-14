@@ -906,46 +906,49 @@ Modes To Start
 #+end_src
 use-package
 #+begin_src emacs-lisp
-    (use-package org
-      :defer t
-      :hook (org-mode . my/org-mode/org-mode-setup)
-      (org-mode . my/org-mode/load-prettify-symbols); symbols
-      (org-mode . auto-fill-mode)
-      :config
-      (require 'org-tempo)
-      (require 'org-habit)
-      (setq geiser-default-implementation  'guile)
-      (setq org-ellipsis " ⤵")
-      (setq org-agenda-start-with-log-mode t)
-      (setq org-highlight-latex-and-related '(latex))
-      (setq org-log-done 'time)
-      (setq org-log-into-drawer t)
-      (dolist (face '((org-document-title . 2.0)
-                      (org-level-1 . 1.2)
-                      (org-level-2 . 1.1)
-                      (org-level-3 . 1.05)
-                      (org-level-4 . 1.0)
-                      (org-level-5 . 1.1)
-                      (org-level-6 . 1.1)
-                      (org-level-7 . 1.1)
-                      (org-level-8 . 1.1)))
-        ;; (set-face-attribute (car face) nil :font my/ui/varfont :weight 'regular :height (cdr face)))
-        (set-face-attribute (car face) nil :font my/ui/varfont :weight 'regular :height (cdr face)))
-    ;)
+  (use-package org
+	:defer t
+	:hook (org-mode . my/org-mode/org-mode-setup)
+	(org-mode . my/org-mode/load-prettify-symbols); symbols
+	(org-mode . auto-fill-mode)
+	:config
+	(require 'org-tempo)
+	(require 'org-habit)
+    (add-to-list 'org-file-apps '("\\.xlsx\\'" . default))
+	(setq geiser-default-implementation  'guile)
+	(setq org-ellipsis " ⤵")
+	(setq org-agenda-start-with-log-mode t)
+	(setq org-highlight-latex-and-related '(latex))
+	(setq org-log-done 'time)
+	(setq org-log-into-drawer t)
+	(dolist (face '((org-document-title . 2.0)
+					(org-level-1 . 1.2)
+					(org-level-2 . 1.1)
+					(org-level-3 . 1.05)
+					(org-level-4 . 1.0)
+					(org-level-5 . 1.1)
+					(org-level-6 . 1.1)
+					(org-level-7 . 1.1)
+					(org-level-8 . 1.1)))
+	  ;; (set-face-attribute (car face) nil :font my/ui/varfont :weight 'regular :height (cdr face)))
+	  (set-face-attribute (car face) nil :font my/ui/varfont :weight 'regular :height (cdr face)))
+  ;)
 
+	(setq org-todo-keyword-faces `(("NOW" (:foreground "white" :background "#444527"))
+								   ("NEXT" (:foreground "bright-white" :background "#444527"))))
 
-    (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
-      ;; Ensure that anything that should be fixed-pitch in Org files appears that way
-      (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
-      (set-face-attribute 'org-code nil   :inherit '(shadow fixed-pitch))
-      (set-face-attribute 'org-table nil   :inherit '(shadow fixed-pitch))
-      (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
-      (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
-      (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
-      (set-face-attribute 'org-todo nil :background "#444527" )
-      (set-face-attribute 'org-done nil :strike-through t)
-      (set-face-attribute 'org-headline-done nil :strike-through t)
-      (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch))
+	(setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
+	;; Ensure that anything that should be fixed-pitch in Org files appears that way
+	(set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
+	(set-face-attribute 'org-code nil   :inherit '(shadow fixed-pitch))
+	(set-face-attribute 'org-table nil   :inherit '(shadow fixed-pitch))
+	(set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
+	(set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
+	(set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
+	(set-face-attribute 'org-todo nil :background "#444527" )
+	(set-face-attribute 'org-done nil :strike-through t)
+	(set-face-attribute 'org-headline-done nil :strike-through t)
+	(set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch))
 #+end_src
 
 Capture Templates
@@ -954,6 +957,13 @@ Capture Templates
   :ensure t
   ;;recommended: defer until calling doct
   :commands (doct))
+#+end_src
+
+** Open with external app
+#+begin_src emacs-lisp
+  ;; Excel with xdg-open
+  ;;(add-to-list 'org-file-apps '("\\.xlsx\\'" . default))
+  ;; moved to org use package
 #+end_src
 
 ** Appearance
@@ -1118,6 +1128,12 @@ From: https://yiufung.net/post/anki-org/
 #+end_src
 
 ** Agenda
+*** Customizations
+#+begin_src emacs-lisp
+  ;;laggy :(
+  (setq org-agenda-show-outline-path nil)
+#+end_src
+
 *** T/ODOs
 #+begin_src emacs-lisp
    (setq org-todo-keywords '((sequence "TODO(t)" "NOW(o)" "NEXT(n)" "|" "DONE(d)")
@@ -1371,6 +1387,11 @@ Stolen from: [[https://blog.jethro.dev/posts/processing_inbox/][Org-mode Workflo
   (org-pomodoro-manual-break t))
 #+end_src
 
+** Org analyzer
+#+begin_src emacs-lisp
+  (use-package org-analyzer)
+#+end_src
+
 ** org-roam
 *** use-package
 #+begin_src emacs-lisp
@@ -1475,7 +1496,7 @@ Stopped using this, I just use Anki like a normal person
   (use-package rainbow-delimiters
     :hook (prog-mode . rainbow-delimiters-mode)
           (prog-mode . show-paren-mode)
-          (prog-mode . electric-pair-mode)
+          (prog-mode . electric-pair-local-mode)
      ) 
 #+end_src
 
@@ -1620,6 +1641,7 @@ Magit TODOs!
          :after magit
          :config (magit-todos-mode 1))
 #+end_src
+
 *** TODO Forge
 #+begin_src emacs-lisp
   ;(use-package forge)
@@ -1687,13 +1709,14 @@ Get treemacs-lsp
      :defer t)
 #+end_src
 
-*** COMMENT Clojure
+*** Clojure
 #+begin_src emacs-lisp
   (use-package cider
   :defer t
   :config (require 'flycheck-clj-kondo)
   :hook   (clojure-mode . zprint-format-on-save-mode)
           (clojure-mode . flycheck-mode)
+          (clojure-mode . electric-pair-local-mode)
   :bind   (:map cider-mode-map
           ([remap lsp-find-definition] . cider-find-var)
           ([remap eval-defun] . cider-eval-list-at-point)
@@ -1866,6 +1889,12 @@ lsp hooks setups
 #+begin_src emacs-lisp
   (add-hook 'html-mode-hook 'lsp)
   (add-hook 'js-mode-hook 'lsp)
+#+end_src
+
+*** Lua
+#+begin_src emacs-lisp
+  (use-package lua-mode
+   :hook (lua-mode . lsp))
 #+end_src
 
 *** Markdown
@@ -2115,6 +2144,14 @@ ivy bibtex
     :commands flymake-shellcheck-load
     :init
     (add-hook 'sh-mode-hook 'flymake-shellcheck-load))
+
+#+end_src
+
+*** Nix(OS)
+#+begin_src emacs-lisp
+  (use-package nix-mode
+     :hook (nix-mode .  (lambda ()
+              (add-hook 'before-save-hook 'nix-mode-format nil t))))
 
 #+end_src
 
@@ -2658,6 +2695,18 @@ I prefer text/plain, over everything >:)
 
 #+end_src
 
+* Matrix Ement
+#+begin_src emacs-lisp
+  (use-package ement
+      :straight (ement
+                 :type git
+                 :host github
+                 :repo "alphapapa/ement.el"))
+      ;; :after org-roam ;; or :after org
+      ;; :hook (org-roam . org-roam-ui-mode)
+      ;; :config)
+#+end_src
+
 * Buffers and Windows
 ** COMMENT Workspaces (Persepective
 #+begin_src emacs-lisp
@@ -2666,7 +2715,6 @@ I prefer text/plain, over everything >:)
   :config
   (setq persp-keymap-prefix (kbd "SPC <tab>"))
 #+end_src
-
 
 * Startpage
 #+begin_src emacs-lisp
