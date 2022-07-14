@@ -81,11 +81,14 @@ setopt HIST_IGNORE_ALL_DUPS  # do not put duplicated command into history list
 setopt HIST_IGNORE_SPACE # Remove commands from history when the first character is a space
 setopt HIST_SAVE_NO_DUPS  # do not save duplicated command
 setopt HIST_REDUCE_BLANKS  # remove unnecessary blanks
-setopt INC_APPEND_HISTORY_TIME  # append command to history file immediately after execution
-setopt EXTENDED_HISTORY  # record command start time
 setopt CORRECT           # Correct spelling of commands
 setopt CORRECT_ALL       # Correct spelling of arguments
 setopt INTERACTIVE_COMMENTS # can have comments at the prompt
+setopt HIST_VERIFY      # history expansions get verified in a new line
+setopt SHARE_HISTORY     # SHARE_HISTORY between zsh sessins
+    # disabled due to SHARE_HISTORY being used
+    #setopt INC_APPEND_HISTORY_TIME  # append command to history file immediately after execution
+setopt EXTENDED_HISTORY  # record command start time
 SAVEHIST=1000
 HISTSIZE=1000
 HISTFILE="$HOME/.local/share/zsh/zsh_history"
