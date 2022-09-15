@@ -1,0 +1,3 @@
+#!/bin/sh
+sudo tee /sys/bus/pci/rescan <<< 1
+

@@ -1,0 +1,6 @@
+#!/bin/bash
+
+DEVICE_BUS_ID=$(lspci | grep "VGA compatible controller: NVIDIA" | awk '{print $1}')
+
+sudo tee /sys/bus/pci/devices/0000:${DEVICE_BUS_ID}/remove <<<1
+
