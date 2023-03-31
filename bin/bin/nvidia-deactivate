@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 DEVICE_BUS_ID=$(lspci | grep "VGA compatible controller: NVIDIA" | awk '{print $1}')
 

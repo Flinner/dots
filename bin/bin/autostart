@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #xset r rate 400 100
 ##emacs -fs &
 rm -rf ~/.cache/fontconfig
