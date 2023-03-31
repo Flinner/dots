@@ -520,8 +520,10 @@ Capture
   "cl" '(lsp-avy-lens :which-key "Code Action")
   "ci" '(lsp-ui-imenu :which-key "lsp imenu")
   "cr" '(lsp-rename :which-key "rename")
-  "cs" '(lsp-find-refernces :which-key "find refernces")
-  "cd" '(lsp-find-definition :which-key "goto defintion")
+  ;"cs" '(lsp-find-refernces :which-key "find refernces")
+  ;"cd" '(lsp-find-definition :which-key "goto defintion")
+  "cd" '(lsp-ui-peek-find-definitions :which-key "goto defintion")
+  "cs" '(lsp-ui-peek-find-refernces :which-key "find refernces")
 #+end_src
 
 **** Git (g)
@@ -600,7 +602,7 @@ Capture
     (define-key evil-insert-state-map "\C-y" 'yank)
     (define-key evil-visual-state-map "\C-y" 'yank)
 
-    (define-key evil-normal-state-map "K" 'lsp-ui-doc-glance); TODO: all modes
+    ;(define-key evil-normal-state-map "K" 'lsp-ui-doc-glance); moved to lsp-ui
     (define-key evil-visual-state-map "\C-y" 'yank)
                                           ;(define-key evil-insert-state-map "\C-k" 'kill-line)
     (define-key evil-normal-state-map "Q" 'call-last-kbd-macro)
@@ -1496,7 +1498,7 @@ Stopped using this, I just use Anki like a normal person
   (use-package rainbow-delimiters
     :hook (prog-mode . rainbow-delimiters-mode)
           (prog-mode . show-paren-mode)
-          (prog-mode . electric-pair-local-mode)
+          ;(prog-mode . electric-pair-local-mode)
      ) 
 #+end_src
 
@@ -1585,22 +1587,26 @@ Counsel Projectile
 
 Lsp UI
 #+begin_src emacs-lisp
-  (use-package lsp-ui
-      :ensure
-      :commands lsp-ui-mode
-      :custom
-      (lsp-ui-peek-always-show t)
-      (lsp-ui-doc-mode t)
-      (lsp-ui-sideline-show-hover nil)
-      ;; (lsp-ui-doc-enable nil)
-      :bind
-          (:map lsp-ui-mode-map
-          ("C-c z" . lsp-ui-doc-focus-frame)
-      :map lsp-ui-doc-frame-mode-map
-          ("C-g" . lsp-ui-doc-unfocus-frame)
-          ("C-c z" . lsp-ui-doc-unfocus-frame)
-    ))
+   (use-package lsp-ui
+       :ensure
+       :commands lsp-ui-mode
+       :custom
+       (lsp-ui-peek-always-show t)
+       (lsp-ui-doc-mode t)
+       (lsp-ui-sideline-show-hover nil)
+       ;; (lsp-ui-doc-enable nil)
+       :bind
+           (:map lsp-ui-mode-map
+            ([remap evil-lookup]           . lsp-ui-doc-glance)
+            ([remap xref-find-references]  . lsp-ui-peek-find-references)
+            ("C-c z" . lsp-ui-doc-focus-frame)
+       :map lsp-ui-doc-frame-mode-map
+           ("C-g"   . lsp-ui-doc-unfocus-frame)
+           ("C-c z" . lsp-ui-doc-unfocus-frame)
+     ))
 #+end_src
+
+#+RESULTS:
 
 *** lsp treemacs
 #+begin_src emacs-lisp
@@ -1753,9 +1759,6 @@ Auto format
     ;; comment to disable rustfmt on save
     (setq rustic-format-on-save t)
     (add-hook 'rustic-mode-hook 'my/dev/rustic-mode-hook)
-    ;; (add-hook 'rustic-mode-hook 'electric-pair-mode)
-    ;; (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
-    ;; (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
     (add-hook 'rustic-mode-hook 'lsp)
     :custom
     (rustic-rustfmt-config-alist '((edition . "2021"))))
