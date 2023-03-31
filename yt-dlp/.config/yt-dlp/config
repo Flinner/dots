@@ -3,5 +3,5 @@
 #--write-subs
 --embed-subs
 --write-auto-subs
---sub-langs "en.*"
+#--sub-langs "en.*,ja.*"
 

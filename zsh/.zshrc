@@ -62,6 +62,10 @@ zplugin ice wait'0' lucid
 zinit load agkozak/zsh-z
 
 
+zplugin ice wait'5' lucid
+zplugin load chisui/zsh-nix-shell
+
+
 #zplugin ice wait'1' lucid
 #zplugin load marlonrichert/zsh-autocomplete
 
@@ -187,6 +191,7 @@ alias sudo='sudo '
 
 alias fm='ranger'
 alias fm.='. ranger'
+alias books="fm ~/Nextcloud/Books"
 
 alias ll='ls -alF'
 alias la='ls -A'
@@ -209,6 +214,7 @@ alias ip='ip --color=auto'
 alias ytfzfd='YTFZF_PLAYER="youtube-dl --embed-subs --write-sub --sub-lang en" ytfzf'
 
 alias cargo-doc-server="python -m http.server -d target/doc/ -b 127.0.0.1"
+alias startx="exec startx"
 
 #===============================================================================================
 
@@ -274,6 +280,12 @@ export LESS_TERMCAP_se=$(printf '\e[0m')     # leave standout mode
 export LESS_TERMCAP_so=$(printf '\e[01;33m') # enter standout mode - yellow
 export LESS_TERMCAP_ue=$(printf '\e[0m')     # leave underline mode
 export LESS_TERMCAP_us=$(printf '\e[04;36m') # enter underline mode - cyan
+
+# fcitx (japanese)
+GTK_IM_MODULE='fcitx'
+QT_IM_MODULE='fcitx'
+SDL_IM_MODULE='fcitx'
+XMODIFIERS='@im=fcitx'
 
 #===============================================================================================
 

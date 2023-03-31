@@ -7,6 +7,7 @@ set selection-clipboard clipboard
 map u scroll half-up
 map d scroll half-down
 map D toggle_page_mode
+# or set first-page-column 1:1 OR 1:2
 map r reload
 map R rotate
 map K zoom in
