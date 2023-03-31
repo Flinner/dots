@@ -198,17 +198,17 @@ Actuall Theme:
     (doom-themes-org-config))
 #+end_src
 
-Transperancy!
+Transparency!
 #+begin_src emacs-lisp
   ;; for the first frame
-  (set-frame-parameter nil 'alpha-background 0.9)
+  (set-frame-parameter nil 'alpha-background 0.8)
   ;; for other frames
   (add-hook 'server-after-make-frame-hook
-      (lambda nil  (set-frame-parameter nil 'alpha-background 0.9)))
+      (lambda nil  (set-frame-parameter nil 'alpha-background 0.8)))
 #+end_src
 
 Center text in the frame, looks nice ;)
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp 
   (use-package olivetti
     :diminish
     :hook (text-mode . olivetti-mode)
@@ -922,16 +922,16 @@ use-package
 	(setq org-log-done 'time)
 	(setq org-log-into-drawer t)
 	(dolist (face '((org-document-title . 2.0)
-					(org-level-1 . 1.2)
-					(org-level-2 . 1.1)
-					(org-level-3 . 1.05)
+					(org-level-1 . 1.5)
+					(org-level-2 . 1.0)
+					(org-level-3 . 1.0)
 					(org-level-4 . 1.0)
-					(org-level-5 . 1.1)
-					(org-level-6 . 1.1)
-					(org-level-7 . 1.1)
-					(org-level-8 . 1.1)))
+					(org-level-5 . 1.0)
+					(org-level-6 . 1.0)
+					(org-level-7 . 1.0)
+					(org-level-8 . 1.0)))
 	  ;; (set-face-attribute (car face) nil :font my/ui/varfont :weight 'regular :height (cdr face)))
-	  (set-face-attribute (car face) nil :font my/ui/varfont :weight 'regular :height (cdr face)))
+	  (set-face-attribute (car face) nil :font my/ui/monofont :weight 'regular :height (cdr face)))
   ;)
 
 	(setq org-todo-keyword-faces `(("NOW" (:foreground "white" :background "#444527"))
@@ -1866,7 +1866,9 @@ Auto format
     ;; formats the buffer before saving
     ;; (add-hook 'before-save-hook 'tide-format-before-save)
     (add-hook 'before-save-hook 'prettier-js)
+    (add-to-list 'auto-mode-alist '("\\.tsx\\'" . js-jsx-mode))
   :hook(typescript-mode . setup-tide-mode)
+  :hook(typescript-mode . prettier-mode)
   :hook(typescript-mode . lsp))
 #+end_src
 
@@ -1889,6 +1891,7 @@ lsp hooks setups
 #+begin_src emacs-lisp
   (add-hook 'html-mode-hook 'lsp)
   (add-hook 'js-mode-hook 'lsp)
+  (add-hook 'js-jsx-mode-hook 'lsp)
 #+end_src
 
 *** Lua
@@ -2151,7 +2154,8 @@ ivy bibtex
 #+begin_src emacs-lisp
   (use-package nix-mode
      :hook (nix-mode .  (lambda ()
-              (add-hook 'before-save-hook 'nix-mode-format nil t))))
+              ;(add-hook 'before-save-hook 'nix-mode-format nil t)))); doesn't require nixfmt
+              (add-hook 'before-save-hook 'nix-format-buffer nil t))))
 
 #+end_src
 
@@ -2193,8 +2197,8 @@ ivy bibtex
 #+begin_src emacs-lisp
   (use-package vterm
       :commands vterm
-      ;; :bind (:map vterm-mode-map
-      ;;         ("C-t" . vterm-toggle))
+      :bind (:map vterm-mode-map
+              ("C-t" . vterm-toggle))
       :config
       ;;Toggle vterm
       (evil-define-key '(normal visual insert) 'vterm-mode-map (kbd "C-t") 'vterm-toggle)
@@ -2424,7 +2428,7 @@ I wrote that, neat isn't it? :P
 #+begin_src emacs-lisp :tangle no
     ;; Doesn't tangle!
     ;; loaded in use-package (block below)
-    (load "~/Documents/passwords/circe-networks.el")
+  (load "~/Nextcloud/Passwords/circe-networks.el")
 
    ; example content
   (add-to-list 'circe-networks `("chat.name/username" :host "irc.example.com" :port 69
@@ -2475,7 +2479,7 @@ I wrote that, neat isn't it? :P
     (enable-lui-track)
     ;(add-to-list 'circe-networks `())
     ;; adding to list happens here!
-    (load "~/Documents/passwords/circe-networks.el")
+    (load "~/Nextcloud/Passwords/circe-networks.el")
     (setq circe-color-nicks-min-constrast-ratio 4.5
           circe-color-nicks-everywhere t)
     :hook (circe-channel-mode . enable-circe-color-nicks)
@@ -2519,9 +2523,12 @@ I wrote that, neat isn't it? :P
 * Email (mu4e)
 ** Package
 #+begin_src emacs-lisp
-  (use-package mu4e
-    :demand
-    ;; :ensure-system-package mu
+
+  (use-package mu4e                       ;
+  ;; this line is for nixos
+  ;; until here
+    ;;:ensure-system-package mu
+    :commands (mu4e)
     :bind   (:map mu4e-main-mode-map
              ([remap revert-buffer] . mu4e-update-index))
     :custom
@@ -2540,8 +2547,8 @@ I wrote that, neat isn't it? :P
       (mu4e-view-mode . olivetti-mode) 
       (mu4e-main-mode . olivetti-mode)
       (mu4e-compose-mode . flyspell-mode)
-      (mu4e-context-changed . mu4e-update-index)
-  )
+      (mu4e-context-changed . mu4e-update-index))
+
 #+end_src
 
 ** Contexts
@@ -2550,6 +2557,7 @@ I wrote that, neat isn't it? :P
   ;; ~/Maildir/Account0/{Inbox,Sent,Trash}
   ;; ~/Maildir/Account1/{Inbox,Sent,Trash}
   ;; where Account0 is context name
+(with-eval-after-load 'mu4e
   (defun my-make-mu4e-context (context-name full-name mail-address signature)
     "Return a mu4e context named CONTEXT-NAME with :match-func matching
   folder name CONTEXT-NAME in Maildir. The context's `user-mail-address',
@@ -2597,7 +2605,7 @@ I wrote that, neat isn't it? :P
          (mu4e-drafts-folder   .   ,(concat dir-name "/Drafts"))
          (mu4e-trash-folder    .   ,(concat dir-name "/Trash"))
          (mu4e-refile-folder   .   ,(concat dir-name "/Archive"))
-         (mu4e-compose-signature . ,signature)))))
+         (mu4e-compose-signature . ,signature))))))
   ;;Fixing duplicate UID errors when using mbsync and mu4e
 #+end_src
 
@@ -2606,6 +2614,7 @@ I wrote that, neat isn't it? :P
   ;; This is a sample, it doesn't get included in init.el
   ;; I put mine at location specified in the  next code block
   ;; any number of email can be used ofc
+(with-eval-after-load 'mu4e
   (setq mu4e-contexts `(
     ,(my-make-mu4e-context
             "maildir-context" "Full Name"
@@ -2613,13 +2622,13 @@ I wrote that, neat isn't it? :P
     ,(my-make-mu4e-context
             "maildir-context2" "Full Name2"
             "Email Address2" "Signature2")
-    ))
+    )))
 #+end_src
 
 or don't include in git source :)
 #+begin_src emacs-lisp
-(eval-after-load 'mu4e
-  (load "~/Documents/passwords/mu4e-context.el"))
+(with-eval-after-load 'mu4e
+  (load "~/Nextcloud/Passwords/mu4e-context.el"))
 #+end_src
 
 ** Other fixes
@@ -2628,16 +2637,18 @@ see: [[https://github.com/djcb/mu/issues/1136][djcb/mu#1136 Shouldn't set flag T
 should only move to trash, not delete entirely from the server
 
 #+begin_src emacs-lisp
-(setf (alist-get 'trash mu4e-marks)
-      (list :char '("d" . "▼")
-            :prompt "dtrash"
-            :dyn-target (lambda (target msg)
-                          (mu4e-get-trash-folder msg))
-            :action (lambda (docid msg target)
-                      ;; Here's the main difference to the regular trash mark,
-                      ;; no +T before -N so the message is not marked as
-                      ;; IMAP-deleted:
-                      (mu4e--server-move docid (mu4e--mark-check-target target) "-N"))))
+
+(with-eval-after-load 'mu4e
+  (setf (alist-get 'trash mu4e-marks)
+        (list :char '("d" . "▼")
+              :prompt "dtrash"
+              :dyn-target (lambda (target msg)
+                            (mu4e-get-trash-folder msg))
+              :action (lambda (docid msg target)
+                        ;; Here's the main difference to the regular trash mark,
+                        ;; no +T before -N so the message is not marked as
+                        ;; IMAP-deleted:
+                        (mu4e--server-move docid (mu4e--mark-check-target target) "-N")))))
 
 #+end_src
 
@@ -2659,9 +2670,10 @@ I prefer text/plain, over everything >:)
   (add-to-list 'mm-discouraged-alternatives "text/richtext")
   (add-to-list 'mm-discouraged-alternatives "text/html"))
 #+end_src
+
 ** Send email (msmtp)
 #+begin_src emacs-lisp
-(setq sendmail-program "/usr/bin/msmtp"
+(setq sendmail-program (executable-find "msmtp")  ;"/usr/bin/msmtp"
       message-sendmail-f-is-evil t
       message-sendmail-extra-arguments '("--read-envelope-from")
       send-mail-function 'smtpmail-send-it
