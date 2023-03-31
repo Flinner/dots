@@ -1,0 +1,26 @@
+#!/usr/bin/env python
+
+# I didn't write this!
+
+import json,yaml,sys,os
+
+if len(sys.argv) != 2:
+  print('Usage:\n  '+os.path.basename(__file__)+' /path/file{.json|.yml}')
+  print('\nConverts JSON to YAML, and vice-versa')
+  sys.exit(0)
+
+path = sys.argv[1]
+
+if not os.path.isfile(path):
+  print('Bad or non-existant file: '+path)
+  sys.exit(1)
+
+with open(path) as file:
+
+  if path.lower().endswith('json'):
+    print(yaml.dump(json.load(file), Dumper=yaml.CDumper, allow_unicode=True))
+  elif path.lower().endswith('yaml') or path.lower().endswith('yml'):
+    print(json.dumps(yaml.load(file, Loader=yaml.SafeLoader),  ensure_ascii=False ,indent=2))
+  else:
+    print('Bad file extension. Must be yml or json')
+
