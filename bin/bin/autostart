@@ -23,7 +23,6 @@ source ~/.fehbg
 #(sleep 1 && keynav)&
 # warped > keynav
 (sleep 1 && warpd)&
-(sleep 0 && ~/bin/keyboard ) &
 killall wired
 (sleep 1 && wired ) &
 #(sleep 3 && optimus-manager-qt) &
@@ -33,8 +32,10 @@ killall wired
 (sleep 6 && bspc rule -r KeePassXC ) &
 
 (sleep 5 && syncthing -no-browser) &
+(sleep 100 && nextcloud --background) &
+
 #(sleep 5 && thunderbird ) &
-(sleep 7 && bspc rule -r Thunderbird ) &
+#(sleep 7 && bspc rule -r Thunderbird ) &
 
 # Kill all davail instances before launching a single one
 kill $(pgrep --full "davmail")
@@ -54,9 +55,20 @@ killall goimapnotify
   #done
 ~/bin/run_goimapnotify.sh &
 
+## Keyboard
+# ibus-daemon &
+# uim-toolbar-gtk3-systray & #uim Japanses Input
+# Japanses Input
+#(sleep 1 && fcitx -d ) &
+(sleep 0 && ~/bin/keyboard ) &
 
-#ibus-daemon &
-#uim-toolbar-gtk3-systray & #uim Japanses Input
+## Audio
+(sleep 0 && dbus-run-session pipewire ) &
+(sleep 2 && dbus-run-session pipewire-pulse ) &
+(sleep 2 && dbus-run-session wireplumber ) &
+
+#(sleep 2 && polkit-dumb-agent) &
+
 
 #if bspwm
 
