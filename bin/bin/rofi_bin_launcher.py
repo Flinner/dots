@@ -3,7 +3,7 @@ import sys
 
 def eprint(*args, **kwargs):
     # uncomment to enable debug...
-    print(*args, file=sys.stderr, **kwargs)
+    # print(*args, file=sys.stderr, **kwargs)
     pass
 
 def bash_it(cmd):
@@ -43,7 +43,7 @@ def send_notif(title, message):
 import subprocess
 
 commands = ['isbn to bibtex',
-     'b',
+     'emoji',
      'c']
 
 
@@ -62,11 +62,13 @@ if selected_command:
         res  = bash_it('echo ' + isbn + '| isbn_to_bibtex.py')
         write_to_clipboard(res)
         send_notif("status", "done!: "+ res)
+    elif selected_command == 'emoji': 
+        bash_it("rofi -show emoji")
     else:
         send_notif("Failure", "Unkown Command")
         exit(1)
 else:
-    print('No command selected')
+    eprint('No command selected')
 
 
 exit(0)

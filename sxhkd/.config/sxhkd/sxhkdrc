@@ -33,6 +33,10 @@ XF86AudioPlay
 # wm independent hotkeys
 #
 
+Pause
+  transformers_ocr recognize
+
+
 # terminal emulator
 super + Return
 	alacritty
@@ -129,10 +133,11 @@ super + r
 # program launcher
 super + shift + r
  	rofi -show run || dmenu_run
-
+super + v
+  rofi -modi "clipboard:greenclip print" -show clipboard -run-command '{cmd}'
 # program launcher
 super + bracketleft
- 	rofi -show emoji
+ 	~/bin/rofi_bin_launcher.py
 
 
 #
