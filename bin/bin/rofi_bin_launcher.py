@@ -24,7 +24,8 @@ def read_clipboard():
 
 def write_to_clipboard(text):
     # Write the text to the clipboard on Linux
-    subprocess.run(["echo", "-n", text, "|", "xclip", "-selection", "clipboard"], shell=True)
+    subprocess.run(["xclip", "-selection", "clipboard"], input = text.strip().encode('utf-8'), check=True)
+    # bash_it("echo " + text +  "|" + "xclip -sel c")
 
     # Write the text to the clipboard on macOS
     # subprocess.run(["echo", "-n", text, "|", "pbcopy"], shell=True)

@@ -9,7 +9,9 @@ import fileinput
 # 2: Network error
 
 def eprint(*args, **kwargs):
+    # uncomment to enable debug...
     #print(*args, file=sys.stderr, **kwargs)
+    pass
 
 #isbn can be a csv list
 def convert_isbn_to_bibtex(isbn):
@@ -30,8 +32,8 @@ def convert_isbn_to_bibtex(isbn):
 
 isbn = None
 
-if not sys.stdin.isatty() :
-    stdin_ = list(fileinput.input().splitlines())
+if not sys.stdin.isatty() and fileinput.input():
+    stdin_ = list(fileinput.input())
     isbn = ",".join(stdin_)
     print("isbn from stdin:", isbn)
 
@@ -51,3 +53,4 @@ if bibtex:
 else:
     print("Failed to convert ISBN to BibTeX")
     sys.exit(2)
+sys.exit(0)
