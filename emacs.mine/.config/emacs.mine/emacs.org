@@ -34,11 +34,13 @@ Initialize Package sources
   (package-install 'use-package))
 #+end_src
 
+#+RESULTS:
+
 Make sure to download packages if not present
 #+begin_src emacs-lisp
   (require 'use-package)
   (setq package-native-compile t)
- (setq use-package-always-ensure t)
+  (setq use-package-always-ensure t)
 #+end_src
 straight
 #+begin_src emacs-lisp
@@ -86,10 +88,10 @@ remove warning by use-package
 #+end_src
 Emacs Backups trashing local dir!
 #+begin_src emacs-lisp 
-  (use-package no-littering
-    (setq auto-save-file-name-transforms
-    `((".*" ,(no-littering-expand-var-file-name "auto-save/") t))))
-  (setq backup-directory-alist `(("." . "~/.local/share/emacs-backups")))
+  (use-package no-littering)
+  (setq auto-save-file-name-transforms
+      `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
+  (setq backup-directory-alist `((".*" . "~/.local/share/emacs-backups")))
   (setq make-backup-files t          ; backup of a file the first time it is saved.
       backup-by-copying t          ; don't clobber symlinks
       version-control t            ; version numbers for backup files
@@ -108,8 +110,8 @@ Better Scrolling
 #+begin_src emacs-lisp
   (setq scroll-conservatively 10)
   (setq scroll-margin 3)
-  (use-package smooth-scrolling
-     :custom (smooth-scrolling-mode 1))
+  ;; (use-package smooth-scrolling
+  ;;    :custom (smooth-scrolling-mode 1))
 #+end_src
 
 ** Fonts
@@ -117,7 +119,7 @@ Setting fonts here as vars to stay sane
 #+begin_src emacs-lisp
   (setq my/ui/monofont "FiraCode Nerd Font")
   (setq my/ui/varfont "Noto Serif")
-  (setq my/ui/arabicfont "Noto Kufi Arabic")
+  (setq my/ui/arabicfont "Noto Sans Arabic")
 #+end_src
 
 #+begin_src emacs-lisp
@@ -204,10 +206,10 @@ Actuall Theme:
 Transparency!
 #+begin_src emacs-lisp
   ;; for the first frame
-  (set-frame-parameter nil 'alpha-background 0.8)
+  (set-frame-parameter nil 'alpha-background 0.9)
   ;; for other frames
   (add-hook 'server-after-make-frame-hook
-      (lambda nil  (set-frame-parameter nil 'alpha-background 0.8)))
+      (lambda nil  (set-frame-parameter nil 'alpha-background 0.9)))
 #+end_src
 
 Center text in the frame, looks nice ;)
@@ -263,8 +265,14 @@ Self explanatory
 ** Tab Width
 *8* Spaces for a single tab is too much
 #+begin_src emacs-lisp
-(setq-default tab-width 4)
+  (setq-default tab-width 4)
 #+end_src
+Spaces > Tabs
+#+begin_src emacs-lisp
+  (setq-default indent-tabs-mode nil)
+#+end_src
+
+#+RESULTS:
 
 * Auth!
 should i really be commiting this? :>
@@ -463,6 +471,7 @@ Capture
   "om" '(mu4e :which-key "mu4e")
   "ot" '(telega :which-key "Telega")
   "oc" '(circe :which-key "Circe")
+  "os" '(easy-hugo :which-key "site")
 
   "oe" '(elfeed-dashboard :which-key "Elfeed Dashboard")
 #+end_src
@@ -524,9 +533,11 @@ Capture
   "ci" '(lsp-ui-imenu :which-key "lsp imenu")
   "cr" '(lsp-rename :which-key "rename")
   ;"cs" '(lsp-find-refernces :which-key "find refernces")
-  ;"cd" '(lsp-find-definition :which-key "goto defintion")
-  "cd" '(lsp-ui-peek-find-definitions :which-key "goto defintion")
+  "cd" '(lsp-find-definition :which-key "goto defintion")
+  "cD" '(lsp-ui-peek-find-definitions :which-key "goto defintion")
   "cs" '(lsp-ui-peek-find-refernces :which-key "find refernces")
+  "cc" '(recompile :which-key "find refernces")
+  "cC" '(compile :which-key "find refernces")
 #+end_src
 
 **** Git (g)
@@ -566,8 +577,8 @@ Capture
           evil-emacs-state-cursor  '(box +evil-emacs-cursor-fn); TODO: fix
           evil-insert-state-cursor 'bar
           evil-visual-state-cursor 'hollow
-          evil-undo-system 'undo-redo
-          )
+          evil-undo-system 'undo-redo)
+          
     :config
     (evil-mode 1)
 
@@ -607,7 +618,7 @@ Capture
 
     ;(define-key evil-normal-state-map "K" 'lsp-ui-doc-glance); moved to lsp-ui
     (define-key evil-visual-state-map "\C-y" 'yank)
-                                          ;(define-key evil-insert-state-map "\C-k" 'kill-line)
+    (define-key evil-insert-state-map "\C-k" 'kill-line)
     (define-key evil-normal-state-map "Q" 'call-last-kbd-macro)
     (define-key evil-visual-state-map "Q" 'call-last-kbd-macro)
     ;; (define-key evil-normal-state-map (kbd "TAB") 'evil-undefine)
@@ -631,30 +642,15 @@ Capture
 #+begin_src emacs-lisp
   (use-package evil-collection
     :after evil
-    :custom
-     (evil-collection-outline-bind-tab-p  t)
+    ; :custom
+     ; (evil-collection-outline-bind-tab-p  t)
     :config
     (evil-collection-init))
 #+end_src
 
 *** Evil Escape
 #+begin_src emacs-lisp
-  (use-package key-chord
-  :config
-  (key-chord-define evil-insert-state-map "jk" 'evil-normal-state) 
-  (key-chord-define evil-replace-state-map "jk" 'evil-normal-state) 
-  :init
-  (key-chord-mode 1))
-  
-    ;; (use-package evil-escape
-    ;;   :after evil
-    ;;   :init
-    ;;   (setq  'evil-escape-excluded-major-modes '(magit-status-mode))
-    ;;   (evil-escape-mode)
-    ;;   :config
-    ;;   (setq evil-escape-key-sequence "jk")
-    ;;   (setq evil-escape-delay 0.2)
-    ;;   (setq evil-escape-unordered-key-sequence t))
+  ;; ; https://emacs.stackexchange.com/questions/19961/using-jk-to-exit-insert-mode-with-key-chord-or-anything-else
   ;; (defun my-jk ()
   ;;   (interactive)
   ;;   (let* ((initial-key ?j)
@@ -669,9 +665,30 @@ Capture
   ;;           (push event unread-command-events))
   ;;       ;; timeout exceeded
   ;;       (insert initial-key))))
-  
+
   ;; (define-key evil-insert-state-map (kbd "j") 'my-jk)
-  
+
+  (use-package key-chord
+    :after evil
+    :custom
+    (key-chord-two-keys-delay 0.05)
+    (key-chord-safety-interval-forward 0.1)
+    :config
+    (key-chord-mode 1)
+    (key-chord-define evil-insert-state-map  "jk" 'evil-normal-state)
+    (key-chord-define evil-replace-state-map  "jk" 'evil-normal-state))
+
+
+  ;; (use-package evil-escape
+  ;;   :after evil
+  ;;   :init
+  ;;   (setq  'evil-escape-excluded-major-modes '(magit-status-mode))
+  ;;   (evil-escape-mode)
+  ;;   :config
+  ;;   (setq evil-escape-key-sequence "jk")
+  ;;   (setq evil-escape-delay 0.2)
+  ;;   (setq evil-escape-unordered-key-sequence t))
+
 #+end_src
 
 *** Evil args
@@ -812,22 +829,20 @@ slow loading! defer it
       :custom
       (company-tooltip-minimum-width 40) ;reduce flicker due to changing width
       (global-company-mode t)
-      (company-idle-delay 0.3) ;; how long to wait until popup
+      (company-idle-delay 0.1) ;; how long to wait until popup
       (company-minimum-prefix-length 1) ;; The minimum prefix length for idle completion.
       (company-selection-wrap-around t)
       ;; (company-begin-commands nil) ;; uncomment to disable popup
       :bind
       (:map company-active-map
-            ("C-n". company-select-next)
+            ;; ("C-n". company-select-next)
             ("C-w". evil-delete-backward-word)
             ("<tab>" . company-complete-common-or-cycle)
             ("RET" . company-complete-selection)
-            ("C-p". company-select-previous)
+            ;; ("C-p". company-select-previous)
             ("M-<". company-select-first)
             ("M->". company-select-last)))
 
-
-  ;; (use-package company-lsp)
   (use-package company-box
     :after company
     :hook (company-mode . company-box-mode))
@@ -888,15 +903,16 @@ better sorting for ivy, company..
 ** Set directories
 #+begin_src emacs-lisp
   (setq org-directory "~/Documents/gtd/"
-    org-roam-directory "~/Documents/roam/"
-    org-books-file (concat org-roam-directory "book_list.org")
-    org-agenda-files (list org-directory org-books-file)
-    rmh-elfeed-org-files (list "~/Documents/private.el/elfeed.org")
-    elfeed-dashboard-file "~/Documents/private.el/elfeed-dashboard.org"
-    org-preview-latex-image-directory  "~/.cache/ltx/ltximg"
-    org-my-anki-file (concat org-roam-directory "anki.org")
-    org-refile-targets '((org-agenda-files . (:level . 1)))
-  )
+	org-roam-directory "~/Documents/roam/"
+	;; org-s-file (car (org-roam-id-find "34f6b040-ea49-421c-ade6-3834a9c86e0f"))
+	;; org-books-file (concat org-roam-directory "book_list.org")
+	org-agenda-files (list org-directory ); org-s-file)
+	rmh-elfeed-org-files (list "~/Documents/private.el/elfeed.org")
+	elfeed-dashboard-file "~/Documents/private.el/elfeed-dashboard.org"
+	org-preview-latex-image-directory  "~/.cache/ltx/ltximg"
+	org-my-anki-file (concat org-roam-directory "anki.org")
+	org-refile-targets '((org-agenda-files . (:level . 1))))
+
 #+end_src
 
 ** use-package 
@@ -1141,8 +1157,8 @@ From: https://yiufung.net/post/anki-org/
 
 *** T/ODOs
 #+begin_src emacs-lisp
-   (setq org-todo-keywords '((sequence "TODO(t)" "NOW(o)" "NEXT(n)" "|" "DONE(d)")
-                            (sequence "|" "CANCELED(c)")))
+   (setq org-todo-keywords '((sequence "TODO(t!)" "NOW(o)" "NEXT(n)" "|" "DONE(d!)")
+                            (sequence "|" "CANCELED(c!)")))
 #+end_src
 
 *** start on sunday!
@@ -1245,7 +1261,7 @@ From: https://yiufung.net/post/anki-org/
 *** habits
 #+begin_src emacs-lisp
   (setq org-habit-graph-column 80   ; prevent overwriting title
-        org-habit-show-all-today t) ; show even if DONE
+        org-habit-show-all-today nil) ; show even if DONE
 #+end_src
 
 *** org SUPER agenda
@@ -1256,6 +1272,12 @@ From: https://yiufung.net/post/anki-org/
    (setq org-agenda-span 'day); a week is too much
    (setq org-super-agenda-groups
          '((:log t :order 99); logs at bottom
+           (:name "S"
+            :order 97
+            :tag ("S"))
+           (:name "Habits"
+                   :order 98
+                   :habit t)
            (:name "Today" ; today is what
                    :time-grid t    ; Items that appear on the time grid
                    :scheduled today)
@@ -1285,7 +1307,7 @@ From: https://yiufung.net/post/anki-org/
            ("l" . evil-forward-char)))
 #+end_src
 
-*** org-ql
+*** COMMENT org-ql
 #+begin_src emacs-lisp
 (use-package helm-org-ql :after org-ql)
 #+end_src
@@ -1348,6 +1370,27 @@ From: https://yiufung.net/post/anki-org/
                                      :title "Quick Picks")))))
 
 
+#+end_src
+
+*** COMMENT org-timeblock
+#+begin_src emacs-lisp
+  (use-package org-timeblock
+  :straight (org-timeblock :type git
+              :host github
+              :repo "ichernyshovvv/org-timeblock"))
+
+#+end_src
+
+*** org-hyperscheduler
+#+begin_src emacs-lisp
+     (use-package org-hyperscheduler
+       :straight
+       ( :repo "dmitrym0/org-hyperscheduler"
+         :host github
+         :type git
+         :files ("*"))
+       :custom
+        (org-hyperscheduler-readonly-mode nil))
 #+end_src
 
 *** Helper functions
@@ -1457,8 +1500,6 @@ Stolen from: [[https://blog.jethro.dev/posts/processing_inbox/][Org-mode Workflo
     (setq deft-recursive t)
   (setq deft-strip-summary-regexp ":PROPERTIES:\n\\(.+\n\\)+:END:\n")
   (setq deft-use-filename-as-title 't)
-
-  
 #+end_src
 
 ** org-download and clip-link
@@ -1510,7 +1551,7 @@ Stopped using this, I just use Anki like a normal person
 #+end_src
 
 #+begin_src emacs-lisp
-  (use-package parinfer-rust-mode
+  (use-package parinfer-rust-mode         ;
       :hook
         (emacs-lisp-mode . parinfer-rust-mode)
         (scheme-mode . parinfer-rust-mode)
@@ -1521,6 +1562,11 @@ Stopped using this, I just use Anki like a normal person
       (setq parinfer-rust-auto-download t
            ; this variable is only available on my fork
             parinfer-rust-disable-troublesome-modes t))
+#+end_src
+*** Compilation output
+When running =M-x compile= the output is colored!
+#+begin_src emacs-lisp
+  (add-hook 'compilation-filter-hook 'ansi-color-compilation-filter)
 #+end_src
 
 *** Projectile
@@ -1572,8 +1618,10 @@ Counsel Projectile
     (lsp-eldoc-render-all t)
     (lsp-eldoc-enable-hover nil)
     (lsp-ui-doc-show-with-mouse nil)
+    (lsp-keep-workspace-alive nil)
     (lsp-idle-delay 0.6)
-    (lsp-completion-provider :none) 
+    (lsp-completion-provider :capf) 
+    (lsp-prefer-flymake nil)
     (lsp-idle-delay 0.6)
     (lsp-rust-analyzer-server-display-inlay-hints t)
     (lsp-rust-analyzer-display-parameter-hints t)
@@ -1581,7 +1629,7 @@ Counsel Projectile
     :config
     (lsp-enable-which-key-integration t)
     (setq lsp-headerline-breadcrumb-enable nil); anonying tabs
-    (lsp-log-io nil) ; if set to true can cause a performance hit
+    (setq lsp-log-io nil) ; if set to true can cause a performance hit
     (add-hook 'lsp-mode-hook 'lsp-ui-mode)
     (lsp-headerline-breadcrumb-mode -1)
     (flycheck-mode 1)
@@ -1595,7 +1643,6 @@ Counsel Projectile
 Lsp UI
 #+begin_src emacs-lisp
    (use-package lsp-ui
-       :ensure
        :commands lsp-ui-mode
        :custom
        (lsp-ui-peek-always-show t)
@@ -1629,12 +1676,32 @@ Lsp UI
              (flycheck-info ((t (:underline (:color "#83a598" :style line :position line))))))
 #+end_src
 
-*** Origami Mode (Folding)
+*** Hide Show
 #+begin_src emacs-lisp
     (use-package origami
     :hook (prog-mode . origami-mode))
 #+end_src
 
+*** Formatting
+#+begin_src emacs-lisp
+  (use-package format-all
+    ;; :commands (format-all-mode)
+    :defer
+    :config
+     (setq my/format-all-formatters '(("Verilog" verible)))
+    :hook (prog-mode . format-all-mode)
+          (format-all-mode . (lambda () (setq format-all-formatters my/format-all-formatters)))
+          (format-all-mode . format-all-ensure-formatter))
+#+end_src
+
+*** Debug
+Use the Debug Adapter Protocol for running tests and debugging
+#+begin_src emacs-lisp
+(use-package dap-mode
+  :hook
+  (lsp-mode . dap-mode)
+  (lsp-mode . dap-ui-mode))
+#+end_src
 ** Git
 #+begin_src emacs-lisp
    (setq vc-handled-backends '(Git))
@@ -1729,7 +1796,7 @@ Get treemacs-lsp
   :config (require 'flycheck-clj-kondo)
   :hook   (clojure-mode . zprint-format-on-save-mode)
           (clojure-mode . flycheck-mode)
-          (clojure-mode . electric-pair-local-mode)
+          ; (clojure-mode . electric-pair-local-mode)
   :bind   (:map cider-mode-map
           ([remap lsp-find-definition] . cider-find-var)
           ([remap eval-defun] . cider-eval-list-at-point)
@@ -1747,7 +1814,7 @@ Auto format
    :after cider)
 #+end_src
 
-*** Rust
+*** COMMENT Rust
 #+begin_src emacs-lisp
   (use-package rustic
     :defer t
@@ -1821,7 +1888,7 @@ Auto format
   
 #+end_src
 
-*** Haskell
+*** COMMENT Haskell
 #+begin_src emacs-lisp
   (use-package haskell-mode :defer t)
 #+end_src
@@ -1846,7 +1913,7 @@ Auto format
     )
 #+end_src
 
-*** yaml
+*** COMMENT yaml
 #+begin_src emacs-lisp
   (use-package yaml-mode
     :hook (yaml-mode . lsp))
@@ -1854,6 +1921,15 @@ Auto format
 
 *** Web
 #+begin_src emacs-lisp
+  (use-package typescript-mode
+    :defer t
+
+    :hook (typescript-mode . electric-pair-mode)
+    :hook (typescript-mode . setup-tide-mode)
+    :hook (typescript-mode . prettier-mode)
+    :hook (typescript-mode . lsp)
+   :config  (add-to-list 'auto-mode-alist '("\\.tsx\\'" . typescript-mode)))
+
   (use-package tide
     :defer t
     :preface
@@ -1875,11 +1951,7 @@ Auto format
 
     ;; formats the buffer before saving
     ;; (add-hook 'before-save-hook 'tide-format-before-save)
-    (add-hook 'before-save-hook 'prettier-js)
-    (add-to-list 'auto-mode-alist '("\\.tsx\\'" . js-jsx-mode))
-  :hook(typescript-mode . setup-tide-mode)
-  :hook(typescript-mode . prettier-mode)
-  :hook(typescript-mode . lsp))
+    (add-hook 'before-save-hook 'prettier-js))
 #+end_src
 
 svelte
@@ -1904,7 +1976,7 @@ lsp hooks setups
   (add-hook 'js-jsx-mode-hook 'lsp)
 #+end_src
 
-*** Lua
+*** COMMENT Lua
 #+begin_src emacs-lisp
   (use-package lua-mode
    :hook (lua-mode . lsp))
@@ -1943,15 +2015,56 @@ Better Diff in header sizes
   (use-package geiser-guile)
 #+end_src
 
+*** Scala
+Scala mode for highlighting, indents and motion commands
+#+begin_src emacs-lisp
+(use-package scala-mode
+  :hook
+    (scala-mode . flycheck-mode)
+    (scala-mode . lsp)
+    (scala-mode . electric-pair-mode)
+    (scala-mode . (lambda ()
+        (add-hook 'before-save-hook 'lsp-format-buffer nil t)))
+  :interpreter
+    ("scala" . scala-mode))
+#+end_src
+
+Sbt for sbt commands...
+#+begin_src emacs-lisp
+(use-package sbt-mode
+  :commands sbt-start sbt-command
+  :config
+  ;; WORKAROUND: https://github.com/ensime/emacs-sbt-mode/issues/31
+  ;; allows using SPACE when in the minibuffer
+  (substitute-key-definition
+   'minibuffer-complete-word
+   'self-insert-command
+   minibuffer-local-completion-map)
+   ;; sbt-supershell kills sbt-mode:  https://github.com/hvesalai/emacs-sbt-mode/issues/152
+   (setq sbt:program-options '("-Dsbt.supershell=false")))
+#+end_src
+
+#+begin_src emacs-lisp
+    ; for scala
+    (use-package lsp-metals)
+#+end_src
+
 *** C and cpp
 #+begin_src emacs-lisp
+  ;; (use-package ccls
+  ;;  :hook ((c-mode c++-mode) . (lambda () (require 'ccls) (lsp)))
+  ;;       ((c-mode c++-mode) . (lambda () (add-hook 'before-save-hook 'lsp-format-buffer nil t)))
+  ;;       ((c-mode c++-mode) . electric-pair-local-mode)
+  ;;       ((c-mode c++-mode) . yas-minor-mode))
+
   (use-package cc-mode
     :defer t
-    :hook (cc-mode . lsp)
-    :hook (c-mode . lsp)
-          (c-mode . (lambda ()
-              (add-hook 'before-save-hook 'lsp-format-buffer nil t)))
-    :hook (c++-mode . lsp))
+    :hook ((c++-mode cc-mode c-mode) . lsp)
+          ((c++-mode cc-mode c-mode) . lsp)
+          ((c++-mode cc-mode c-mode) . electric-pair-local-mode)
+          ((c++-mode cc-mode c-mode) . yas-minor-mode)
+          ((c++-mode cc-mode c-mode) . (lambda ()
+                     (add-hook 'before-save-hook 'lsp-format-buffer nil t))))
 #+end_src
 
 *** COMMENT Ruby
@@ -2017,6 +2130,7 @@ AucTex
     (LaTeX-mode . flycheck-mode)
     (LaTeX-mode . turn-on-reftex)
     (LaTeX-mode . auto-fill-mode)
+    (LaTeX-mode . format-all-mode)
     (LaTeX-mode . TeX-source-correlate-mode)
     (LaTeX-mode . try/latex-mode-setup)
     (LaTeX-mode . turn-on-cdlatex)
@@ -2062,6 +2176,13 @@ AucTex
   (add-to-list 'LaTeX-clean-intermediate-suffixes '"-figure[0-9]*\\.\\(pdf\\|md5\\|log\\|dpth\\|dep\\|run\\.xml\\)")
   (add-to-list 'LaTeX-clean-intermediate-suffixes '".auxlock")
 
+; (eval-after-load 'latex
+;   `(dolist (face '((font-latex-sectioning-0-face . 3.0)    ; \part
+;                   (font-latex-sectioning-1-face . 2.5)    ; \chapter
+;                   (font-latex-sectioning-2-face . 2.0)    ; \section
+;                   (font-latex-sectioning-3-face . 1.5)    ; \subsection
+;                   (font-latex-sectioning-4-face . 1.5)))  ; \subsubsection
+;           (set-face-attribute (car face) nil :font my/ui/varfont :weight 'bold  :height (cdr face))))
 
     ;; to have the buffer refresh after compilation,
     ;; very important so that PDFView refesh itself after comilation
@@ -2092,43 +2213,90 @@ Custom functions
               company-ispell)
             company-backends)))
 
+#+end_src
 
+Insert from clip
+[[https://hershsingh.net/blog/emacs-latex-screenshot/#:~:text=Clipboard%20to%20TeX,-Finally%2C%20I%20have&text=Once%20I%20have%20captured%20the,file%20img%2F.][Quickly insert hand-drawn figures in a LaTeX document in Emacs]]
+#+begin_src emacs-lisp
+  (defvar latex/insert-image-format "\\begin{center}\\includegraphics[width=\\linewidth]{%s}\\end{center}")
+  (defvar latex/insert-figure-format
+   "   \\begin{figure}[h]
+        \\centering
+        \\includegraphics[width=\\linewidth]{%s}
+        \\caption{\\label{fig:TODO} TODO}
+    \\end{figure}
+    \\FloatBarrier")
+
+  (defun latex/insert-image-from-clipboard ()
+    (interactive)
+    (let* 
+      ;; Ask for a filename
+      ((image-name (read-string "image-name: "))
+      ;; This is getting uply...
+      (image-file-location (concat "\"" (expand-file-name (concat (TeX-master-directory) "img/" image-name ".png" )) "\"")))
+
+      ;; Make the "img" directory if it does not exist
+      (make-directory (concat (TeX-master-directory) "img") t)
+
+      ;; Copy the image in clipboard to "img/" directory
+      (shell-command (concat "xclip -selection clipboard -t image/png -o > " image-file-location))
+
+      ;; Insert the latex snippet to include the figure
+      (insert (format latex/insert-image-format (concat "img/" (file-name-nondirectory image-file-location) )))))
+
+    (defun latex/insert-figure-from-clipboard ()
+    (interactive)
+    (let* 
+      ;; Ask for a filename
+      ((image-name (read-string "image-name: "))
+      ;; This is getting uply...
+      (image-file-location (concat "\"" (expand-file-name (concat (TeX-master-directory) "img/" image-name ".png" )) "\"")))
+
+      ;; Make the "img" directory if it does not exist
+      (make-directory (concat (TeX-master-directory) "img") t)
+
+      ;; Copy the image in clipboard to "img/" directory
+      (message       (concat "xclip -selection clipboard -t image/png -o > " image-file-location))
+      (shell-command (concat "xclip -selection clipboard -t image/png -o > " image-file-location))
+
+      ;; Insert the latex snippet to include the figure
+      (insert (format latex/insert-figure-format (concat "img/" (file-name-nondirectory (concat image-name ".png")))))))
 
 
 #+end_src
 
 Folding
-#+begin_src emacs-lisp
-  (use-package outshine
+#+begin_src emacs-lisp :tangle no
+  (use-package outshine                   ;
     :defer t
     :config
-  (setq LaTeX-section-list '(
-                             ("part" 0)
-                             ("chapter" 1)
-                             ("section" 2)
-                             ("subsection" 3)
-                             ("subsubsection" 4)
-                             ("paragraph" 5)
-                             ("subparagraph" 6)
-                             ("begin" 7)
-                             )
-        )
-  (add-hook 'LaTeX-mode-hook #'(lambda ()
-                                 (outshine-mode 1)
-                                 (setq outline-level #'LaTeX-outline-level)
-                                 (setq outline-regexp (LaTeX-outline-regexp t))
-                                 (setq outline-heading-alist
-                                       (mapcar (lambda (x)
-                                                 (cons (concat "\\" (nth 0 x)) (nth 1 x)))
-                                               LaTeX-section-list))))
+   (setq LaTeX-section-list '(
+                              ("part" 0)
+                              ("chapter" 1)
+                              ("section" 2)
+                              ("subsection" 3)
+                              ("subsubsection" 4)
+                              ("paragraph" 5)
+                              ("subparagraph" 6)
+                              ("begin" 7)))
+                             
+        
+   (add-hook 'LaTeX-mode-hook #'(lambda ()
+                                  (outshine-mode 1)
+                                  (setq outline-level #'LaTeX-outline-level)
+                                  (setq outline-regexp (LaTeX-outline-regexp t))
+                                  (setq outline-heading-alist
+                                        (mapcar (lambda (x)
+                                                  (cons (concat "\\" (nth 0 x)) (nth 1 x)))
+                                                LaTeX-section-list)))))
 
-    )
+    
 
-      (general-define-key
-        :states '(normal visual)
-        :keymaps 'LaTeX-mode-map
-        "TAB"  '(outshine-cycle :which-key "outshine-cycle")
-    )
+  (general-define-key
+    :states '(normal visual)
+    :keymaps 'LaTeX-mode-map
+    "TAB"  '(outshine-cycle :which-key "outshine-cycle"))
+    
 
 #+end_src
 
@@ -2148,7 +2316,35 @@ ivy bibtex
 
 *** Verilog
 #+begin_src emacs-lisp
-(setq verilog-linter "verilator --lint-only")
+
+  (setq verilog-linter "verilator --lint-only")
+  (setq verilog-auto-newline nil
+        verilog-auto-arg-sort t
+        verilog-case-fold nil)
+  ; (setq verilog-indent-level 1)  
+  (add-hook 'verilog-mode-hook 'electric-pair-mode)
+  (add-hook 'verilog-mode-hook 'lsp)
+  (add-hook 'verilog-mode-hook 'flycheck-mode)
+  ;; (add-hook 'verilog-mode-hook (lambda ()
+  ;;                  (add-hook 'before-save-hook 'verilog-indent-buffer nil t)))
+
+  (with-eval-after-load 'lsp-mode
+      (add-to-list 'lsp-language-id-configuration '(verilog-mode . "verilog"))
+      (lsp-register-client
+      (make-lsp-client :new-connection (lsp-stdio-connection "verible-verilog-ls")
+                          :major-modes '(verilog-mode)
+                          :server-id 'verible-ls)))
+
+
+#+end_src
+
+*** VHDL
+#+begin_src emacs-lisp
+  (setq lsp-vhdl-server 'vhdl-ls)
+  (add-hook 'vhdl-mode-hook 'vhdl-electric-mode)
+  (add-hook 'vhdl-mode-hook 'flycheck-mode)
+  (add-hook 'vhdl-mode-hook (lambda ()
+                     (add-hook 'before-save-hook 'vhdl-beautify-buffer nil t)))
 #+end_src
 
 *** Bash
@@ -2283,7 +2479,7 @@ ivy bibtex
             (icon-color nil))
         (if (org-clock-is-active)
             (setq message (substring-no-properties (org-clock-get-clock-string))
-                    icon ""
+                    icon ""; there is an icon here, in case it isn't rendered...
                     icon-color "#BA68C8")
             (setq message ""
                     icon ""; "";; I want it to be empty
@@ -2297,6 +2493,21 @@ ivy bibtex
   (use-package elpher
       :defer t
       :hook (elpher-mode . olivetti-mode) )
+#+end_src
+
+** Easy hugo
+#+begin_src emacs-lisp
+  (use-package easy-hugo
+      :init
+          (easy-hugo-enable-menu)
+          (setq easy-hugo-basedir "~/code/sites/ammar.engineer/")
+          (setq easy-hugo-postdir "content/posts")
+          (setq easy-hugo-url "https://ammar.engineer")
+          ;; (setq easy-hugo-sshdomain "blogdomain")
+          ;; (setq easy-hugo-root "")
+          (setq easy-hugo-previewtime "300"))
+      ;:bind
+          ;("C-c C-e" . easy-hugo))
 #+end_src
 
 * Elfeed org
@@ -2538,6 +2749,10 @@ I wrote that, neat isn't it? :P
   ;; this line is for nixos
   ;; until here
     ;;:ensure-system-package mu
+  :init
+    (defun mu4e--main-action-str (str &optional func-or-shortcut))
+  (defun evil-collection-mu4e-update-main-view@override())
+  (advice-add 'evil-collection-mu4e-update-main-view :override #'evil-collection-mu4e-update-main-view@override)
     :commands (mu4e)
     :bind   (:map mu4e-main-mode-map
              ([remap revert-buffer] . mu4e-update-index))
@@ -2590,7 +2805,8 @@ I wrote that, neat isn't it? :P
        `(
           (mu4e-bookmarks .
             ,`(
-            (:name "All Unread messages"  :query ,"flag:unread AND NOT flag:trashed AND NOT flag:list" :key ?a)
+            ;(:name "All Unread messages"  :query ,"flag:unread AND NOT flag:trashed AND NOT flag:list" :key ?a)
+            (:name "All Unread messages"  :query ,"flag:unread AND NOT flag:trashed" :key ?a)
             (:name "Unread messages"  :query ,(concat "flag:unread AND NOT flag:trashed"  context-filter) :key ?u)
             (:name "Inbox"            :query ,(concat "maildir:/Inbox/"  context-filter) :key ?i)
             (:name "Today's messages"     :query ,(concat "date:today..now" context-filter)                   :key ?t)
@@ -2683,11 +2899,11 @@ I prefer text/plain, over everything >:)
 
 ** Send email (msmtp)
 #+begin_src emacs-lisp
-(setq sendmail-program (executable-find "msmtp")  ;"/usr/bin/msmtp"
-      message-sendmail-f-is-evil t
-      message-sendmail-extra-arguments '("--read-envelope-from")
-      send-mail-function 'smtpmail-send-it
-      message-send-mail-function 'message-send-mail-with-sendmail)
+  (setq sendmail-program (executable-find "msmtp")  ;"/usr/bin/msmtp"
+        message-sendmail-f-is-evil t
+        message-sendmail-extra-arguments '("--read-envelope-from")
+        send-mail-function 'smtpmail-send-it
+        message-send-mail-function 'message-send-mail-with-sendmail)
 #+end_src
 
 * Telega
@@ -2717,7 +2933,7 @@ I prefer text/plain, over everything >:)
 
 #+end_src
 
-* Matrix Ement
+* COMMENT Matrix Ement
 #+begin_src emacs-lisp
   (use-package ement
       :straight (ement
@@ -2764,6 +2980,4 @@ I prefer text/plain, over everything >:)
     (setq dashboard-set-init-info t)
     (setq dashboard-projects-switch-function 'counsel-projectile-switch-project-by-name))
 #+end_src
-
-
 
