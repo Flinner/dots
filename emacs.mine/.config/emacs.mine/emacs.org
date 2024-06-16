@@ -426,6 +426,7 @@ Edit: honestly I have no clue wtf that meant, or why I wrote it, but I will keep
   
   ;; Dailies
   "rd"  '(:ignore t :which-key "Dailies")
+  "rdD" '(org-roam-dailies-goto-date :which-key "Go To Date")
   "rdT" '(org-roam-dailies-goto-today :which-key "Go To Today")
   "rdt" '(org-roam-dailies-capture-today :which-key "Capture Today")
   "rdY" '(org-roam-dailies-goto-yesterday :which-key "Go To yesterday")
@@ -829,7 +830,7 @@ slow loading! defer it
       :custom
       (company-tooltip-minimum-width 40) ;reduce flicker due to changing width
       (global-company-mode t)
-      (company-idle-delay 0.1) ;; how long to wait until popup
+      (company-idle-delay 0.3) ;; how long to wait until popup
       (company-minimum-prefix-length 1) ;; The minimum prefix length for idle completion.
       (company-selection-wrap-around t)
       ;; (company-begin-commands nil) ;; uncomment to disable popup
@@ -1261,7 +1262,29 @@ From: https://yiufung.net/post/anki-org/
 *** habits
 #+begin_src emacs-lisp
   (setq org-habit-graph-column 80   ; prevent overwriting title
+        org-habit-show-habits-only-for-today 't
         org-habit-show-all-today nil) ; show even if DONE
+  ;; (with-eval-after-load 'org-habit
+  ;;   (defun org-habit-streak-count ()
+  ;;   (goto-char (point-min))
+  ;;   (while (not (eobp))
+  ;;       ;;on habit line?
+  ;;       (when (get-text-property (point) 'org-habit-p)
+  ;;       (let ((streak 0)
+  ;;               (counter (+ org-habit-graph-column (- org-habit-preceding-days org-habit-following-days)))
+  ;;               )
+  ;;           (move-to-column counter)
+  ;;           ;;until end of line
+  ;;           (while (= (char-after (point)) org-habit-completed-glyph)
+  ;;                   (setq streak (+ streak 1))
+  ;;                   (setq counter (- counter 1))
+  ;;                   (backward-char 1))
+  ;;           (end-of-line)
+  ;;           (insert (number-to-string streak))))
+  ;;       (forward-line 1)))
+
+  ;;   (add-hook 'org-agenda-finalize-hook 'org-habit-streak-count))
+
 #+end_src
 
 *** org SUPER agenda
@@ -1296,11 +1319,11 @@ From: https://yiufung.net/post/anki-org/
   :hook (org-agenda-mode . origami-mode)
         (org-agenda-mode . org-super-agenda-mode); need this sadly
         (org-agenda-mode . olivetti-mode)
-        (org-agenda-mode . olivetti-mode)
+        ;(org-agenda-mode . olivetti-mode)
   ;(evil-define-key '(normal visual) 'org-super-agenda-header-map "j" 'org-agenda-next-line)
-  ;; evil doesn't work on headers, bruh
    :bind (:map org-super-agenda-header-map
            ([tab] . origami-toggle-node)
+  ;; evil doesn't work on headers, bruh
            ("j" . org-agenda-next-line)
            ("k" . org-agenda-previous-line)
            ("h" . evil-backward-char)
@@ -1510,7 +1533,7 @@ Stolen from: [[https://blog.jethro.dev/posts/processing_inbox/][Org-mode Workflo
         :after org)
 #+end_src
 
-** org-book
+** COMMENT org-book
 #+begin_src emacs-lisp
   (use-package org-books
    :after org )
@@ -1702,6 +1725,15 @@ Use the Debug Adapter Protocol for running tests and debugging
   (lsp-mode . dap-mode)
   (lsp-mode . dap-ui-mode))
 #+end_src
+
+*** Highlihght Indenation Mode
+#+begin_src emacs-lisp
+    (use-package highlight-indent-guides
+       :hook (prog-mode . highlight-indent-guides-mode)
+       :custom (highlight-indent-guides-method 'character)
+               (highlight-indent-guides-responsive 'top))
+
+#+end_src
 ** Git
 #+begin_src emacs-lisp
    (setq vc-handled-backends '(Git))
@@ -1786,6 +1818,12 @@ Get treemacs-lsp
 *** COMMENT Arduino
 #+begin_src emacs-lisp
   (use-package arduino-mode
+  :config
+    (lsp-register-client
+        (make-lsp-client
+        :new-connection (lsp-stdio-connection '("arduino-language-server" "-clangd" "clangd" "-cli" "arduino-cli" "-cli-config" "/home/lambda/.arduino15/arduino-cli.yaml" "-fqbn" "arduino:avr:uno"))
+        :activation-fn (lsp-activate-on "arduino")
+        :server-id 'arduino-language-server))
      :defer t)
 #+end_src
 
@@ -1888,14 +1926,13 @@ Auto format
   
 #+end_src
 
-*** COMMENT Haskell
+*** Haskell
 #+begin_src emacs-lisp
   (use-package haskell-mode :defer t)
 #+end_src
 
 #+begin_src emacs-lisp
   (use-package lsp-haskell
-    :defer t
     :preface
   ;; lambda symbol
     (defun my/font/pretty-lambdas-haskell ()
@@ -1905,12 +1942,14 @@ Auto format
                                         ,(make-char 'greek-iso8859-7 107))
                         nil))))))
     :hook (haskell-mode . lsp)
+          ;(haskell-literate-mode-hook lsp)
+          (prog-mode . electric-pair-local-mode)
+
     (haskell-mode . my/font/pretty-lambdas-haskell)
     :config
     (haskell-indentation-mode -1)
     (add-hook 'before-save-hook 'lsp-format-buffer)
-    :custom (haskell-stylish-on-save t)
-    )
+    :custom (haskell-stylish-on-save t))
 #+end_src
 
 *** COMMENT yaml
@@ -2022,7 +2061,7 @@ Scala mode for highlighting, indents and motion commands
   :hook
     (scala-mode . flycheck-mode)
     (scala-mode . lsp)
-    (scala-mode . electric-pair-mode)
+    (scala-mode . electric-pair-local-mode)
     (scala-mode . (lambda ()
         (add-hook 'before-save-hook 'lsp-format-buffer nil t)))
   :interpreter
@@ -2079,8 +2118,14 @@ Sbt for sbt commands...
 
 *** COMMENT python
 #+begin_src emacs-lisp
-    (add-hook 'python-mode-hook 'lsp)
-    (add-hook 'python-mode-hook 'prettify-symbols-mode)
+  (use-package elpy
+    :ensure t
+    :defer t
+    :bind ([remap lsp-find-definition] . elpy-goto-definition)
+    :config
+    (setq elpy-modules (remove 'elpy-module-highlight-indentation elpy-modules))
+    :init
+    (advice-add 'python-mode :before 'elpy-enable))
 #+end_src
 
 *** LaTeX
@@ -2393,12 +2438,6 @@ ivy bibtex
   (use-package restart-emacs)
 #+end_src
 
-** Server
-#+begin_src emacs-lisp
-  (unless (server-running-p) (server-start))
-  (add-hook 'server-after-make-frame-hook '(lambda () (set-cursor-color "#FFFFFF")))
-#+end_src
-
 ** Vterm
 #+begin_src emacs-lisp
   (use-package vterm
@@ -2417,6 +2456,12 @@ ivy bibtex
 
 #+begin_src emacs-lisp
 (use-package vterm-toggle)
+#+end_src
+
+** Server
+#+begin_src emacs-lisp
+  (unless (server-running-p) (server-start))
+  (add-hook 'server-after-make-frame-hook '(lambda () (set-cursor-color "#FFFFFF")))
 #+end_src
 
 ** COMMENT ranger
@@ -2921,8 +2966,8 @@ I prefer text/plain, over everything >:)
     ;; installed telegram-tdlib from AUR
     :config
     (telega-mode-line-mode)
-    (telega-appindicator-mode)
-    (telega-notifications-mode)
+    ;(telega-appindicator-mode)
+    ;(telega-notifications-mode)
     :custom (telega-server-libs-prefix "/usr")
             (telega-chat-bidi-display-reordering 'right-to-left)
             (telega-sticker-size '(10 . 24))
