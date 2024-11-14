@@ -70,3 +70,5 @@ source /etc/profile
 if [ -f ~/.bash_aliases ]; then . ~/.bash_aliases ; fi
 #eval "$(starship init bash)"
 
+
+export QSYS_ROOTDIR="/home/lambda/Programs/intelQuartus/quartus/sopc_builder/bin"

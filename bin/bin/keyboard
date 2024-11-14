@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 setxkbmap -option ctrl:swapcaps 
 setxkbmap -option altwin:swap_lalt_lwin 
-setxkbmap -model pc105 -layout us,ara -variant ,qwerty -option grp:shifts_toggle 
+#setxkbmap -model pc105 -layout us,ara -variant ,qwerty -option grp:shifts_toggle 
+setxkbmap -layout us,ara -option grp:shifts_toggle
 
 xset r rate 300 50
 

@@ -35,13 +35,13 @@ isbn = None
 if not sys.stdin.isatty() and fileinput.input():
     stdin_ = list(fileinput.input())
     isbn = ",".join(stdin_)
-    print("isbn from stdin:", isbn)
+    eprint("isbn from stdin:", isbn)
 
 # favour stdin over args!
 if (not isbn):
     if (len(sys.argv) > 1):
         isbn = sys.argv[1]
-        print("isbn from args:", isbn)
+        eprint("isbn from args:", isbn)
     else:
         eprint("No Arguments (or stdin) Provided!")
         sys.exit(1)
@@ -51,6 +51,6 @@ bibtex = convert_isbn_to_bibtex(isbn)
 if bibtex:
     print(bibtex)
 else:
-    print("Failed to convert ISBN to BibTeX")
+    eprint("Failed to convert ISBN to BibTeX")
     sys.exit(2)
 sys.exit(0)

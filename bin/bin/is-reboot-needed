@@ -1,4 +1,4 @@
 #!/bin/sh
-grep -qs '^ID=artix$' /etc/os-release \
+grep -qs '^ID=arch$' /etc/os-release \
     && { test -e /lib/modules/`uname -r` \
          || echo Kernel updated, reboot computer.; }

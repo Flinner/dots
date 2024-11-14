@@ -53,3 +53,5 @@ fi
 #fi
 
 
+
+export QSYS_ROOTDIR="/home/lambda/Programs/intelQuartus/quartus/sopc_builder/bin"
