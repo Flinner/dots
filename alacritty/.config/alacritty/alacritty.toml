@@ -1,0 +1,180 @@
+#[colors.bright]
+#black = "#686868"
+#blue = "#57c7ff"
+#cyan = "#9aedfe"
+#green = "#5af78e"
+#magenta = "#ff6ac1"
+#red = "#ff5c57"
+#white = "#f1f1f0"
+#yellow = "#f3f99d"
+
+#[colors.normal]
+#black = "#282a36"
+#blue = "#57c7ff"
+#cyan = "#9aedfe"
+#green = "#5af78e"
+#magenta = "#ff6ac1"
+#red = "#ff5c57"
+#white = "#f1f1f0"
+#yellow = "#f3f99d"
+
+#[colors.primary]
+#background = "#282a36"
+#foreground = "#eff0eb"
+#[colors.snazzy.primary]
+#background= '#282a36'
+#foreground= '#eff0eb'
+#[colors.snazzy.normal]
+#black= '#282a36'
+#red= '#ff5c57'
+#green= '#5af78e'
+#yellow= '#f3f99d'
+#blue= '#57c7ff'
+#magenta= '#ff6ac1'
+#cyan= '#9aedfe'
+#white= '#f1f1f0'
+
+    ## Bright colors
+#[colors.snazzy.bright]
+#black= '#686868'
+#red= '#ff5c57'
+#green= '#5af78e'
+#yellow= '#f3f99d'
+#blue= '#57c7ff'
+#magenta= '#ff6ac1'
+#cyan= '#9aedfe'
+#white= '#f1f1f0'
+
+
+[colors.bright]
+black = "#928374"
+blue = "#83a598"
+cyan = "#8ec07c"
+green = "#b8bb26"
+magenta = "#d3869b"
+red = "#fb4934"
+white = "#ebdbb2"
+yellow = "#fabd2f"
+
+[colors.normal]
+black = "#282828"
+blue = "#458588"
+cyan = "#689d6a"
+green = "#98971a"
+magenta = "#b16286"
+red = "#cc241d"
+white = "#a89984"
+yellow = "#d79921"
+
+[colors.primary]
+background = "#282828"
+foreground = "#ebdbb2"
+
+[env]
+TERM = "xterm-256color"
+
+[font]
+size = 6.0
+
+[font.bold]
+style = "Bold"
+
+[font.bold_italic]
+family = "monospace"
+
+[font.italic]
+family = "monospace"
+
+[font.normal]
+family = "Fira Code"
+style = "Regular"
+
+[[keyboard.bindings]]
+action = "SpawnNewInstance"
+key = "Return"
+mods = "Shift|Super"
+
+#[schemes.flinty_dark.bright]
+#black = "#686868"
+#blue = "#57c7ff"
+#cyan = "#9aedfe"
+#green = "#5af78e"
+#magenta = "#ff6ac1"
+#red = "#ff5c57"
+#white = "#f1f1f0"
+#yellow = "#f3f99d"
+
+#[schemes.flinty_dark.normal]
+#black = "#282a36"
+#blue = "#57c7ff"
+#cyan = "#9aedfe"
+#green = "#5af78e"
+#magenta = "#ff6ac1"
+#red = "#ff5c57"
+#white = "#f1f1f0"
+#yellow = "#f3f99d"
+
+#[schemes.flinty_dark.primary]
+#background = "#282828"
+#foreground = "#eff0eb"
+
+#[schemes.snazzy_dark.bright]
+#black = "#686868"
+#blue = "#57c7ff"
+#cyan = "#9aedfe"
+#green = "#5af78e"
+#magenta = "#ff6ac1"
+#red = "#ff5c57"
+#white = "#f1f1f0"
+#yellow = "#f3f99d"
+
+#[schemes.snazzy_dark.gruvbox_dark.bright]
+#black = "#928374"
+#blue = "#83a598"
+#cyan = "#8ec07c"
+#green = "#b8bb26"
+#magenta = "#d3869b"
+#red = "#fb4934"
+#white = "#ebdbb2"
+#yellow = "#fabd2f"
+
+#[schemes.snazzy_dark.gruvbox_dark.normal]
+#black = "#282828"
+#blue = "#458588"
+#cyan = "#689d6a"
+#green = "#98971a"
+#magenta = "#b16286"
+#red = "#cc241d"
+#white = "#a89984"
+#yellow = "#d79921"
+
+#[schemes.snazzy_dark.gruvbox_dark.primary]
+#background = "#282828"
+#foreground = "#ebdbb2"
+
+#[schemes.snazzy_dark.normal]
+#black = "#282a36"
+#blue = "#57c7ff"
+#cyan = "#9aedfe"
+#green = "#5af78e"
+#magenta = "#ff6ac1"
+#red = "#ff5c57"
+#white = "#f1f1f0"
+#yellow = "#f3f99d"
+
+#[schemes.snazzy_dark.primary]
+#background = "#282a36"
+#foreground = "#eff0eb"
+
+[terminal.shell]
+program = "/bin/zsh"
+
+[window]
+dynamic_padding = true
+opacity = 0.9
+
+[window.padding]
+x = 9
+y = 6
+
+[terminal]
