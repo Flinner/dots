@@ -232,7 +232,7 @@ export CARGO_HOME="$XDG_DATA_HOME"/cargo
 export GOPATH="$XDG_DATA_HOME"/go
 export GOBIN="$XDG_DATA_HOME"/go
 export DOOM_PATH="$HOME/.emacs.d/bin"
-export YARN_PATH="$HOME/.yarn/bin"
+#export YARN_PATH="$HOME/.yarn/bin"
 
 export PATH="$DOOM_PATH:$HOME/.local/bin:$HOME/bin:$CARGO_HOME/bin:$YARN_PATH:$GOPATH:$PATH"
 
@@ -287,6 +287,9 @@ QT_IM_MODULE='fcitx'
 SDL_IM_MODULE='fcitx'
 XMODIFIERS='@im=fcitx'
 
+# for emacs-ng
+WINIT_X11_SCALE_FACTOR=1
+
 #===============================================================================================
 
 # Load the pure theme, with zsh-async library that's bundled with it
@@ -294,7 +297,10 @@ PS1="> "
 RPS1=" "
 #zplugin ice wait'!0' lucid pick"async.zsh" src"pure.zsh"; zplugin light sindresorhus/pure
 eval "$(starship init zsh)"
-[ -f "/home/user/.ghcup/env" ] && source "/home/user/.ghcup/env" # ghcup-env
 
 #~/bin/dennis
 #cutefetch 2> /dev/null
+~/bin/is-reboot-needed
+
+export QSYS_ROOTDIR="/home/lambda/Programs/intelQuartus/quartus/sopc_builder/bin"
+export JUPYTERLAB_DIR=$HOME/.local/share/jupyter/lab
