@@ -28,10 +28,10 @@ set statusbar-bg                "#504945" # bg2
 set statusbar-fg                "#ebdbb2" # fg
 set statusbar-fg                "#eff0eb" # fg " from  SNAZZY
 
-set highlight-color             "#fabd2f" # bright:yellow
-set highlight-active-color      "#fe8019" # bright:orange
+set highlight-color             "#fabd2f00" # bright:yellow
+set highlight-active-color      "#fe801900" # bright:orange
 
-set default-bg                  rgba(28,28,28,0.9) # bg
+set default-bg                  rgba(40,40,40,0.8) # bg
 set default-fg                  "#ebdbb2" # fg
 set default-fg                  "#eff0eb0" # fg " from SNAZZY
 set render-loading              true
