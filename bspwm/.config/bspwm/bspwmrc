@@ -8,7 +8,7 @@ pgrep ~/bin/wm/bspswallow || ~/bin/wm/bspswallow &
 
 
 # not sure if I can count using Roman Numerals :)
-bspc monitor -d I II III IV V VI VII VIII IX X
+bspc monitor eDP1 -d I II III IV V VI VII VIII IX X
 
 #bspc config ignore_ewmh_fullscreen all
 bspc config ignore_ewmh_focus true
@@ -27,18 +27,24 @@ bspc config single_monocle        true
 bspc config focus_follows_pointer true
 bspc config pointer_follows_focus true
 
+bspc config remove_unplugged_monitors true
+bspc config remove_disabled_monitors true
+
 # bspc rule -a Gimp desktop='^8' state=floating follow=on 
 #bspc rule -a Chromium desktop='^1' 
 
 # these 2 rules are removed after the program starts, in ~/bin/autostart
 bspc rule -a Thunderbird desktop='^8' 
-bspc rule -a KeePassXC desktop='^8' 
+bspc rule -a KeePassXC desktop='^9' 
 # the confirm dialog
-bspc rule -a "KeePassXC:*:Confirm Auto-Type" sticky=on
+bspc rule -a "keepassxc:*:Confirm Auto-Type" sticky=on
 bspc rule -a "Dragon-drop" sticky=on
+bspc rule -a "No Title Yet:*:*" state=floating # for ngscopeclient
+bspc rule -a "*:*:Quick Format Citation" state=floating # for ngscopeclient
 
 bspc rule -a Dino desktop='^8' 
 bspc rule -a Peek state=floating 
+bspc rule -a Qalculate-gtk state=floating 
 bspc rule -a Connman-gtk state=floating 
 bspc rule -a mplayer2 state=floating 
 bspc rule -a Emacs state=tiled
@@ -50,6 +56,11 @@ bspc rule -a wmpin sticky=on
 
 bspc rule -a Floating state=floating
 bspc rule -a \*:\*:org-capture state=floating
+# Fix MATLAB https://github.com/baskerville/bspwm/issues/1204
+#bspc rule -a 'MATLAB R2024a - academic use:sun-awt-X11-XWindowPeer:DefaultOverlayManager.JWindow' manage=off
+#bspc rule -a 'MATLAB R2024a - academic use:sun-awt-X11-XWindowPeer:TabCompletionPopup'  manage=off
+bspc rule -a 'MATLAB*:TabCompletionPopup'  manage=off
+bspc rule -a 'MATLAB*:DefaultOverlayManager.JWindow' manage=off
 
 ~/bin/autostart 
 xsetroot -cursor_name left_ptr &

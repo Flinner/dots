@@ -44,7 +44,9 @@ import subprocess
 
 commands = ['isbn to bibtex',
      'emoji',
-     'c']
+     'calc',
+     'spellcheck',
+     'nvidia rofi']
 
 
 rofi_process = subprocess.Popen(['rofi', '-dmenu'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
@@ -58,12 +60,20 @@ if selected_command:
         clipboard = read_clipboard()
         isbn = bash_it(f"echo \"{clipboard}\n'Esc to Cancel'\" | rofi -dmenu")
         exit(0) if not isbn else False
-        isbn = isbn.replace("\n", ",")
+        isbn = isbn.replace("\n", " ")
+        eprint("isbn:", isbn)
         res  = bash_it('echo ' + isbn + '| isbn_to_bibtex.py')
+        eprint(res)
         write_to_clipboard(res)
         send_notif("status", "done!: "+ res)
-    elif selected_command == 'emoji': 
+    elif selected_command == 'emoji':
         bash_it("rofi -show emoji")
+    elif selected_command == 'calc':
+        bash_it("rofi -show calc -modi calc -no-show-match -no-sort")
+    elif selected_command == 'spellcheck':
+        bash_it("rofi -show spell -modes \"spell:rofi-spellcheck.sh\"")
+    elif selected_command == 'nvidia rofi':
+        bash_it("nvidia-offload ~/.config/polybar/forest/scripts/launcher.sh")
     else:
         send_notif("Failure", "Unkown Command")
         exit(1)

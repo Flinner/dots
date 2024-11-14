@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#xset r rate 400 100
+xset r rate 180 40
 ##emacs -fs &
 rm -rf ~/.cache/fontconfig
 
@@ -25,6 +25,7 @@ source ~/.fehbg
 (sleep 1 && warpd)&
 killall wired
 (sleep 1 && wired ) &
+(sleep 3 && greenclip daemon) &
 #(sleep 3 && optimus-manager-qt) &
 (sleep 3 && flameshot) &
 
@@ -32,7 +33,9 @@ killall wired
 (sleep 6 && bspc rule -r KeePassXC ) &
 
 (sleep 5 && syncthing -no-browser) &
-(sleep 100 && nextcloud --background) &
+(sleep 5 && kdeconnect-indicator) &
+(sleep 4 && kdeconnectd) &
+#(sleep 100 && nextcloud --background) &
 
 #(sleep 5 && thunderbird ) &
 #(sleep 7 && bspc rule -r Thunderbird ) &
@@ -61,6 +64,12 @@ killall goimapnotify
 # Japanses Input
 #(sleep 1 && fcitx -d ) &
 (sleep 0 && ~/bin/keyboard ) &
+#(sleep 4 && ~/bin/battery-alert ) &
+
+(sleep 1 && udiskie --tray) &
+(sleep 1 && nm-applet) &
+
+(sleep 2 && blueberry-tray) &
 
 ## Audio
 (sleep 0 && dbus-run-session pipewire ) &
