@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# FOR openGL from arch wiki
+export LD_PRELOAD=/usr/lib/libstdc++.so
+export LD_LIBRARY_PATH=/usr/lib/xorg/modules/dri/
+#export _JAVA_AWT_WM_NONREPARENTING=1
+
+
+~/Programs/MATLAB/R2024a/bin/matlab "$@"
+
