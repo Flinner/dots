@@ -2,6 +2,7 @@
 -o "%(playlist_index)s-%(title)s.%(ext)s"
 #--write-subs
 --embed-subs
---write-auto-subs
-#--sub-langs "en.*,ja.*"
+--embed-chapters
+#--write-auto-subs
+--sub-langs "en.*,ja.*,ru.ru"
 

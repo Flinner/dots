@@ -32,6 +32,8 @@ XF86AudioPlay
    #tdrop -ma -w 75% -x 12% -y  "$PANEL_HEIGHT"  -s dropdown emacsclient --eval "(emacs-everywhere)"
 # wm independent hotkeys
 #
+F8
+ warpd --normal
 
 Pause
   transformers_ocr recognize
@@ -93,12 +95,12 @@ super + End
 #================WM=============================
 
 # Show Help
-super + slash
-	~/bin/wm/sxhkd-help
+#super + slash
+	#~/bin/wm/sxhkd-help
 
 # quit/restart bspwm
-super + alt + {q,r}
-	bspc {quit,wm -r}
+#super + alt + {q,r}
+	#bspc {quit,wm -r}
 
 # close and kill
 super + {shift, ctrl } + q
@@ -135,9 +137,15 @@ super + shift + r
  	rofi -show run || dmenu_run
 super + v
   rofi -modi "clipboard:greenclip print" -show clipboard -run-command '{cmd}'
+
 # program launcher
-super + bracketleft
- 	~/bin/rofi_bin_launcher.py
+super + {bracketleft,bracketright}
+ 	{rofi -show calc -modi calc -no-show-match -no-sort,~/bin/rofi_bin_launcher.py}
+
+super + shift + bracketleft
+ 	rofi -show spell -modes "spell:rofi-spellcheck.sh"
+super + ctrl + bracketleft
+ 	qalculate-gtk
 
 
 #
@@ -149,7 +157,7 @@ super + {p,n}
 
 # unhide
 super + shift + n
-  bspc node $(bspc query -N -n .hidden.local | tail -n1) -g hidden=off
+  bspc node $(bspc query -N -n .hidden.local | head -n 1) -g hidden=off
 
 # set the window state
 super + {t,shift + t,s,f}

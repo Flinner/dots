@@ -24,6 +24,7 @@ disabled = true
 
 [username]
 style_user = 'bold dimmed blue'
+
 [custom.git_host]
 command = '''
 IFS="/"
@@ -53,3 +54,14 @@ shell = [
 ]
 style = 'bright-yellow bold'
 format = 'at [$output]($style) '
+
+[custom.ranger]
+command = '''echo $RANGER_LEVEL'''
+when = 'if [ -v ${RANGER_LEVEL} ]; then false; else true; fi'
+shell = [
+    'sh',
+    '--norc',
+    '--noprofile',
+]
+style = 'bright-blue bold'
+format = '[\(ranger: $output\)]($style) '

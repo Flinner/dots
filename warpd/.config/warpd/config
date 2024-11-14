@@ -1,6 +1,6 @@
-hint_oneshot_key: A-M-f8
-activation_key: f8
+hint_oneshot_key: A-M-F8
+activation_key: F8
 buttons: u i o
 grid_keys: C-u C-i C-j C-k
 oneshot_buttons: m , .
-exit: tab
+exit: Tab

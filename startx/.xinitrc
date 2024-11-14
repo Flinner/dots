@@ -39,3 +39,5 @@ if [ $# -gt 0 ]; then
 else
     dbus-launch /usr/bin/bspwm
 fi
+
+#exex bspwm
