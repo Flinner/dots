@@ -1,0 +1,4 @@
+--pedantic
+--explicit
+--file ~/Documents/ledger/index.hledger
+
