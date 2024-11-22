@@ -1,0 +1,3 @@
+timeout 300 'hyprlock >> ~/hyprlock_logfile.txt'
+timeout 315 'hyprctl dispatch dpms off' resume 'hyprctl dispatch dpms on'
+before-sleep 'hyprlock'

@@ -8,7 +8,7 @@
 # Calculation Method: https://api.aladhan.com/v1/methods
 method='4'
 # Print Text Language (en/ar)
-print_lang="ar"
+print_lang="en"
 # Notifcation Daemon
 notify="mako"
 # ----------------------- #
