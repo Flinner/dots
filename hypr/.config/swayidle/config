@@ -1,3 +1,4 @@
+timeout 250 'notify-send --app-name=screenlockwarning "Screen will lock in 30 seconds"'
 timeout 300 'hyprlock >> ~/hyprlock_logfile.txt'
-timeout 315 'hyprctl dispatch dpms off' resume 'hyprctl dispatch dpms on'
+timeout 600 'hyprctl dispatch dpms off' resume 'hyprctl dispatch dpms on'
 before-sleep 'hyprlock'

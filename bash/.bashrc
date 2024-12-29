@@ -1,7 +1,8 @@
 # ~/.bashrc: executed by bash(1) for non-login shells.
 # see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
 # for examples
-TERM=xterm
+export TERM=xterm-256color
+exec zsh
 # If not running interactively, don't do anything
 case $- in
     *i*) ;;
@@ -72,3 +73,5 @@ if [ -f ~/.bash_aliases ]; then . ~/.bash_aliases ; fi
 
 
 export QSYS_ROOTDIR="/home/lambda/Programs/intelQuartus/quartus/sopc_builder/bin"
+
+[ -f "/home/lambda/.ghcup/env" ] && . "/home/lambda/.ghcup/env" # ghcup-env

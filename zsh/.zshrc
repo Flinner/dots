@@ -1,3 +1,4 @@
+
  ########
  # INIT #
  ########
@@ -35,6 +36,9 @@ autoload -Uz _zinit
 ### End of Zinit's installer chunk
 #===============================================================================================
 
+# Get a random preset
+fastfetch --config $(printf "%s\n" examples/{6,7,9,13,17,20,21,22} | shuf -n 1)
+
 ###########
 # PLUGINS #
 ###########
@@ -61,9 +65,12 @@ zplugin light zsh-users/zsh-autosuggestions
 zplugin ice wait'0' lucid
 zinit load agkozak/zsh-z
 
+zplugin ice wait'0' lucid
+zinit load "MichaelAquilina/zsh-auto-notify"
 
-zplugin ice wait'5' lucid
-zplugin load chisui/zsh-nix-shell
+
+#zplugin ice wait'5' lucid
+#zplugin load chisui/zsh-nix-shell
 
 
 #zplugin ice wait'1' lucid
@@ -191,7 +198,7 @@ alias sudo='sudo '
 
 alias fm='ranger'
 alias fm.='. ranger'
-alias books="fm ~/Nextcloud/Books"
+alias books="fm ~/Documents/Books"
 
 alias ll='ls -alF'
 alias la='ls -A'
@@ -232,7 +239,7 @@ export CARGO_HOME="$XDG_DATA_HOME"/cargo
 export GOPATH="$XDG_DATA_HOME"/go
 export GOBIN="$XDG_DATA_HOME"/go
 export DOOM_PATH="$HOME/.emacs.d/bin"
-#export YARN_PATH="$HOME/.yarn/bin"
+export YARN_PATH="$HOME/.yarn/bin"
 
 export PATH="$DOOM_PATH:$HOME/.local/bin:$HOME/bin:$CARGO_HOME/bin:$YARN_PATH:$GOPATH:$PATH"
 
@@ -271,6 +278,7 @@ else
 fi
 
 export TERMINAL="alacritty"
+export TERM=xterm-256color
 
 # man colors
 export LESS_TERMCAP_mb=$(printf '\e[01;31m') # enter blinking mode - red
@@ -295,6 +303,8 @@ WINIT_X11_SCALE_FACTOR=1
 # Load the pure theme, with zsh-async library that's bundled with it
 PS1="> "
 RPS1=" "
+# TODO: Check if starship binary exist, and choose to eval one of the next two
+# lines of code
 #zplugin ice wait'!0' lucid pick"async.zsh" src"pure.zsh"; zplugin light sindresorhus/pure
 eval "$(starship init zsh)"
 
@@ -304,3 +314,6 @@ eval "$(starship init zsh)"
 
 export QSYS_ROOTDIR="/home/lambda/Programs/intelQuartus/quartus/sopc_builder/bin"
 export JUPYTERLAB_DIR=$HOME/.local/share/jupyter/lab
+
+#[ -f "/home/lambda/.ghcup/env" ] && . "/home/lambda/.ghcup/env" # ghcup-env
+

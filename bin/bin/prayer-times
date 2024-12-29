@@ -1,18 +1,18 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # ----- Parameters ------ #
 # Coordinates: https://www.mapcoordinates.net/en
-# Set explicitly, or leave commented to get them automatically from ipinfo.io
-# lat='100.00000'
-# long='100.00000'
+# Set lat and long explicitly, or leave commented to get them automatically from ipinfo.io
+lat=''
+long=''
 # Calculation Method: https://api.aladhan.com/v1/methods
 method='4'
 # Print Text Language (en/ar)
-print_lang="en"
+print_lang='en'
 # Notifcation Daemon
-notify="mako"
+notify='mako'
 # ----------------------- #
-prayers_json="$HOME/.local/share/prayers.json"
+prayers_json="${HOME}/.local/share/prayers.json"
 prayers=("Fajr" "Dhuhr" "Asr" "Maghrib" "Isha")
 declare -A date
 declare -A epochtimes
@@ -33,43 +33,42 @@ date=(
 )
 
 nameof() {
-  if [[ "$print_lang" != "en" ]]; then
-    local array_name="prayers_$print_lang"
-    eval "echo -n \${${array_name}[$1]}"
+  if [[ "${print_lang}" != "en" ]]; then
+    local array_name="prayers_${print_lang}"
+    eval "echo -n \${${array_name}[${1}]}"
   else
-    echo -n "$1"
+    echo -n "${1}"
   fi
 }
 
 check() {
   local available_month
-  if [[ -r $prayers_json ]]; then
-    available_month=$(jq -r ".data[0].date.gregorian.month.number" "$prayers_json")
+  local response
+  local location
+  if [[ -r "${prayers_json}" ]]; then
+    available_month=$(jq -r ".data[0].date.gregorian.month.number" "${prayers_json}")
   else
     local fetch_prayers=1
   fi
 
-  if [[ "$fetch_prayers" || "$available_month" != "${date[month]}" ]]; then
-    # Fetch the geolocation data from ipinfo.io
-    response=$(curl -s https://ipinfo.io)
-
-    echo "-- fetching latitude and longitude"
-    # Parse the latitude and longitude
-    location=$(echo $response | jq -r '.loc')
-
-    # Separate latitude and longitude
-    latitude=$(echo $location | cut -d',' -f1)
-    longitude=$(echo $location | cut -d',' -f2)
-
-    # Set `lat` to `latitude`, or default to the specified value above
-    lat=${latitude:lat}
-    long=${longitude:long}
+  if ((fetch_prayers)) || [[ "${available_month}" != "${date[month]}" ]]; then
+    if [[ -z "${lat}" ]] || [[ -z "${long}" ]]; then
+      echo "-- fetching latitude and longitude (from ipinfo.io)"
+      response="$(curl -s https://ipinfo.io)"
+      # parse city name
+      city=$(echo "${response}" | jq -r '.city')
+      echo "-- city: ${city}"
+      # parse the latitude and longitude
+      mapfile -t location < <(echo "${response}" | jq -r ' (.loc | split(","))[] ')
+      # set `lat` to `latitude`, or default to the specified value above
+      lat=${location[0]:-${lat}}
+      long=${location[1]:-${long}}
+    fi
 
     echo "-- latitude: ${lat}, longitude: ${long}"
-
     echo "-- fetching current month prayer calendar (${date[month]}-${date[year]})"
     # Documentation: https://aladhan.com/prayer-times-api#GetCalendar
-    curl -Lso "$prayers_json" "https://api.aladhan.com/v1/calendar/${date[year]}/${date[month]}?latitude=$lat&longitude=$long&method=$method"
+    curl -Lso "${prayers_json}" "https://api.aladhan.com/v1/calendar/${date[year]}/${date[month]}?latitude=${lat}&longitude=${long}&method=${method}"
   fi
 }
 
@@ -78,49 +77,49 @@ add-jobs() {
   echo "-- removing all jobs in queue 'p'"
   if [[ "$(at -q p -l | wc -l)" != "0" ]]; then
     for i in $(at -q p -l | awk '{ print $1 }'); do
-      atrm "$i"
+      atrm "${i}"
     done
   fi
 
   for prayer in "${prayers[@]}"; do
-    echo "-- creating at job for $prayer prayer"
-    if [[ "$notify" == "mako" ]]; then
-      printf 'notify-send -t 30000 --icon="clock-applet-symbolic" "Prayer Times" "It is time for %s prayer 🕌"' "$prayer" | at -q p "$(timeof "$prayer" '%H:%M %F')"
+    echo "-- creating at job for ${prayer} prayer"
+    if [[ "${notify}" == "mako" ]]; then
+      printf 'notify-send -t 30000 --icon="clock-applet-symbolic" "Prayer Times" "It is time for %s prayer 🕌"' "${prayer}" | at -q p "$(timeof "${prayer}" '%H:%M %F')"
     else
-      printf '[ "$(dunstify --icon="clock-applet-symbolic" --action="Reply,reply" "Prayer Times" "Time for %s prayer 🕌" -t 30000)" = "2" ] && %s' "$prayer" "$HOME/.local/bin/toggle-athan" | at -q p "$(timeof "$prayer" '%H:%M %F')"
+      printf '[ "$(dunstify --icon="clock-applet-symbolic" --action="Reply,reply" "Prayer Times" "Time for %s prayer 🕌" -t 30000)" = "2" ] && %s' "${prayer}" "${HOME}/.local/bin/toggle-athan" | at -q p "$(timeof "${prayer}" '%H:%M %F')"
     fi
   done
 }
 
 timeof() {
-  [[ "$#" -lt "1" ]] && echo "atleast 1 argument is needed" && return 1
-  echo -n "$(date -d "$(jq -r ".data[${date[day_idx]}].timings.$1" "$prayers_json")" "+${2:-%I:%M}")"
+  [[ "${#}" -lt "1" ]] && echo "atleast 1 argument is needed" && return 1
+  echo -n "$(date -d "$(jq -r ".data[${date[day_idx]}].timings.${1}" "${prayers_json}")" "+${2:-%I:%M}")"
 }
 
 hijri() {
-  case "$1" in
+  case "${1}" in
   weekday)
-    if [[ "$print_lang" == "ar" ]]; then
-      echo -n "$(jq -r ".data[${date[day_idx]}].date.hijri.weekday.ar" "$prayers_json")"
+    if [[ "${print_lang}" == "ar" ]]; then
+      echo -n "$(jq -r ".data[${date[day_idx]}].date.hijri.weekday.ar" "${prayers_json}")"
     else
-      echo -n "$(jq -r ".data[${date[day_idx]}].date.hijri.weekday.en" "$prayers_json")"
+      echo -n "$(jq -r ".data[${date[day_idx]}].date.hijri.weekday.en" "${prayers_json}")"
     fi
     ;;
   day)
-    echo -n "$(jq -r ".data[${date[day_idx]}].date.hijri.day" "$prayers_json")"
+    echo -n "$(jq -r ".data[${date[day_idx]}].date.hijri.day" "${prayers_json}")"
     ;;
   month)
-    if [[ "$print_lang" == "ar" ]]; then
-      echo -n "$(jq -r ".data[${date[day_idx]}].date.hijri.month.ar" "$prayers_json")"
+    if [[ "${print_lang}" == "ar" ]]; then
+      echo -n "$(jq -r ".data[${date[day_idx]}].date.hijri.month.ar" "${prayers_json}")"
     else
-      echo -n "$(jq -r ".data[${date[day_idx]}].date.hijri.month.en" "$prayers_json")"
+      echo -n "$(jq -r ".data[${date[day_idx]}].date.hijri.month.en" "${prayers_json}")"
     fi
     ;;
   year)
-    echo -n "$(jq -r ".data[${date[day_idx]}].date.hijri.year" "$prayers_json")"
+    echo -n "$(jq -r ".data[${date[day_idx]}].date.hijri.year" "${prayers_json}")"
     ;;
   *)
-    echo "unsupported argument: $1" && return 1
+    echo "unsupported argument: ${1}" && return 1
     ;;
   esac
 }
@@ -141,37 +140,37 @@ settimes() {
   local nxt_idx=0
   local curr_idx=4
   for i in {4..0}; do
-    local prayer_key="${prayers[$i],,}"
-    if [[ "${epochtimes[now]}" -ge "${epochtimes[$prayer_key]}" ]]; then
-      [[ "$i" -lt "4" ]] && curr_idx=$i && nxt_idx=$((i + 1))
+    local prayer_key="${prayers[${i}],,}"
+    if [[ "${epochtimes[now]}" -ge "${epochtimes[${prayer_key}]}" ]]; then
+      [[ "${i}" -lt "4" ]] && curr_idx=${i} && nxt_idx=$((i + 1))
       break
     fi
   done
 
-  local next_key="${prayers[$nxt_idx],,}"
-  epochtimes[next]="${epochtimes[$next_key]}"
-  currentprayer="${prayers[$curr_idx]}"
-  nextprayer="${prayers[$nxt_idx]}"
-  if [[ "$nxt_idx" == "1" && "${date[weekday]}" == "Fri" ]]; then
+  local next_key="${prayers[${nxt_idx}],,}"
+  epochtimes[next]="${epochtimes[${next_key}]}"
+  currentprayer="${prayers[${curr_idx}]}"
+  nextprayer="${prayers[${nxt_idx}]}"
+  if [[ "${nxt_idx}" == "1" && "${date[weekday]}" == "Fri" ]]; then
     nextprayer="Jumuaa"
   fi
 }
 
 timeto() {
-  [[ "$#" -lt "1" ]] && echo "atleast 1 argument are needed" && return 1
+  [[ "${#}" -lt "1" ]] && echo "atleast 1 argument are needed" && return 1
   settimes
   remain="$((epochtimes["${1,,}"] - epochtimes[now]))"
-  [[ "$remain" -lt "0" ]] && remain="$((remain + 86400))"
-  date -u -d"@$remain" "+${2:-%H:%M}"
+  [[ "${remain}" -lt "0" ]] && remain="$((remain + 86400))"
+  date -u -d"@${remain}" "+${2:-%H:%M}"
 }
 
 print() {
   local format="📅 %s،%s\n%-12s%-10s\n%-12s%-10s\n%-12s%-10s\n%-12s%-10s\n%-12s%-10s\n%-12s%-10s\n"
-  if [[ "$print_lang" == "ar" ]]; then
+  if [[ "${print_lang}" == "ar" ]]; then
     format="📅 %s،%s\n%s%11s\n%s%10s\n%s%11s\n%s%11s\n%s%10s\n%s%10s\n"
   fi
 
-  printf "$format" \
+  printf "${format}" \
     "$(hijri weekday)" \
     "$(hijri day)-$(hijri month)-$(hijri year)" \
     "۞ $(nameof Fajr)" "$(timeof Fajr)" \
@@ -190,9 +189,7 @@ yad-en() {
     "<span font-size='large'><b>📅 $(hijri weekday),$(hijri day)-$(hijri month)-$(hijri year)</b></span>" \
     --list \
     --width=300 \
-    --posx=550 \
-    --posy=20 \
-    --height=270 \
+    --height=250 \
     --title="Prayers" \
     --column="Prayer" \
     --column="Time" \
@@ -217,9 +214,7 @@ yad-ar() {
     "<span font-size='large'><b>📅 $(hijri weekday),$(hijri day)-$(hijri month)-$(hijri year)</b></span>" \
     --list \
     --width=250 \
-    --posx=550 \
-    --posy=20 \
-    --height=280 \
+    --height=240 \
     --title="Prayers" \
     --column="الوقت" \
     --column="الصلاة" \
@@ -239,26 +234,26 @@ yad-toggle() {
   local yad_pid
   yad_pid=$(pgrep -f 'yad.*Prayers')
 
-  if [[ -z "$yad_pid" ]]; then
-    if [[ "$print_lang" == "ar" ]]; then
+  if [[ -z "${yad_pid}" ]]; then
+    if [[ "${print_lang}" == "ar" ]]; then
       yad-ar
     else
       yad-en
     fi
 
   else
-    kill "$yad_pid"
+    kill "${yad_pid}"
   fi
 }
 
 current() {
   settimes
-  echo "$currentprayer"
+  echo "${currentprayer}"
 }
 
 next() {
   settimes
-  echo "$nextprayer"
+  echo "${nextprayer}"
 }
 
 remaining() {
@@ -270,18 +265,18 @@ status() {
   settimes
   local remain
   remain="$(timeto next)"
-  echo "$nextprayer in $remain"
+  echo "${nextprayer} in ${remain}"
 }
 
 waybar-status() {
   settimes
   local remain
   remain="$(timeto next)"
-  local next_text="$nextprayer in $remain"
-  printf '{ "text": "%s", "class": "%s" }' "$next_text" "$nextprayer"
+  local next_text="${nextprayer} in ${remain}"
+  printf '{ "text": "%s", "class": "%s" }' "${next_text}" "${nextprayer}"
 }
 
-case "$1" in
+case "${1}" in
 check)
   check
   ;;
@@ -314,12 +309,12 @@ waybar)
   waybar-status
   ;;
 timeto)
-  if [[ -n "$2" ]]; then
-    if [[ "$2" == "next" ]]; then
+  if [[ -n "${2}" ]]; then
+    if [[ "${2}" == "next" ]]; then
       valid=1
     else
       for p in "${prayers[@]}"; do
-        if [[ "${2^}" == "$p" ]]; then
+        if [[ "${2^}" == "${p}" ]]; then
           valid=1
           break
         fi
@@ -327,16 +322,16 @@ timeto)
     fi
   fi
 
-  if [[ -z "$valid" ]]; then
+  if [[ -z "${valid}" ]]; then
     IFS='|'
-    echo "Usage: $(basename "$0") timeto (next|${prayers[*],,})"
+    echo "Usage: $(basename "${0}") timeto (next|${prayers[*],,})"
     exit 1
   fi
 
-  timeto "$2"
+  timeto "${2}"
   ;;
 *)
-  echo "Usage: $(basename "$0") [command]"
+  echo "Usage: $(basename "${0}") [command]"
   echo "Command:"
   echo "  check      Check if prayer time data needs to be fetched"
   echo "  jobs       Add prayer time notifications as at jobs"
