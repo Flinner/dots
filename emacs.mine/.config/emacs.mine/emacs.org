@@ -902,8 +902,8 @@ better sorting for ivy, company..
 * Org-Mode
 ** Set directories
 #+begin_src emacs-lisp
-    (setq org-directory "~/Documents/gtd/"
-    org-roam-directory "~/Documents/roam/"
+    (setq org-directory "~/Documents/Emacs/gtd/"
+    org-roam-directory "~/Documents/Emacs/roam/"
     ;; org-s-file (car (org-roam-id-find "34f6b040-ea49-421c-ade6-3834a9c86e0f"))
     ;; org-books-file (concat org-roam-directory "book_list.org")
     org-agenda-files (list org-directory ); org-s-file)
@@ -2130,16 +2130,20 @@ Sbt for sbt commands...
     (add-hook 'before-save-hook 'lsp-format-buffer nil t))))
 #+end_src
 
-*** COMMENT python
+*** python
 #+begin_src emacs-lisp
     (use-package elpy
-    :ensure t
-    :defer t
-    :bind ([remap lsp-find-definition] . elpy-goto-definition)
-    :config
-    (setq elpy-modules (remove 'elpy-module-highlight-indentation elpy-modules))
-    :init
-    (advice-add 'python-mode :before 'elpy-enable))
+        :ensure t
+        :defer t
+        :bind ([remap lsp-find-definition] . elpy-goto-definition)
+        :config
+        (setq elpy-modules (remove 'elpy-module-highlight-indentation elpy-modules))
+        :init
+        ;(advice-add 'python-mode :before 'elpy-enable)
+        (elpy-enable))
+    (setq python-interpreter "~/.python/venv/bin/python")
+    (setq python-shell-interpreter "~/.python/venv/bin/python")
+
 #+end_src
 
 *** LaTeX
@@ -2835,7 +2839,7 @@ I wrote that, neat isn't it? :P
 #+begin_src emacs-lisp :tangle no
     ;; Doesn't tangle!
     ;; loaded in use-package (block below)
-    (load "~/Nextcloud/Passwords/circe-networks.el")
+    (load "~/Nextcloud/Documents/Passwords/circe-networks.el")
 
     ; example content
     (add-to-list 'circe-networks `("chat.name/username" :host "irc.example.com" :port 69
@@ -2886,7 +2890,7 @@ I wrote that, neat isn't it? :P
     (enable-lui-track)
     ;(add-to-list 'circe-networks `())
     ;; adding to list happens here!
-    (load "~/Nextcloud/Passwords/circe-networks.el")
+    (load "~/Documents/Passwords/circe-networks.el")
     (setq circe-color-nicks-min-constrast-ratio 4.5
     circe-color-nicks-everywhere t)
     :hook (circe-channel-mode . enable-circe-color-nicks)
@@ -3010,6 +3014,7 @@ I wrote that, neat isn't it? :P
     (:maildir ,(concat dir-name "/Trash") :key ?t)
     ))
 
+    (mu4e-sent-messages-behavior . 'delete)
     (user-mail-address    .   ,mail-address)
     ;; (mu4e-maildir         .   ,(concat "~/.mail" dir-name))
     (user-full-name       .   ,full-name)
@@ -3041,7 +3046,7 @@ I wrote that, neat isn't it? :P
 or don't include in git source :)
 #+begin_src emacs-lisp
 (with-eval-after-load 'mu4e
-    (load "~/Nextcloud/Passwords/mu4e-context.el"))
+    (load "~/Documents/Passwords/mu4e-context.el"))
 #+end_src
 
 ** Other fixes
@@ -3103,7 +3108,7 @@ Only ask whether to reply to all if there are more than one recipients
           (and (> (+ tos ccs) 1)
                   (yes-or-no-p "Reply to all?")))))
       (evil-define-key 'normal mu4e-headers-mode-map "R" 'mu4e-supersede-or-compose-reply-ask-wide)
-      (evil-define-key 'normal mu4e-view-mode-map    "R" 'mu4e-supersede-or-compose-reply-ask-wide))
+      (evil-define-key 'normal mu4e-view-mode-map    "R" 'mu4e-supersede-or-compose-reply-ask-wide)))
 #+end_src
 
 
