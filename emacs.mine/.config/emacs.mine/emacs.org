@@ -521,6 +521,7 @@ Capture
     "wo" '(other-window :which-key "Window Other")
     "wr" '(winner-redo :which-key "Window Redo")
     "wt" '(treemacs :which-key "Treemacs")
+    "wT" '(treemacs-select-window :which-key "Treemacs Sel. Window")
 #+end_src
 
 **** Code (c)
@@ -829,7 +830,7 @@ slow loading! defer it
     :custom
     (company-tooltip-minimum-width 40) ;reduce flicker due to changing width
     (global-company-mode t)
-    (company-idle-delay 0.3) ;; how long to wait until popup
+    (company-idle-delay 0.01) ;; how long to wait until popup
     (company-minimum-prefix-length 1) ;; The minimum prefix length for idle completion.
     (company-selection-wrap-around t)
     ;; (company-begin-commands nil) ;; uncomment to disable popup
@@ -907,8 +908,8 @@ better sorting for ivy, company..
     ;; org-s-file (car (org-roam-id-find "34f6b040-ea49-421c-ade6-3834a9c86e0f"))
     ;; org-books-file (concat org-roam-directory "book_list.org")
     org-agenda-files (list org-directory ); org-s-file)
-    rmh-elfeed-org-files (list "~/Documents/private.el/elfeed.org")
-    elfeed-dashboard-file "~/Documents/private.el/elfeed-dashboard.org"
+    rmh-elfeed-org-files (list "~/Documents/Emacs/private.el/elfeed.org")
+    elfeed-dashboard-file "~/Documents/Emacs/private.el/elfeed-dashboard.org"
     org-preview-latex-image-directory  "~/.cache/ltx/ltximg"
     org-my-anki-file (concat org-roam-directory "anki.org")
     org-refile-targets '((org-agenda-files . (:level . 1))))
@@ -1721,12 +1722,11 @@ Lsp UI
 #+begin_src emacs-lisp
     (use-package format-all
     ;; :commands (format-all-mode)
-    :defer
     :config
     (setq my/format-all-formatters '(("Verilog" verible)))
     :hook (prog-mode . format-all-mode)
     (format-all-mode . (lambda () (setq format-all-formatters my/format-all-formatters)))
-    (format-all-mode . format-all-ensure-formatter))
+    (format-all-mode . format-all-ensure-formatter))all 
 #+end_src
 
 *** Debug
@@ -1790,10 +1790,11 @@ Magit TODOs!
 ** Treemacs
 use-package
 #+begin_src emacs-lisp
-    (use-package treemacs
-    :commands (treemacs)
-    :init
-    (setq treemacs-follow-after-init t
+  (use-package treemacs
+  :commands (treemacs)
+  :init
+  (treemacs-project-follow-mode 1)
+  (setq treemacs-follow-after-init t
     treemacs-is-never-other-window t
     treemacs-sorting 'alphabetic-case-insensitive-asc))
 #+end_src
@@ -2120,6 +2121,11 @@ Sbt for sbt commands...
     (add-hook 'before-save-hook 'lsp-format-buffer nil t))))
 #+end_src
 
+CMake
+#+begin_src emacs-lisp
+    (use-package cmake-mode)
+#+end_src
+
 *** COMMENT Ruby
 #+begin_src emacs-lisp
     (use-package ruby-mode
@@ -2146,8 +2152,8 @@ Sbt for sbt commands...
 
 #+end_src
 
-*** LaTeX
-AucTex
+*** COMMENT LaTeX (old, to be deleted)
+AucTex (Archived, =:tangle= set to =no=)
 #+begin_src emacs-lisp :tangle no
     ;; latexmk
     (use-package magic-latex-buffer
@@ -2229,7 +2235,7 @@ AucTex
     ;; ;; pdftools
     ;; ;; https://emacs.stackexchange.com/questions/21755/use-pdfview-as-default-auctex-pdf-viewer#21764
     (setq TeX-view-program-selection '((output-pdf "Zathura"))
-    ;; TeX-view-program-list '(("PDF Tools" TeX-pdf-tools-sync-view))
+        ;; TeX-view-program-list '(("PDF Tools" TeX-pdf-tools-sync-view))
     TeX-source-correlate-start-server t) ;; not sure if last line is neccessary
     ;; (add-to-list 'TeX-view-program-selection '(output-pdf "Zathura"))
 
@@ -2252,13 +2258,13 @@ AucTex
 
     ;; latexmk
     (require 'auctex-latexmk)
-    (auctex-latexmk-setup)
-    (setq auctex-latexmk-inherit-TeX-PDF-mode t)
-
-    )
+    (auctex-latexmk-setup) ; look here for stuff
+    (setq auctex-latexmk-inherit-TeX-PDF-mode t))
 #+end_src
 
-Custom functions
+
+
+Custom functions (Archived, =:tangle= set to =no=)
 #+begin_src emacs-lisp :tangle no
 
 (defun try/latex-mode-setup ()
@@ -2371,15 +2377,67 @@ ivy bibtex
     (bibtex-completion-cite-prompt-for-optional-arguments nil)
     (bibtex-completion-cite-default-as-initial-input t)
     )
-    
 #+end_src
 
+*** LaTeX
+See: [[https://karthinks.com/software/latex-input-for-impatient-scholars/][LaTeX Input for Impatient Scholars | Karthinks]]
+AucTex
 #+begin_src emacs-lisp
+  (use-package auctex-latexmk
+    :after auctex  ;; Ensure it's loaded after AUCTeX
+    :config
+    (setq LaTeX-command "LaTeXMk")  ;; Use latexmk as the default LaTeX command
+    (setq latex-run-command "LaTeXMk"))
+
+  (use-package auctex
+    :mode ("\\.tex\\'" . LaTeX-mode)
+    :defer t
+    :hook 
+        (LaTeX-mode . flyspell-mode)
+        (LaTeX-mode . flycheck-mode)
+        (LaTeX-mode . company-mode)
+        (LaTeX-mode . turn-on-reftex)
+        (LaTeX-mode . electric-indent-mode)
+        (LaTeX-mode . auto-fill-mode)
+        ;(LaTeX-mode . format-all-mode)
+        (LaTeX-mode . TeX-source-correlate-mode)
+        (LaTeX-mode . turn-on-cdlatex)
+    :custom
+        (reftex-default-bibliography '("~/Documents/refs.bib"))
+        (bibtex-dialect 'biblatex)
+        (TeX-save-query 'nil)
+        (reftex-plug-into-AUCTeX 't)
+    :config
+        (require 'auctex-latexmk)
+        (auctex-latexmk-setup) ; look here for stuff
+        (setq auctex-latexmk-inherit-TeX-PDF-mode t)
+
+        (evil-define-key 'visual 'LaTeX-mode-map
+            "$" 'TeX-insert-dollar
+            "'" 'cdlatex-math-modify)
+        (setq TeX-view-program-selection '((output-pdf "Zathura"))
+              TeX-source-correlate-start-server t)
+        (setq-default TeX-output-dir "/tmp/tex")
+        (add-to-list 'LaTeX-clean-intermediate-suffixes
+                     '"-figure[0-9]*\\.\\(pdf\\|md5\\|log\\|dpth\\|dep\\|run\\.xml\\)")
+        (add-to-list 'LaTeX-clean-intermediate-suffixes '".auxlock")
+    :custom-face
+        (font-latex-sectioning-0-face ((t (:family my/ui/varfont :weight bold :height 3.0))))
+        (font-latex-sectioning-1-face ((t (:family my/ui/varfont :weight bold :height 2.5))))
+        (font-latex-sectioning-2-face ((t (:family my/ui/varfont :weight bold :height 2.0))))
+        (font-latex-sectioning-3-face ((t (:family my/ui/varfont :weight bold :height 1.5))))
+        (font-latex-sectioning-4-face ((t (:family my/ui/varfont :weight bold :height 1.5)))))
+#+end_src
+
+Lsp LaTeX
+#+begin_src emacs-lisp
+  (use-package cdlatex
+    :defer t
+    :hook ((LaTeX-mode . cdlatex-mode)))
 
   (use-package lsp-latex
-    :hook ((tex-mode . lsp)
-            (latex-mode . lsp)))
-
+    :hook (;(tex-mode . lsp)
+           (LaTeX-mode . lsp)))
 #+end_src
 
 *** COMMENT Ledger
@@ -2554,6 +2612,14 @@ Unused, switched to =hledger=
     ;(add-hook 'before-save-hook 'nix-mode-format nil t)))); doesn't require nixfmt
     (add-hook 'before-save-hook 'nix-format-buffer nil t))))
 
+#+end_src
+
+*** Zig
+#+begin_src emacs-lisp
+  (use-package zig-mode
+    :hook 
+      (zig-mode . lsp-mode)
+      (zig-mode . (lambda () (remove-hook 'before-save-hook 'zig-format-buffer t))))
 #+end_src
 
 ** Tramp
@@ -2938,7 +3004,7 @@ I wrote that, neat isn't it? :P
     (use-package mu4e                       ;
     ;; this line is for nixos
     ;; until here
-    ;;:ensure-system-package mu
+    :ensure-system-package mu
     :init
     (defun mu4e--main-action-str (str &optional func-or-shortcut))
     (defun evil-collection-mu4e-update-main-view@override())
@@ -3176,7 +3242,7 @@ Only ask whether to reply to all if there are more than one recipients
     :init
     (dashboard-setup-startup-hook)
     :config
-    (setq dashboard-startup-banner "~/Downloads/haskell-rec.png")
+    (setq dashboard-startup-banner "~/Documents/Emacs/haskell-rec.png")
     ;; Value can be
     ;; 'official which displays the official emacs logo
     ;; 'logo which displays an alternative emacs logo
