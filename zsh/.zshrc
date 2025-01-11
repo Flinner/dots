@@ -229,6 +229,8 @@ alias startx="exec startx"
 
 #===============================================================================================
 
+#source ~/.config/sh_vars/variables.sh
+
 #xdg specs
 export XDG_CONFIG_HOME="$HOME"/.config
 export XDG_CACHE_HOME="$HOME"/.cache
@@ -251,10 +253,11 @@ export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quo
 export _Z_NO_RESOLVE_SYMLINKS=1
 export _Z_DATA="$HOME/.local/share/z"
 
-# jupyter garbage export JUPYTERLAB_DIR=$HOME/.local/share/jupyter/lab
+# jupyter garbage
+# export JUPYTERLAB_DIR=$HOME/.local/share/jupyter/lab
 
 # python path for jupyter garbage
-export PYTHONPATH="$HOME/.local/bin"
+# export PYTHONPATH="$HOME/.local/bin"
 
 # andriod studio, not that I use it
 # also needed by shitlab! (matlab)
