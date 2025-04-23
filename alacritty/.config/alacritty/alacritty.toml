@@ -94,6 +94,11 @@ action = "SpawnNewInstance"
 key = "Return"
 mods = "Shift|Super"
 
+[[keyboard.bindings]]
+action = "CreateNewTab"
+key = "T"
+mods = "Control|Shift"
+
 #[schemes.flinty_dark.bright]
 #black = "#686868"
 #blue = "#57c7ff"

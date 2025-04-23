@@ -36,6 +36,10 @@ autoload -Uz _zinit
 ### End of Zinit's installer chunk
 #===============================================================================================
 
+if [[ "${TERM}" == "dumb" ]]; then
+    exec sh
+fi
+
 # Get a random preset
 fastfetch --config $(printf "%s\n" examples/{6,7,9,13,17,20,21,22} | shuf -n 1)
 
@@ -65,7 +69,7 @@ zplugin light zsh-users/zsh-autosuggestions
 zplugin ice wait'0' lucid
 zinit load agkozak/zsh-z
 
-zplugin ice wait'0' lucid
+zplugin ice wait'1' lucid
 zinit load "MichaelAquilina/zsh-auto-notify"
 
 
@@ -103,6 +107,7 @@ setopt EXTENDED_HISTORY  # record command start time
 SAVEHIST=1000
 HISTSIZE=1000
 HISTFILE="$HOME/.local/share/zsh/zsh_history"
+AUTO_NOTIFY_IGNORE+=("fm", "ranger", "nvim")
 #===============================================================================================
 
 ############
@@ -318,5 +323,5 @@ eval "$(starship init zsh)"
 export QSYS_ROOTDIR="/home/lambda/Programs/intelQuartus/quartus/sopc_builder/bin"
 export JUPYTERLAB_DIR=$HOME/.local/share/jupyter/lab
 
-#[ -f "/home/lambda/.ghcup/env" ] && . "/home/lambda/.ghcup/env" # ghcup-env
+[ -f "/home/lambda/.ghcup/env" ] && . "/home/lambda/.ghcup/env" # ghcup-env
 
