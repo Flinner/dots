@@ -7,3 +7,4 @@ __pycache__
 /hypr/.face
 /emacs.mine/.config/emacs.mine/eln-cache/
 /emacs.mine/.config/emacs.mine/elpy/
+/haskell/.ghc/ghci_history
