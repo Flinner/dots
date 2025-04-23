@@ -21,7 +21,8 @@ export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quo
 export _Z_NO_RESOLVE_SYMLINKS=1
 export _Z_DATA="$HOME/.local/share/z"
 
-# jupyter garbage export JUPYTERLAB_DIR=$HOME/.local/share/jupyter/lab
+# jupyter garbage
+export JUPYTERLAB_DIR=$HOME/.local/share/jupyter/lab
 
 # python path for jupyter garbage
 export PYTHONPATH="$HOME/.local/bin"

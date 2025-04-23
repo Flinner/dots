@@ -5,9 +5,9 @@
     // Choose the order of the modules
     "reload_style_on_change": true,
     "modules-left": ["hyprland/workspaces"],
-    "modules-center": ["custom/music"],
+    "modules-center": ["pulseaudio","custom/prayers", "network", "cpu", "memory", "clock", "custom/music"],
     // "modules-right": ["pulseaudio", "cpu", "backlight", "battery", "clock", "tray", "custom/lock", "custom/power"],
-    "modules-right": ["pulseaudio","custom/prayers", "network", "cpu", "memory", "clock", "tray", "custom/lock", "custom/power"],
+    "modules-right": ["tray", "custom/lock", "custom/power"],
     "hyprland/workspaces": {
          "disable-scroll": true,
          "sort-by-name": true,

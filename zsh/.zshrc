@@ -1,3 +1,4 @@
+
  ########
  # INIT #
  ########
@@ -35,6 +36,13 @@ autoload -Uz _zinit
 ### End of Zinit's installer chunk
 #===============================================================================================
 
+if [[ "${TERM}" == "dumb" ]]; then
+    exec sh
+fi
+
+# Get a random preset
+fastfetch --config $(printf "%s\n" examples/{6,7,9,13,17,20,21,22} | shuf -n 1)
+
 ###########
 # PLUGINS #
 ###########
@@ -61,9 +69,12 @@ zplugin light zsh-users/zsh-autosuggestions
 zplugin ice wait'0' lucid
 zinit load agkozak/zsh-z
 
+zplugin ice wait'1' lucid
+zinit load "MichaelAquilina/zsh-auto-notify"
 
-zplugin ice wait'5' lucid
-zplugin load chisui/zsh-nix-shell
+
+#zplugin ice wait'5' lucid
+#zplugin load chisui/zsh-nix-shell
 
 
 #zplugin ice wait'1' lucid
@@ -96,6 +107,7 @@ setopt EXTENDED_HISTORY  # record command start time
 SAVEHIST=1000
 HISTSIZE=1000
 HISTFILE="$HOME/.local/share/zsh/zsh_history"
+AUTO_NOTIFY_IGNORE+=("fm", "ranger", "nvim")
 #===============================================================================================
 
 ############
@@ -222,6 +234,8 @@ alias startx="exec startx"
 
 #===============================================================================================
 
+#source ~/.config/sh_vars/variables.sh
+
 #xdg specs
 export XDG_CONFIG_HOME="$HOME"/.config
 export XDG_CACHE_HOME="$HOME"/.cache
@@ -232,7 +246,7 @@ export CARGO_HOME="$XDG_DATA_HOME"/cargo
 export GOPATH="$XDG_DATA_HOME"/go
 export GOBIN="$XDG_DATA_HOME"/go
 export DOOM_PATH="$HOME/.emacs.d/bin"
-#export YARN_PATH="$HOME/.yarn/bin"
+export YARN_PATH="$HOME/.yarn/bin"
 
 export PATH="$DOOM_PATH:$HOME/.local/bin:$HOME/bin:$CARGO_HOME/bin:$YARN_PATH:$GOPATH:$PATH"
 
@@ -244,10 +258,11 @@ export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quo
 export _Z_NO_RESOLVE_SYMLINKS=1
 export _Z_DATA="$HOME/.local/share/z"
 
-# jupyter garbage export JUPYTERLAB_DIR=$HOME/.local/share/jupyter/lab
+# jupyter garbage
+# export JUPYTERLAB_DIR=$HOME/.local/share/jupyter/lab
 
 # python path for jupyter garbage
-export PYTHONPATH="$HOME/.local/bin"
+# export PYTHONPATH="$HOME/.local/bin"
 
 # andriod studio, not that I use it
 # also needed by shitlab! (matlab)
@@ -271,6 +286,7 @@ else
 fi
 
 export TERMINAL="alacritty"
+export TERM=xterm-256color
 
 # man colors
 export LESS_TERMCAP_mb=$(printf '\e[01;31m') # enter blinking mode - red
@@ -295,6 +311,8 @@ WINIT_X11_SCALE_FACTOR=1
 # Load the pure theme, with zsh-async library that's bundled with it
 PS1="> "
 RPS1=" "
+# TODO: Check if starship binary exist, and choose to eval one of the next two
+# lines of code
 #zplugin ice wait'!0' lucid pick"async.zsh" src"pure.zsh"; zplugin light sindresorhus/pure
 eval "$(starship init zsh)"
 
@@ -304,3 +322,6 @@ eval "$(starship init zsh)"
 
 export QSYS_ROOTDIR="/home/lambda/Programs/intelQuartus/quartus/sopc_builder/bin"
 export JUPYTERLAB_DIR=$HOME/.local/share/jupyter/lab
+
+[ -f "/home/lambda/.ghcup/env" ] && . "/home/lambda/.ghcup/env" # ghcup-env
+

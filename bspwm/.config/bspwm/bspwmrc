@@ -8,7 +8,7 @@ pgrep ~/bin/wm/bspswallow || ~/bin/wm/bspswallow &
 
 
 # not sure if I can count using Roman Numerals :)
-bspc monitor eDP1 -d I II III IV V VI VII VIII IX X
+bspc monitor -d I II III IV V VI VII VIII IX X
 
 #bspc config ignore_ewmh_fullscreen all
 bspc config ignore_ewmh_focus true

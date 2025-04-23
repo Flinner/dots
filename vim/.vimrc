@@ -26,44 +26,44 @@ Plug 'mbbill/undotree'
 Plug  'preservim/tagbar'
 " }}}
 Plug 'neoclide/coc.nvim', {'do': { -> coc#util#install()}} " Completion as in vscode
-Plug 'preservim/nerdcommenter' " comments code
-Plug 'junegunn/goyo.vim' " zen mode
+" Plug 'preservim/nerdcommenter' " comments code
+" Plug 'junegunn/goyo.vim' " zen mode
 "Plug 'Valloric/YouCompleteMe', { 'do': './install.py' }
-Plug 'vim-utils/vim-man'
+" Plug 'vim-utils/vim-man'
 Plug 'sheerun/vim-polyglot' "all lang packs :)
 Plug 'qpkorr/vim-bufkill'
 "JS {{{
-Plug 'https://github.com/pangloss/vim-javascript.git'
-Plug 'posva/vim-vue'
-Plug 'prettier/vim-prettier'
-Plug 'dense-analysis/ale' "ES-Lint
-Plug 'pangloss/vim-javascript'
-Plug 'heavenshell/vim-jsdoc', { 'for': ['javascript', 'javascript.jsx','typescript'],  'do': 'make install' }
+" Plug 'https://github.com/pangloss/vim-javascript.git'
+" Plug 'posva/vim-vue'
+" Plug 'prettier/vim-prettier'
+" Plug 'dense-analysis/ale' "ES-Lint
+" Plug 'pangloss/vim-javascript'
+" Plug 'heavenshell/vim-jsdoc', { 'for': ['javascript', 'javascript.jsx','typescript'],  'do': 'make install' }
 Plug 'honza/vim-snippets'
-Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
-Plug 'junegunn/fzf.vim'
+" Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+" Plug 'junegunn/fzf.vim'
 Plug 'francoiscabrol/ranger.vim'
-Plug 'rbgrouleff/bclose.vim'
+" Plug 'rbgrouleff/bclose.vim'
 Plug 'SirVer/ultisnips'
-Plug 'albanm/vuetify-vim'
+" Plug 'albanm/vuetify-vim'
 "}}}
 ": Latex{{{
 Plug 'lervag/vimtex'
 Plug 'xuhdev/vim-latex-live-preview', { 'for': 'tex' }
 "}}}
 "Rust {{{
-Plug 'rust-lang/rust.vim'
+" Plug 'rust-lang/rust.vim'
 
 "}}}
 "V {{{
-Plug 'ollykel/v-vim'
+" Plug 'ollykel/v-vim'
 "}}}
 " Markdown {{{
-Plug 'godlygeek/tabular'
+" Plug 'godlygeek/tabular'
 "Plug 'plasticboy/vim-markdown'
 "}}}
 " GIT {{{
-Plug 'tpope/vim-fugitive'
+" Plug 'tpope/vim-fugitive'
 Plug 'airblade/vim-gitgutter'
 " }}}
 

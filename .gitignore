@@ -5,3 +5,6 @@ __pycache__
 /emacs.mine/.config/emacs.mine/straight/
 /emacs.mine/.config/emacs.mine/var/
 /hypr/.face
+/emacs.mine/.config/emacs.mine/eln-cache/
+/emacs.mine/.config/emacs.mine/elpy/
+/haskell/.ghc/ghci_history

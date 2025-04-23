@@ -55,3 +55,5 @@ fi
 
 
 export QSYS_ROOTDIR="/home/lambda/Programs/intelQuartus/quartus/sopc_builder/bin"
+
+[ -f "/home/lambda/.ghcup/env" ] && . "/home/lambda/.ghcup/env" # ghcup-env
