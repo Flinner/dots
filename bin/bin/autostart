@@ -26,7 +26,7 @@ source ~/.fehbg
 killall wired
 (sleep 1 && wired ) &
 (sleep 3 && greenclip daemon) &
-#(sleep 3 && optimus-manager-qt) &
+(sleep 3 && optimus-manager-qt) &
 (sleep 3 && flameshot) &
 
 (sleep 4 && keepassxc) &

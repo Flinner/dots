@@ -3014,7 +3014,7 @@ I wrote that, neat isn't it? :P
     (:maildir ,(concat dir-name "/Trash") :key ?t)
     ))
 
-    (mu4e-sent-messages-behavior . 'delete)
+    (mu4e-sent-messages-behavior . delete)
     (user-mail-address    .   ,mail-address)
     ;; (mu4e-maildir         .   ,(concat "~/.mail" dir-name))
     (user-full-name       .   ,full-name)

@@ -191,7 +191,7 @@ alias sudo='sudo '
 
 alias fm='ranger'
 alias fm.='. ranger'
-alias books="fm ~/Nextcloud/Books"
+alias books="fm ~/Documents/Books"
 
 alias ll='ls -alF'
 alias la='ls -A'
