@@ -3,8 +3,8 @@
 # ----- Parameters ------ #
 # Coordinates: https://www.mapcoordinates.net/en
 # Set lat and long explicitly, or leave commented to get them automatically from ipinfo.io
-lat=''
-long=''
+lat="${lat:-}"
+long="${long:-}"
 # Calculation Method: https://api.aladhan.com/v1/methods
 method='4'
 # Print Text Language (en/ar)
