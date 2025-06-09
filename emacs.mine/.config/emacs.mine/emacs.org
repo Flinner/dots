@@ -854,9 +854,10 @@ slow loading! defer it
           ("M-<". company-select-first)
           ("M->". company-select-last)))
 
-  (use-package company-box
-    :after company
-    :hook (company-mode . company-box-mode))
+  ; THIS WAS SLOWING ME!!!!
+  ; (use-package company-box
+    ; :after company
+    ; :hook (company-mode . company-box-mode))
 #+end_src
 
 *** lsp + yasnippet
@@ -922,6 +923,7 @@ better sorting for ivy, company..
         elfeed-dashboard-file "~/Documents/Emacs/private.el/elfeed-dashboard.org"
         org-preview-latex-image-directory  "~/.cache/ltx/ltximg"
         org-my-anki-file (concat org-roam-directory "anki.org")
+        org-my-daily-template-file (concat org-roam-directory "templates/daily.orgcaptmpl")
         org-refile-targets '((org-agenda-files . (:level . 1))))
 
 #+end_src
@@ -1123,16 +1125,23 @@ Allow fast code insertion
                  :children (("Project"   :keys "p"
                              :olp ("Ideas" "Project")
                              :todo-state "")
-                            ("Blogs"   :keys "b"
-                             :olp ("Blog")
+                            ("Research"   :keys "r"
+                             :olp ("Ideas" "Research")
                              :todo-state "")
-                            ("placeholder" :keys "w"
+                            ("Blogs"   :keys "b"
+                             :olp ("Ideas" "Blog")
+                             :todo-state "")
+                            ("Want to Buy"   :keys "w"
+                             :olp ("Ideas" "Buy")
+                             :todo-state "")
+                            ("placeholder" :keys "z"
                              :headline "Watch"
                              :todo-state "TODO")))
                 ("GTD" :keys "g"
                  :file ,(concat org-directory "inbox.org")
                  :prepend t
                  :template ("* %{todo-state} %^{Description}"
+                            "SCHEDULED: %t"
                             ":PROPERTIES:"
                             ":Created: %U"
                             ":END:"
@@ -1309,48 +1318,49 @@ From: https://yiufung.net/post/anki-org/
 
 *** org SUPER agenda
 #+begin_src emacs-lisp
-  (use-package org-super-agenda
-    :after org-agenda
-    :config
-    (setq org-agenda-span 'day); a week is too much
-    (setq org-super-agenda-groups
-          '((:log t :order 99); logs at bottom
-            (:name "Study"
-                   :order 97
-                   :tag ("S"))
-            (:name "Life"
-                   :order 98
-                   :tag ("L"))
-            (:name "Habits"
-                   :order 99
-                   :habit t)
-            (:name "Overdue"
-                   :deadline past
-                   :scheduled past)
-            (:name "Today" ; today is what
-                   :time-grid t    ; Items that appear on the time grid
-                   :scheduled today)
-            (:name "Now" ; today is what
-                   :todo "NOW")
-            (:name "Deadlines"
-                   :deadline t)
-            (:name "To Refile"
-                   :tag ("INBOX"))))
+      (use-package org-super-agenda
+        :after org-agenda
+        :config
+        (setq org-agenda-span 'day); a week is too much
+        (setq org-super-agenda-groups
+              '((:log t :order 99); logs at bottom
+                (:name "Study"
+                       :order 90
+                       :tag ("S"))
+                (:name "Life"
+                       :order 91
+                       :tag ("L"))
+                (:name "Habits"
+                       :order 92
+                       :habit t)
+                (:name "To Refile"
+                       :tag ("INBOX")
+                       :order 93)
+                (:name "Overdue"
+                       :deadline past
+                       :scheduled past)
+                (:name "Today" ; today is what
+                       :time-grid t    ; Items that appear on the time grid
+                       :scheduled today)
+                (:name "Now" ; today is what
+                       :todo "NOW")
+                (:name "Deadlines"
+                       :deadline t)))
 
-    (org-super-agenda-mode 1)
+        (org-super-agenda-mode 1)
 
-    :hook (org-agenda-mode . origami-mode)
-    (org-agenda-mode . org-super-agenda-mode); need this sadly
-    (org-agenda-mode . olivetti-mode)
-                                          ;(org-agenda-mode . olivetti-mode)
-                                          ;(evil-define-key '(normal visual) 'org-super-agenda-header-map "j" 'org-agenda-next-line)
-    :bind (:map org-super-agenda-header-map
-                ([tab] . origami-toggle-node)
-                ;; evil doesn't work on headers, bruh
-                ("j" . org-agenda-next-line)
-                ("k" . org-agenda-previous-line)
-                ("h" . evil-backward-char)
-                ("l" . evil-forward-char)))
+        :hook (org-agenda-mode . origami-mode)
+        (org-agenda-mode . org-super-agenda-mode); need this sadly
+        (org-agenda-mode . olivetti-mode)
+                                              ;(org-agenda-mode . olivetti-mode)
+                                              ;(evil-define-key '(normal visual) 'org-super-agenda-header-map "j" 'org-agenda-next-line)
+        :bind (:map org-super-agenda-header-map
+                    ([tab] . origami-toggle-node)
+                    ;; evil doesn't work on headers, bruh
+                    ("j" . org-agenda-next-line)
+                    ("k" . org-agenda-previous-line)
+                    ("h" . evil-backward-char)
+                    ("l" . evil-forward-char)))
 #+end_src
 
 *** COMMENT org-ql
@@ -1482,7 +1492,7 @@ Stolen from: [[https://blog.jethro.dev/posts/processing_inbox/][Org-mode Workflo
 
 ** Org analyzer
 #+begin_src emacs-lisp
-  (use-package org-analyzer)
+  ;(use-package org-analyzer)
 #+end_src
 
 ** org-roam
@@ -1493,22 +1503,35 @@ Stolen from: [[https://blog.jethro.dev/posts/processing_inbox/][Org-mode Workflo
     :custom
     (org-roam-completion-everywhere t)
     (org-roam-db-gc-threshold most-positive-fixnum) ;; preformance
-    (org-roam-capture-ref-templates
-     '(("r" "ref" plain "%?" :if-new
-        (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}")
-        :unnarrowed t)))
-    :config
-    ;; side window
-                                          ;(require 'org-roam-protocol)
-    (org-roam-db-autosync-mode)
-    (add-to-list 'display-buffer-alist
-                 '("\\*org-roam\\*"
-                   (display-buffer-in-side-window)
-                   (side . right)
-                   (slot . 0)
-                   (window-width . 0.33)
-                   (window-parameters . ((no-other-window . t)
-                                         (no-delete-other-windows . t))))))
+    
+     ;;; Capture Templates
+    ;; Dailies
+    (org-roam-dailies-capture-templates
+     `(("d" "default" entry "* %?" :target
+        (file+head "%<%Y-%m-%d>.org" ,(concat "%[" org-my-daily-template-file "]")))))
+
+     ;; Capture Templates
+     (org-roam-capture-templates
+      '(("d" "default" plain "%?" :target
+         (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+         :unnarrowed t)))
+     
+     ;; (org-roam-capture-ref-templates
+     ;;  '(("r" "ref" plain "%?" :if-new
+     ;;     (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}")
+     ;;     :unnarrowed t)))
+     :config
+     ;; side window
+     ;;(require 'org-roam-protocol)
+     (org-roam-db-autosync-mode)
+     (add-to-list 'display-buffer-alist
+                  '("\\*org-roam\\*"
+                    (display-buffer-in-side-window)
+                    (side . right)
+                    (slot . 0)
+                    (window-width . 0.33)
+                    (window-parameters . ((no-other-window . t)
+                                          (no-delete-other-windows . t))))))
 #+end_src
 
 *** org roam server
@@ -1656,7 +1679,8 @@ This is done in Performance section
 #+begin_src emacs-lisp
   (use-package lsp-mode
     :commands (lsp lsp-deferred)
-    ;;  :hook
+     :hook
+     (lsp-mode . lsp-inlay-hints-mode)
     ;; (lsp-mode . my/lsp/lsp-mode-setup)
     :custom
     (lsp-headerline-breadcrumb-segments '(path-up-to-project file))
@@ -2451,6 +2475,17 @@ Lsp LaTeX
            (LaTeX-mode . lsp)))
 #+end_src
 
+*** OpenSCAD
+#+begin_src emacs-lisp
+  (use-package scad-mode
+    :defer t)
+  
+  (use-package scad-dbus
+    :after scad-mode
+    :straight (:host github :repo "Lenbok/scad-dbus" :branch "master")
+    :bind (:map scad-mode-map ("C-c o" . 'hydra-scad-dbus/body)))
+#+end_src
+
 *** COMMENT Ledger
 Unused, switched to =hledger=
 #+begin_src emacs-lisp
@@ -2736,7 +2771,7 @@ Unused, switched to =hledger=
     (keyfreq-autosave-mode 1))
 #+end_src
 
-** Polybar
+** Polybar/Waybar
 *** org clock
 #+begin_src emacs-lisp
   (defun my/polybar/org-clock ()
@@ -2753,6 +2788,28 @@ Unused, switched to =hledger=
               icon-color "#FDD835"))
       (concat "%{F" icon-color "}" icon  "%{F-}" message)))
 
+#+end_src
+
+#+begin_src emacs-lisp
+  (defun my/waybar/org-clock ()
+    "Gets waybar formatted message"
+    (let ((message nil)
+          (icon nil)
+          (enabled t)
+          (icon-color nil))
+      (if (org-clock-is-active)
+          (setq message (substring-no-properties (org-clock-get-clock-string))
+                icon ""; there is an icon here, in case it isn't rendered...
+                enabled t
+                icon-color "#BA68C8")
+        (setq message ""
+              icon ""; "";; I want it to be empty
+              enabled nil
+              icon-color "#FDD835"))
+      (json-encode
+       `((text . ,message)
+         (icon . ,icon)
+         ,@(when enabled '((class . "enabled")))))))
 #+end_src
 
 ** Gemini
