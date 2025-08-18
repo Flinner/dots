@@ -86,7 +86,7 @@ family = "monospace"
 family = "monospace"
 
 [font.normal]
-family = "Fira Code"
+family = "JetBrainsMono Nerd Font"
 style = "Regular"
 
 [[keyboard.bindings]]

@@ -5,7 +5,7 @@
     // Choose the order of the modules
     "reload_style_on_change": true,
     "modules-left": ["hyprland/workspaces"],
-    "modules-center": ["pulseaudio","custom/prayers", "network", "cpu", "memory", "clock", "custom/music"],
+    "modules-center": ["custom/org-clock", "pulseaudio","custom/prayers", "network", "cpu", "memory", "clock", "upower#headset", "custom/music"],
     // "modules-right": ["pulseaudio", "cpu", "backlight", "battery", "clock", "tray", "custom/lock", "custom/power"],
     "modules-right": ["tray", "custom/lock", "custom/power"],
     "hyprland/workspaces": {
@@ -37,9 +37,25 @@
     "format": "  {}%",
     "max-length": 10
     },
+    "upower#headset": {
+        "native-path": "/org/bluez/hci0/dev_94_8B_93_A7_1A_B9",
+        "tooltip": true,
+        "format": "󰂯 {percentage}",
+        "show-icon": false
+    },
     "memory": {
     "interval": 30,
     "format": "{used:0.1f}G/{total:0.1f}G "
+    },
+    "custom/org-clock": {
+        "format": "{text}",
+        "escape": true,
+        "interval": 5,
+        "tooltip": false,
+        "exec": "emacsclient --eval '(my/waybar/org-clock)' | sed 's/\\\\//g' | sed 's/\\(^\"\\|\"$\\)//g'",
+        "return-type": "json",
+        "on-click": "",
+        "max-length": 50
     },
     "custom/music": {
         "format": "  {}",

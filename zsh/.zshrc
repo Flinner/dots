@@ -72,6 +72,9 @@ zinit load agkozak/zsh-z
 zplugin ice wait'1' lucid
 zinit load "MichaelAquilina/zsh-auto-notify"
 
+zi ice from"gh-r" as"program" bpick"ys-*" pick"ys-*/ys"
+zi light yaml/yamlscript
+
 
 #zplugin ice wait'5' lucid
 #zplugin load chisui/zsh-nix-shell
@@ -107,7 +110,7 @@ setopt EXTENDED_HISTORY  # record command start time
 SAVEHIST=1000
 HISTSIZE=1000
 HISTFILE="$HOME/.local/share/zsh/zsh_history"
-AUTO_NOTIFY_IGNORE+=("fm", "ranger", "nvim")
+AUTO_NOTIFY_IGNORE+=("fm", "ranger", "nvim", "vim")
 #===============================================================================================
 
 ############
@@ -165,6 +168,43 @@ select-word-style bash
 
 #===============================================================================================
 copy () { xclip -selection c "$@" }
+# DeepSeeked teehee :)
+copy() {
+    local input
+    
+    # Read from stdin if available
+    if [ ! -t 0 ]; then
+        input=$(cat)
+    fi
+
+    # Check if we're running under Wayland
+    if [ "$XDG_SESSION_TYPE" = "wayland" ] || [ -n "$WAYLAND_DISPLAY" ]; then
+        # Try using wl-copy (Wayland)
+        if command -v wl-copy >/dev/null 2>&1; then
+            if [ -n "$input" ]; then
+                printf '%s' "$input" | wl-copy
+            else
+                wl-copy "$@"
+            fi
+        else
+            echo "Error: wl-copy not found. Install wl-clipboard package." >&2
+            return 1
+        fi
+    else
+        # Fall back to xclip (X11)
+        if command -v xclip >/dev/null 2>&1; then
+            if [ -n "$input" ]; then
+                printf '%s' "$input" | xclip -selection c
+            else
+                xclip -selection c "$@"
+            fi
+        else
+            echo "Error: xclip not found. Please install it." >&2
+            return 1
+        fi
+    fi
+}
+
 
 chmodx-last () { chmod +x "$_"  ; }
 
@@ -234,7 +274,7 @@ alias startx="exec startx"
 
 #===============================================================================================
 
-#source ~/.config/sh_vars/variables.sh
+source ~/.config/sh_vars/variables.sh
 
 #xdg specs
 export XDG_CONFIG_HOME="$HOME"/.config
@@ -247,8 +287,9 @@ export GOPATH="$XDG_DATA_HOME"/go
 export GOBIN="$XDG_DATA_HOME"/go
 export DOOM_PATH="$HOME/.emacs.d/bin"
 export YARN_PATH="$HOME/.yarn/bin"
+export DENO_PATH="$HOME/.deno/bin"
 
-export PATH="$DOOM_PATH:$HOME/.local/bin:$HOME/bin:$CARGO_HOME/bin:$YARN_PATH:$GOPATH:$PATH"
+export PATH="$DENO_PATH:$DOOM_PATH:$HOME/.local/bin:$HOME/bin:$CARGO_HOME/bin:$YARN_PATH:$GOPATH:$PATH"
 
 
 # colored GCC warnings and errors
@@ -282,7 +323,8 @@ export fish_greeting="" #disable greeting
 if [[ -n $SSH_CONNECTION ]]; then
 	export EDITOR='vim'
 else
-	export EDITOR='nvim'
+	export EDITOR='nvim' 
+  export EDITOR='vim' # neovim unusuable rn due to python3 provider missing :(
 fi
 
 export TERMINAL="alacritty"

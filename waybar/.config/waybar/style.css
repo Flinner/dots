@@ -2,7 +2,7 @@
 
 * {
   font-family: FantasqueSansMono Nerd Font;
-  font-size: 12px;
+  font-size: 15px;
   min-height: 0;
 }
 
@@ -37,6 +37,8 @@
 
 #custom-prayers,
 #custom-music,
+#upower.headset,
+#custom-org-clock,
 #cpu,
 #memory,
 #network,
@@ -97,10 +99,21 @@
     border-radius: 0rem 0px 0px 0rem;
 }
 
+#custom-org-clock {
+  color: @yellow;
+  border-radius: 1rem;
+}
 #custom-music {
   color: @mauve;
   border-radius: 1rem;
 }
+
+#upower.headset {
+  color: @teal;
+  border-radius: 1rem;
+  margin-right: 1rem;
+}
+
 
 #custom-lock {
     border-radius: 1rem 0px 0px 1rem;
