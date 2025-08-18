@@ -80,7 +80,7 @@ remove warning by use-package
   (setq visible-bell nil)           ; Set up the visible bell
   (column-number-mode)              ; Display Column Number in the modline
   (setq use-dialog-box nil)         ; I don't like to confirm anything with a mouse!
-  (setq max-mini-window-height 1)   ; Maximum height for resizing mini-windows (the minibuffer and the echo area). = 1 line
+  (setq max-mini-window-height 13)   ; Maximum height for resizing mini-windows (the minibuffer and the echo area). = 1 line
 
   (defalias 'yes-or-no-p 'y-or-n-p) ; I don't want to type 'yes' everytime!, 'y' is enough
 
@@ -127,17 +127,18 @@ Better Scrolling
 ** Fonts
 Setting fonts here as vars to stay sane
 #+begin_src emacs-lisp
-  (setq my/ui/monofont "FiraCode Nerd Font")
+  (setq my/ui/monofont "JetBrainsMono Nerd Font")
   (setq my/ui/varfont "Noto Serif")
   (setq my/ui/arabicfont "Noto Sans Arabic")
 #+end_src
 
 #+begin_src emacs-lisp
-  (set-face-attribute 'default nil :font my/ui/monofont :height 90)
-  (set-face-attribute 'fixed-pitch nil :font my/ui/monofont :height 90)
-  (set-face-attribute 'variable-pitch nil :font my/ui/varfont :height 90)
+  (setq my/ui/font-height 130)
+  (set-face-attribute 'default nil :font my/ui/monofont :height my/ui/font-height)
+  (set-face-attribute 'fixed-pitch nil :font my/ui/monofont :height my/ui/font-height)
+  (set-face-attribute 'variable-pitch nil :font my/ui/varfont :height my/ui/font-height)
   ;; Info has a horrible mono font
-  (set-face-attribute 'Info-quoted nil :font my/ui/monofont :height 90)
+  (set-face-attribute 'Info-quoted nil :font my/ui/monofont :height my/ui/font-height)
 #+end_src
 
 emacs-client frames don't adhire to the font for some reason, need to
@@ -145,11 +146,11 @@ run this hook:
 #+begin_src emacs-lisp
   (defun my/ui/font-check ()
     "Do font check, then remove self from `focus-in-hook'; need to run this just once."
-    (set-face-attribute 'default nil :font my/ui/monofont :height 90)
-    (set-face-attribute 'fixed-pitch nil :font my/ui/monofont :height 90)
-    (set-face-attribute 'variable-pitch nil :font my/ui/varfont :height 90)
+    (set-face-attribute 'default nil :font my/ui/monofont :height my/ui/font-height)
+    (set-face-attribute 'fixed-pitch nil :font my/ui/monofont :height my/ui/font-height)
+    (set-face-attribute 'variable-pitch nil :font my/ui/varfont :height my/ui/font-height)
     ;; Info has a horrible mono font
-    (set-face-attribute 'Info-quoted nil :font my/ui/monofont :height 90)
+    (set-face-attribute 'Info-quoted nil :font my/ui/monofont :height my/ui/font-height)
     ;; Arabic
     (when window-system (set-fontset-font "fontset-default" '(#x600 . #x6ff) my/ui/arabicfont))
     (remove-hook 'focus-in-hook #'my/ui/font-check))
@@ -285,6 +286,11 @@ Spaces > Tabs
 
 #+RESULTS:
 
+** COMMENT Window Management TODO!
+#+begin_src emacs-lisp
+  (use-package frames-only-mode)
+#+end_src
+
 * Auth!
 should i really be commiting this? :>
 ** auth sources
@@ -408,7 +414,8 @@ Edit: honestly I have no clue wtf that meant, or why I wrote it, but I will keep
   "sb" '(swiper :which-key "swiper")
 #+end_src
 
-**** Files (f)
+**** COMMENT Files (f)
+Commented for evilem
 #+begin_src emacs-lisp 
   "f"  '(:ignore t :which-key "Files")
 
@@ -486,6 +493,16 @@ Capture
   "os" '(easy-hugo :which-key "site")
 
   "oe" '(elfeed-dashboard :which-key "Elfeed Dashboard")
+#+end_src
+
+**** Obsidian (O)
+#+begin_src emacs-lisp
+  "O"  '(:ignore t :which-key "Obsidian")
+
+  "Oc" '(obsidian-capture         :which-key "Obsidian Capture")
+  "Oi" '(obsidian-insert-link     :which-key "Obsidian Insert Link")
+  "Ow" '(obsidian-insert-wikilink :which-key "Obsidian Insert Wiki")
+  "Oj" '(obsidian-jump            :which-key "Obsidian Jump")
 #+end_src
 
 **** Insert (i)
@@ -806,7 +823,7 @@ Ivy floating
 
 #+end_src
 
-** Counsel
+** COMMENT Counsel
 #+begin_src emacs-lisp
   (use-package counsel
     :defer t
@@ -1188,6 +1205,12 @@ From: https://yiufung.net/post/anki-org/
         org-agenda-weekend-days '(5 6))
 #+end_src
 
+*** Start day on 4am
+#+begin_src emacs-lisp
+  ; It doesn't make sense to reset days at 00:00, since I work late!
+  (setq org-extend-today-until 4)
+#+end_src
+
 *** Weeks per semester
 #+begin_src emacs-lisp
   (defun org-week-to-class-week (week)
@@ -1288,11 +1311,14 @@ From: https://yiufung.net/post/anki-org/
   ;; TODO check this
 #+END_SRC
 
-*** habits
+*** habits: =better-org-habit.el=!
 #+begin_src emacs-lisp
-  (setq org-habit-graph-column 80   ; prevent overwriting title
-        org-habit-show-habits-only-for-today 't
-        org-habit-show-all-today nil) ; show even if DONE
+  ;; (use-package better-org-habit
+    ;; :straight (better-org-habit :type git :host github :repo "vberezhnev/better-org-habit.el"))
+
+  ;; (setq org-habit-graph-column 80   ; prevent overwriting title
+  ;;       org-habit-show-habits-only-for-today 't
+  ;;       org-habit-show-all-today nil) ; show even if DONE
   ;; (with-eval-after-load 'org-habit
   ;;   (defun org-habit-streak-count ()
   ;;   (goto-char (point-min))
@@ -1495,6 +1521,20 @@ Stolen from: [[https://blog.jethro.dev/posts/processing_inbox/][Org-mode Workflo
   ;(use-package org-analyzer)
 #+end_src
 
+** org-appear
+#+begin_quote
+ Make invisible parts of Org elements appear visible.
+#+end_quote
+
+#+begin_src emacs-lisp
+  (use-package org-appear
+    :straight (org-appear :type git :host github :repo "awth13/org-appear")
+    :hook (org-mode . org-appear-mode)
+    :config
+    (setq org-appear-autolinks t
+          org-hide-emphasis-markers t
+          org-appear-delay 0.5))
+#+end_src
 ** org-roam
 *** use-package
 #+begin_src emacs-lisp
@@ -1631,6 +1671,7 @@ Stopped using this, I just use Anki like a normal person
                                           ; this variable is only available on my fork
           parinfer-rust-disable-troublesome-modes t))
 #+end_src
+
 *** Compilation output
 When running =M-x compile= the output is colored!
 #+begin_src emacs-lisp
@@ -1693,6 +1734,8 @@ This is done in Performance section
     (lsp-idle-delay 0.6)
     (lsp-completion-provider :capf) 
     (lsp-prefer-flymake nil)
+    ;; in Emacs 31.0!!
+    ;; (flymake-show-diagnostics-at-end-of-line 'fancy)
     (lsp-idle-delay 0.6)
     (lsp-rust-analyzer-server-display-inlay-hints t)
     (lsp-rust-analyzer-display-parameter-hints t)
@@ -1747,10 +1790,84 @@ Lsp UI
     (flycheck-info ((t (:underline (:color "#83a598" :style line :position line))))))
 #+end_src
 
+*** COMMENT Flymake's Flyover
+#+begin_src emacs-lisp
+  (use-package flyover
+    :straight (flyover :type git :host github :repo "konrad1977/flyover")
+    :hook (flycheck-mode . flyover-mode)
+    :custom
+    ;; Display levels
+    (flyover-levels '(error warning info))
+
+    ;; Theme integration
+    (flyover-use-theme-colors t)
+    (flyover-background-lightness 45)
+    (flyover-percent-darker 40)
+    (flyover-text-tint 'lighter) ;; or 'darker or nil
+    (flyover-text-tint-percent 50)
+
+    ;; Checker settings
+    (flyover-checkers '(flycheck flymake))
+    (flyover-debug nil)
+
+    ;; Optimization
+    (flyover-debounce-interval 0.2)
+
+    ;; Positioning
+    (flyover-line-position-offset 1)
+
+    ;; Wrapping
+    (flyover-wrap-messages t)
+    (flyover-max-line-length 80)
+
+    ;; Icon settings
+    (flyover-info-icon "")
+    (flyover-warning-icon "⚠")
+    (flyover-error-icon "✘")
+    (flyover-icon-left-padding 0.9)
+    (flyover-icon-right-padding 0.9)
+
+    ;; Virtual line indicators
+    (flyover-virtual-line-type 'straight-arrow)
+    (flyover-virtual-line-icon "──►")
+
+    ;; Visibility
+    (flyover-hide-checker-name t)
+    (flyover-show-at-eol t)
+    (flyover-hide-when-cursor-is-on-same-line t)
+    (flyover-show-virtual-line t)
+
+    :config
+    ;; Optional face customization
+    (custom-set-faces
+     '(flyover-error
+       ((t :background "#453246"
+           :foreground "#ea8faa"
+           :height 0.9
+           :weight normal)))
+     '(flyover-warning
+       ((t :background "#331100"
+           :foreground "#DCA561"
+           :height 0.9
+           :weight normal)))
+     '(flyover-info
+       ((t :background "#374243"
+           :foreground "#a8e3a9"
+           :height 0.9
+           :weight normal)))))
+
+#+end_src
+
 *** Hide Show
 #+begin_src emacs-lisp
   (use-package origami
     :hook (prog-mode . origami-mode))
+#+end_src
+
+*** show "TODO"s
+#+begin_src emacs-lisp
+  (use-package hl-todo
+    :hook (prog-mode . hl-todo-mode))
 #+end_src
 
 *** COMMENT Formatting
@@ -1781,6 +1898,8 @@ Use the Debug Adapter Protocol for running tests and debugging
     (highlight-indent-guides-responsive 'top))
 
 #+end_src
+
+
 ** Git
 #+begin_src emacs-lisp
   (setq vc-handled-backends '(Git))
@@ -1798,7 +1917,21 @@ Magit TODOs!
 #+begin_src emacs-lisp
   (use-package magit-todos
     :after magit
-    :config (magit-todos-mode 1))
+    :config
+    (magit-todos-mode 1)
+
+    ;; Generate all keyword variants (@, \, upper/lowercase)
+    (setq my/magit-todos/doxygen-keywords
+          (apply 'append
+                 (mapcar (lambda (kw)
+                           (list (concat "@" kw)
+                                 (concat "@" (downcase kw))
+                                 (concat "\\" kw)
+                                 (concat "\\" (downcase kw))))
+                         '("TODO" "FIXME" "HACK" "NOTE" "BUG" "XXX" "TEMP" "KLUDGE"))))
+
+    (setq magit-todos-keywords-list
+          (delete-dups (append my/magit-todos/doxygen-keywords magit-todos-keywords-list))))
 #+end_src
 
 *** TODO Forge
@@ -1879,8 +2012,11 @@ Get treemacs-lsp
   (use-package cider
     :defer t
     :config (require 'flycheck-clj-kondo)
-    :hook   (clojure-mode . zprint-format-on-save-mode)
-    (clojure-mode . flycheck-mode)
+    :hook   ;(clojure-mode . zprint-format-on-save-mode)
+            (clojure-mode . flycheck-mode)
+            (clojure-mode . (lambda ()
+                     (add-hook 'before-save-hook 'cider-format-buffer nil t)))
+
                                           ; (clojure-mode . electric-pair-local-mode)
     :bind   (:map cider-mode-map
                   ([remap lsp-find-definition] . cider-find-var)
@@ -1899,16 +2035,16 @@ Auto format
     :after cider)
 #+end_src
 
-*** COMMENT Rust
+*** Rust
 #+begin_src emacs-lisp
-  (use-package rustic
+  (use-package rust-mode
     :defer t
     :ensure
-    :bind (:map rustic-mode-map
-                ("C-c C-c l" . lsp-ui-flycheck-list)
-                ("C-c C-c s" . lsp-rust-analyzer-status)
-                ("<f5>" . rustic-cargo-test)
-                ("C-<f5>" . rustic-cargo-run))
+    ;; :bind (:map rustic-mode-map
+    ;;             ("C-c C-c l" . lsp-ui-flycheck-list)
+    ;;             ("C-c C-c s" . lsp-rust-analyzer-status)
+    ;;             ("<f5>" . rustic-cargo-test)
+    ;;             ("C-<f5>" . rustic-cargo-run))
     :config
     ;; uncomment for less flashiness
     ;; (setq lsp-eldoc-hook nil)
@@ -1916,20 +2052,24 @@ Auto format
     ;; (setq lsp-signature-auto-activate nil)
 
     ;; comment to disable rustfmt on save
-    (setq rustic-format-on-save t)
-    (add-hook 'rustic-mode-hook 'my/dev/rustic-mode-hook)
-    (add-hook 'rustic-mode-hook 'lsp)
-    :custom
-    (rustic-rustfmt-config-alist '((edition . "2021"))))
+    (setq rust-format-on-save t)
+    (setq rust-mode-treesitter-derive t)
+    ;; (add-hook 'rustic-mode-hook 'my/dev/rustic-mode-hook)
+    (add-hook 'rust-mode-hook 'lsp))
+    ;; :custom
+    ;; (rustic-rustfmt-config-alist '((edition . "2024"))))
 
-  (defun my/dev/rustic-mode-hook ()
-    ;; so that run C-c C-c C-r works without having to confirm, but don't try to
-    ;; save rust buffers that are not file visiting. Once
-    ;; https://github.com/brotzeit/rustic/issues/253 has been resolved this should
-    ;; no longer be necessary.
-    (when buffer-file-name
-      (setq-local buffer-save-without-query t)))
+  ;; (defun my/dev/rustic-mode-hook ()
+  ;;   ;; so that run C-c C-c C-r works without having to confirm, but don't try to
+  ;;   ;; save rust buffers that are not file visiting. Once
+  ;;   ;; https://github.com/brotzeit/rustic/issues/253 has been resolved this should
+  ;;   ;; no longer be necessary.
+  ;;   (when buffer-file-name
+  ;;     (setq-local buffer-save-without-query t)))
 #+end_src
+
+#+RESULTS:
+: t
 
 *** emacs-lisp
 #+begin_src emacs-lisp
@@ -2083,8 +2223,37 @@ Better Diff in header sizes
       '(markdown-header-face-5 ((t (:inherit markdown-header-face :height 1.1))))
       '(markdown-header-face-6 ((t (:inherit markdown-header-face :height 1.0))))
       ))
-  ;; (add-hook 'markdown-mode-hook 'my/org-mode/org-mode-visual-fill)
+  (add-hook 'markdown-mode-hook 'auto-fill-mode)
   ;; (add-hook 'markdown-mode-hook 'outline-minor-mode)
+#+end_src
+
+*** Markdown (Obsidian)
+#+begin_src emacs-lisp
+  (use-package obsidian
+    :config
+    (global-obsidian-mode t)
+    (obsidian-backlinks-mode t)
+    :custom
+    ;; location of obsidian vault
+    (obsidian-directory "~/Documents/Obsidian/AmmarSeliaman/AmmarSeliaman/")
+    ;; Default location for new notes from `obsidian-capture'
+    (obsidian-inbox-directory "Notes")
+    ;; Useful if you're going to be using wiki links
+    (markdown-enable-wiki-links t)
+
+    ;; These bindings are only suggestions; it's okay to use other bindings
+    :bind (:map obsidian-mode-map
+                ;; Create note
+                ; ("C-c C-n" . obsidian-capture)
+                ;; If you prefer you can use `obsidian-insert-wikilink'
+                ("C-c C-l" . obsidian-insert-link)
+                ;; Open file pointed to by link at point
+                ("C-c C-o" . obsidian-follow-link-at-point)
+                ;; Open a different note from vault
+                ("C-c C-p" . obsidian-jump)
+                ;; Follow a backlink for the current file
+                ("C-c C-b" . obsidian-backlink-jump)))
+
 #+end_src
 
 *** COMMENT Vue
@@ -2094,14 +2263,14 @@ Better Diff in header sizes
     :hook (vue-mode . prettier-js-mode))
 #+end_src
 
-*** COMMENT Scheme (guile)
+*** Scheme (guile)
 #+begin_src emacs-lisp
-  (use-package geiser
-    :defer
-    ;; :bind ([remap eval-last-sexp] . geiser-eval-last-sexp))
-    )
+  (use-package geiser-guile
+    :defer t
+    :bind (:map scheme-mode-map
+                ([remap eval-last-sexp] . geiser-eval-last-sexp)))
 
-  (use-package geiser-guile)
+                                          ;(use-package geiser-guile)
 #+end_src
 
 *** Scala
@@ -2134,7 +2303,7 @@ Sbt for sbt commands...
 #+end_src
 
 #+begin_src emacs-lisp
-                                          ; for scala
+  ;; for scala
   (use-package lsp-metals)
 #+end_src
 
@@ -2473,6 +2642,17 @@ Lsp LaTeX
   (use-package lsp-latex
     :hook (;(tex-mode . lsp)
            (LaTeX-mode . lsp)))
+#+end_src
+
+*** LLVM
+#+begin_src emacs-lisp
+  (use-package llvm-ts-mode
+    :mode ("\\.ll\\'" . llvm-ts-mode)
+    :config
+    (add-to-list
+     'treesit-language-source-alist
+     '(llvm "https://github.com/benwilliamgraham/tree-sitter-llvm"))
+    (treesit-install-language-grammar 'llvm))
 #+end_src
 
 *** OpenSCAD
@@ -3302,7 +3482,7 @@ Only ask whether to reply to all if there are more than one recipients
   (use-package persp-mode
     :defer t
     :config
-    (setq persp-keymap-prefix (kbd "SPC <tab>"))
+    (setq persp-keymap-prefix (kbd "SPC <tab>")))
 #+end_src
 
 * Startpage
