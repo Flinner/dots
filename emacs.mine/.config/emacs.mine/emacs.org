@@ -361,7 +361,6 @@ Edit: honestly I have no clue wtf that meant, or why I wrote it, but I will keep
               :action
               (lambda (x)
                 (insert (file-relative-name x)))))
-
 #+end_src
 
 ***  leader-keys
@@ -381,7 +380,7 @@ Edit: honestly I have no clue wtf that meant, or why I wrote it, but I will keep
 #+begin_src emacs-lisp
   (my/leader-keys
     "." '(counsel-find-file :which-key "find file")
-    "SPC" '(counsel-projectile-find-file :which-key "projectile find file")
+    "SPC" '(helm-projectile-find-file-dwim :which-key "projectile find file")
     "/" '(counsel-projectile-rg :which-key "projects")
     "," '(counsel-rg :which-key "rg")
     "u" '(universal-argument :which-key "universal arg")
@@ -1664,6 +1663,7 @@ Stopped using this, I just use Anki like a normal person
     (emacs-lisp-mode . parinfer-rust-mode)
     (scheme-mode . parinfer-rust-mode)
     (clojure-mode . parinfer-rust-mode)
+    (racket-mode . parinfer-rust-mode)
                                           ;tabs break parinfer rust mode
     (parinfer-rust-mode . (lambda () (setq indent-tabs-mode nil)));
     :init
@@ -1696,6 +1696,13 @@ Counsel Projectile
   (use-package counsel-projectile
     :defer 9
     :config (counsel-projectile-mode))
+#+end_src
+
+Helm Projectile
+#+begin_src emacs-lisp 
+  (use-package helm-projectile
+    :defer t
+    :config (helm-projectile-mode))
 #+end_src
 
 *** Recentf
@@ -2035,6 +2042,21 @@ Auto format
     :after cider)
 #+end_src
 
+*** Julia
+#+begin_src emacs-lisp
+  (use-package julia-mode
+    :defer t)
+
+  (use-package lsp-julia
+    :hook (julia-mode . lsp)
+    :config
+    (setq lsp-julia-default-environment "~/.julia/environments/v1.11"))
+
+  (use-package julia-snail
+    :ensure t
+    :hook (julia-mode . julia-snail-mode))
+#+end_src
+
 *** Rust
 #+begin_src emacs-lisp
   (use-package rust-mode
@@ -2070,6 +2092,32 @@ Auto format
 
 #+RESULTS:
 : t
+
+*** Racket
+#+begin_src emacs-lisp
+  (use-package racket-mode
+    :defer t
+    :bind (:map racket-mode-map
+                ([remap lsp-find-definition] . racket-send-region)
+                ([remap eval-defun]          . racket-send-definition)
+                ([remap eval-last-sexp]      . racket-send-last-sexp))
+    :config
+    ;; fix evil-eol
+    ;; Source: https://github.com/greghendershott/racket-mode/issues/489#issuecomment-686903522
+    (defun evil-eol-racket-send-last-sexp (command &rest args)
+      "In normal-state or motion-state, last sexp ends at point."
+      (if (and (not evil-move-beyond-eol) (or (evil-normal-state-p) (evil-motion-state-p)))
+          (if (or (eobp) (eolp))
+              (apply command args)
+            (save-excursion
+              (forward-char)
+              (apply command args)))
+        (apply command args)))
+    (unless (and (boundp 'evil-move-beyond-eol) evil-move-beyond-eol)
+      (advice-add 'racket-send-last-sexp
+                  :around 'evil-eol-racket-send-last-sexp)))
+
+#+end_src
 
 *** emacs-lisp
 #+begin_src emacs-lisp
@@ -2488,7 +2536,7 @@ Custom functions (Archived, =:tangle= set to =no=)
 
 Insert from clip
 [[https://hershsingh.net/blog/emacs-latex-screenshot/#:~:text=Clipboard%20to%20TeX,-Finally%2C%20I%20have&text=Once%20I%20have%20captured%20the,file%20img%2F.][Quickly insert hand-drawn figures in a LaTeX document in Emacs]]
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
   (defvar latex/insert-image-format "\\begin{center}\\includegraphics[width=\\linewidth]{%s}\\end{center}")
   (defvar latex/insert-figure-format
     "   \\begin{figure}[h]
@@ -2498,6 +2546,23 @@ Insert from clip
   \\end{figure}
   \\FloatBarrier")
 
+  (defun latex/insert-image-from-clipboard-insert-filename ()
+    (interactive)
+    (let* 
+        ;; Ask for a filename
+        ((image-name (read-string "image-name: "))
+         ;; This is getting uply...
+         (image-file-location (concat "\"" (expand-file-name (concat (TeX-master-directory) "img/" image-name ".png" )) "\"")))
+
+      ;; Make the "img" directory if it does not exist
+      (make-directory (concat (TeX-master-directory) "img") t)
+
+      ;; Copy the image in clipboard to "img/" directory
+      (shell-command (concat "xclip -selection clipboard -t image/png -o > " image-file-location))
+
+      ;; Insert the latex snippet to include the figure
+      (insert (concat "img/" image-name ))))
+  
   (defun latex/insert-image-from-clipboard ()
     (interactive)
     (let* 
@@ -2971,25 +3036,45 @@ Unused, switched to =hledger=
 #+end_src
 
 #+begin_src emacs-lisp
-  (defun my/waybar/org-clock ()
-    "Gets waybar formatted message"
-    (let ((message nil)
-          (icon nil)
-          (enabled t)
-          (icon-color nil))
-      (if (org-clock-is-active)
-          (setq message (substring-no-properties (org-clock-get-clock-string))
-                icon ""; there is an icon here, in case it isn't rendered...
-                enabled t
-                icon-color "#BA68C8")
-        (setq message ""
-              icon ""; "";; I want it to be empty
-              enabled nil
-              icon-color "#FDD835"))
-      (json-encode
-       `((text . ,message)
-         (icon . ,icon)
-         ,@(when enabled '((class . "enabled")))))))
+    
+  ;; From Qwen3-Max
+  (defun my/waybar/org-clock-get-current-heading ()
+    "Return the heading text of the currently clocked item, or nil if none."
+    (when (org-clock-is-active)
+      (with-current-buffer (marker-buffer org-clock-marker)
+        (save-excursion
+          (goto-char org-clock-marker)
+          (org-get-heading t t t t)))))  ; args: no-tags, no-todo, no-priority, no-comment
+
+  ;; From Qwen3-Max
+  (defun my/waybar/org-clock-current-session-string-with-heading ()
+    "Return string like '[1:23] (Heading)' for current clocking session."
+    (when (org-clock-is-active)
+      (let* ((elapsed-minutes (/ (- (float-time) (float-time org-clock-start-time)) 60.0))
+             (duration (org-duration-from-minutes elapsed-minutes))
+             (heading (my/waybar/org-clock-get-current-heading)))
+        (format "[%s] (%s) " duration (or heading "???")))))
+
+    (defun my/waybar/org-clock ()
+      "Gets waybar formatted message"
+      (let ((message nil)
+            (icon nil)
+            (enabled t)
+            (icon-color nil))
+        (if (org-clock-is-active)
+            (setq ; message (substring-no-properties (org-clock-get-clock-string))
+                  message (my/waybar/org-clock-current-session-string-with-heading)
+                  icon ""; there is an icon here, in case it isn't rendered...
+                  enabled t
+                  icon-color "#BA68C8")
+          (setq message ""
+                icon ""; "";; I want it to be empty
+                enabled nil
+                icon-color "#FDD835"))
+        (json-encode
+         `((text . ,message)
+           (icon . ,icon)
+           ,@(when enabled '((class . "enabled")))))))
 #+end_src
 
 ** Gemini
