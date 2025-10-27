@@ -67,7 +67,7 @@ if selected_command:
         write_to_clipboard(res)
         send_notif("status", "done!: "+ res)
     elif selected_command == 'emoji':
-        bash_it("rofi -show emoji")
+        bash_it("rofi -modi \"emoji:rofimoji\" -show emoji")
     elif selected_command == 'calc':
         bash_it("rofi -show calc -modi calc -no-show-match -no-sort")
     elif selected_command == 'spellcheck':
