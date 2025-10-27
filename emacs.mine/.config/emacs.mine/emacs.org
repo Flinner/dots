@@ -2658,6 +2658,7 @@ AucTex
     (setq LaTeX-command "LaTeXMk")  ;; Use latexmk as the default LaTeX command
     (setq latex-run-command "LaTeXMk"))
 
+
   (use-package auctex
     :mode ("\\.tex\\'" . LaTeX-mode)
     :defer t
@@ -2684,8 +2685,19 @@ AucTex
     (evil-define-key 'visual 'LaTeX-mode-map
       "$" 'TeX-insert-dollar
       "'" 'cdlatex-math-modify)
-    (setq TeX-view-program-selection '((output-pdf "Zathura"))
-          TeX-source-correlate-start-server t)
+    
+    (setq TeX-view-program-selection '((output-pdf "Zathura")))
+    (if (eq system-type 'darwin)      
+        (setq TeX-view-program-list   ;; Use Skim, it's awesome
+              '(("Skim" "/Applications/Skim.app/Contents/SharedSupport/displayline -g -b %n %o %b"))
+              TeX-view-program-selection '((output-pdf "Skim"))))
+    
+    (setq TeX-source-correlate-method 'synctex
+          TeX-source-correlate-start-server t
+          TeX-auto-save t
+          TeX-parse-self t
+          TeX-save-query nil
+          TeX-master 'dwim)
     (setq-default TeX-output-dir "/tmp/tex")
     (add-to-list 'LaTeX-clean-intermediate-suffixes
                  '"-figure[0-9]*\\.\\(pdf\\|md5\\|log\\|dpth\\|dep\\|run\\.xml\\)")
