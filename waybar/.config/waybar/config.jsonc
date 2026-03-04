@@ -5,7 +5,7 @@
     // Choose the order of the modules
     "reload_style_on_change": true,
     "modules-left": ["hyprland/workspaces"],
-    "modules-center": ["custom/org-clock", "pulseaudio","custom/prayers", "network", "cpu", "memory", "clock", "upower#headset", "custom/music"],
+    "modules-center": ["custom/org-clock", "custom/daysleft", "pulseaudio","custom/prayers", "network", "cpu", "memory", "clock", "upower#headset", "custom/music"],
     // "modules-right": ["pulseaudio", "cpu", "backlight", "battery", "clock", "tray", "custom/lock", "custom/power"],
     "modules-right": ["tray", "custom/lock", "custom/power"],
     "hyprland/workspaces": {
@@ -56,6 +56,12 @@
         "return-type": "json",
         "on-click": "",
         "max-length": 50
+    },
+    "custom/daysleft": {
+        "format": "{} days left!",
+        "return-type": "json",
+        "interval": 3600, // Update once an hour
+        "exec": "echo '{\"text\": \"'$((($(date -d '2026-04-16' +%s) - $(date +%s)) / 86400))'\"}'"
     },
     "custom/music": {
         "format": "  {}",

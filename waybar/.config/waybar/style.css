@@ -39,6 +39,7 @@
 #custom-music,
 #upower.headset,
 #custom-org-clock,
+#custom-daysleft,
 #cpu,
 #memory,
 #network,
@@ -102,7 +103,14 @@
 #custom-org-clock {
   color: @yellow;
   border-radius: 1rem;
+  margin-right: 1rem;
 }
+
+#custom-daysleft {
+  color: lavender;
+  border-radius: 1rem;
+}
+
 #custom-music {
   color: @mauve;
   border-radius: 1rem;
