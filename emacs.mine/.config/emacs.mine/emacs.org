@@ -230,6 +230,8 @@ Center text in the frame, looks nice ;)
     :diminish
     :hook (text-mode . olivetti-mode)
     :hook (prog-mode . olivetti-mode)
+    :hook (magit-mode . olivetti-mode)
+    :hook (dired-mode . olivetti-mode)
     :hook (Info-mode . olivetti-mode)
     :config
     (setq-default olivetti-body-width 120))
@@ -1935,7 +1937,7 @@ Magit TODOs!
                                  (concat "@" (downcase kw))
                                  (concat "\\" kw)
                                  (concat "\\" (downcase kw))))
-                         '("TODO" "FIXME" "HACK" "NOTE" "BUG" "XXX" "TEMP" "KLUDGE"))))
+                         '("TODO" "FIXME" "HACK" "NOTE" "BUG" "XXX" "TEMP" "TESTME" "REVIEW" "KLUDGE"))))
 
     (setq magit-todos-keywords-list
           (delete-dups (append my/magit-todos/doxygen-keywords magit-todos-keywords-list))))
@@ -2050,7 +2052,7 @@ Auto format
   (use-package lsp-julia
     :hook (julia-mode . lsp)
     :config
-    (setq lsp-julia-default-environment "~/.julia/environments/v1.11"))
+    (setq lsp-julia-default-environment "~/.julia/environments/v1.12"))
 
   (use-package julia-snail
     :ensure t
@@ -2448,7 +2450,7 @@ AucTex (Archived, =:tangle= set to =no=)
     (LaTeX-mode . flyspell-mode)
     (LaTeX-mode . flycheck-mode)
     (LaTeX-mode . turn-on-reftex)
-    (LaTeX-mode . auto-fill-mode)
+    ;(LaTeX-mode . auto-fill-mode)
     (LaTeX-mode . format-all-mode)
     (LaTeX-mode . TeX-source-correlate-mode)
     (LaTeX-mode . try/latex-mode-setup)
@@ -2719,6 +2721,15 @@ Lsp LaTeX
   (use-package lsp-latex
     :hook (;(tex-mode . lsp)
            (LaTeX-mode . lsp)))
+#+end_src
+
+*** Lean 
+#+begin_src emacs-lisp
+(use-package lean4-mode
+  :commands lean4-mode
+  :straight (lean4-mode :type git :host github
+                        :repo "leanprover-community/lean4-mode"
+                        :files ("*.el" "data")))
 #+end_src
 
 *** LLVM
@@ -3581,7 +3592,26 @@ Only ask whether to reply to all if there are more than one recipients
     :config
     (setq persp-keymap-prefix (kbd "SPC <tab>")))
 #+end_src
-
+** COMMENT tabspaces
+#+begin_src emacs-lisp
+(use-package tabspaces
+  ;; use this next line only if you also use straight, otherwise ignore it. 
+  ;; :straight (:type git :host github :repo "mclear-tools/tabspaces")
+  :hook (after-init . tabspaces-mode) ;; use this only if you want the minor-mode loaded at startup. 
+  :commands (tabspaces-switch-or-create-workspace
+             tabspaces-open-or-create-project-and-workspace)
+  :custom
+  (tabspaces-use-filtered-buffers-as-default t)
+  (tabspaces-default-tab "Default")
+  (tabspaces-remove-to-default t)
+  (tabspaces-include-buffers '("*scratch*"))
+  (tabspaces-initialize-project-with-todo t)
+  (tabspaces-todo-file-name "project-todo.org")
+  ;; sessions
+  (tabspaces-session t)
+  (tabspaces-session-auto-restore t)
+  (tab-bar-new-tab-choice "*scratch*"))
+#+end_src
 * Startpage
 #+begin_src emacs-lisp
   (use-package dashboard
