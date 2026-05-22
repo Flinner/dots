@@ -219,7 +219,7 @@ ip.me () { curl eth0.me ; curl ipv6.icanhazip.com } # or ip.me
   [ ! -z "$1" ] && file=$1 || file=$(find . -maxdepth 2 -type f | fzf)
   [ -z "$file" ] && return
   echo "file=@$file"
-  _URL=$(curl -F "file=@$file" 0x0.st)
+  _URL=$(curl -F "file=@$file" ttm.sh)
   echo "$_URL" | xclip -sel clip 
   echo "$_URL"
 }

@@ -1,4 +1,4 @@
-#+title: Flinner's Config
+
 #+PROPERTY: header-args:emacs-lisp :tangle ~/.config/emacs.mine/init.el :mkdirp yes
 #+startup: content
 * README:
@@ -83,6 +83,7 @@ remove warning by use-package
   (setq max-mini-window-height 13)   ; Maximum height for resizing mini-windows (the minibuffer and the echo area). = 1 line
 
   (defalias 'yes-or-no-p 'y-or-n-p) ; I don't want to type 'yes' everytime!, 'y' is enough
+  (setq dired-listing-switches "-al --group-directories-first") ; directories first
 
                                           ;(setq native-comp-deferred-compilation t); emacs 30+ i guess
   (setq comp-deferred-compilation-deny-list '()) ;; turn off bytecompiler warnings
@@ -1352,8 +1353,11 @@ From: https://yiufung.net/post/anki-org/
         (setq org-super-agenda-groups
               '((:log t :order 99); logs at bottom
                 (:name "Study"
-                       :order 90
+                       :order 88
                        :tag ("S"))
+                (:name "Conferences, Journals, and Papers"
+                       :order 90
+                       :tag ("conf"))
                 (:name "Life"
                        :order 91
                        :tag ("L"))

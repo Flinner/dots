@@ -8,3 +8,4 @@ __pycache__
 /emacs.mine/.config/emacs.mine/eln-cache/
 /emacs.mine/.config/emacs.mine/elpy/
 /haskell/.ghc/ghci_history
+/bin/bin/out/
