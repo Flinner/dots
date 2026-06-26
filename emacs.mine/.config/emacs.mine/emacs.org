@@ -1216,7 +1216,7 @@ From: https://yiufung.net/post/anki-org/
 *** Weeks per semester
 #+begin_src emacs-lisp
   (defun org-week-to-class-week (week)
-    (- week 0))
+    (- week 22))
 
   (advice-add 'org-days-to-iso-week :filter-return 
               #'org-week-to-class-week)
@@ -1393,6 +1393,7 @@ From: https://yiufung.net/post/anki-org/
                     ("h" . evil-backward-char)
                     ("l" . evil-forward-char)))
 #+end_src
+
 
 *** COMMENT org-ql
 #+begin_src emacs-lisp
@@ -2278,6 +2279,7 @@ Better Diff in header sizes
       '(markdown-header-face-6 ((t (:inherit markdown-header-face :height 1.0))))
       ))
   (add-hook 'markdown-mode-hook 'auto-fill-mode)
+  (setq markdown-css-paths '("https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"))
   ;; (add-hook 'markdown-mode-hook 'outline-minor-mode)
 #+end_src
 

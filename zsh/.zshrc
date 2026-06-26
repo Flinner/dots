@@ -367,3 +367,5 @@ export JUPYTERLAB_DIR=$HOME/.local/share/jupyter/lab
 
 [ -f "/home/lambda/.ghcup/env" ] && . "/home/lambda/.ghcup/env" # ghcup-env
 
+
+if [ -e /home/lambda/.nix-profile/etc/profile.d/nix.sh ]; then . /home/lambda/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
