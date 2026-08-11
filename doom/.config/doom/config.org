@@ -65,8 +65,8 @@ clients, file templates and snippets.
 
 #+begin_src emacs-lisp
 
-(setq user-full-name "Serben"
-      user-mail-address "serben@disroot.org")
+(setq user-full-name "user"
+      user-mail-address "user@example.com")
 #+end_src
 
 ** Start as a server
