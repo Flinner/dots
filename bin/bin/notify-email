@@ -1,0 +1,639 @@
+#!/usr/bin/env python3
+"""Send plain-text or Markdown-as-HTML email through msmtp.
+
+Messages sent from the same agent session are automatically threaded: the
+caller passes a subject and a body, nothing else. Thread identity is derived
+from the environment (see resolve_thread), never from anything the model has
+to remember.
+"""
+
+from __future__ import annotations
+
+import argparse
+import contextlib
+import hashlib
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+import time
+import uuid
+from datetime import datetime, timezone
+from email import policy
+from email.message import EmailMessage
+from email.utils import format_datetime
+from pathlib import Path
+
+try:
+    import bleach
+    import markdown
+
+    HAVE_MARKDOWN = True
+except ImportError:  # degrade to plain text rather than losing the notification
+    HAVE_MARKDOWN = False
+
+try:
+    import fcntl
+
+    HAVE_FLOCK = True
+except ImportError:
+    HAVE_FLOCK = False
+
+
+FORMATS = ("auto", "markdown", "plain")
+DEDUPE_WINDOW_SECONDS = 6 * 3600
+DEDUPE_RETENTION_SECONDS = 24 * 3600
+LOCK_TIMEOUT_SECONDS = float(os.getenv("NOTIFY_LOCK_TIMEOUT", "20"))
+SEND_TIMEOUT_SECONDS = float(os.getenv("NOTIFY_SEND_TIMEOUT", "120"))
+
+# Agent CLIs recognised in the process ancestry. Extend with NOTIFY_AGENTS.
+DEFAULT_AGENTS = (
+    "claude", "codex", "opencode", "omp", "amp", "cursor-agent",
+    "aider", "goose", "gemini", "crush", "cline",
+)
+
+# Session-id environment variables, by harness. Only the Claude one is
+# verified; the rest are harmless when absent.
+ENV_SESSION_KEYS = (
+    ("claude", "CLAUDE_CODE_SESSION_ID"),
+    ("codex", "CODEX_SESSION_ID"),
+    ("opencode", "OPENCODE_SESSION_ID"),
+    ("omp", "OMP_SESSION_ID"),
+    ("omp", "PI_SESSION_ID"),
+    ("amp", "AMP_SESSION_ID"),
+    ("aider", "AIDER_SESSION_ID"),
+)
+
+MARKDOWN_BLOCK_RE = re.compile(
+    r"(?m)(?:^#{1,6}\s|^\s{0,3}(?:[-+*]\s|\d+\.\s|>\s|```|~~~)|"
+    r"^\s*\|?.*\|\s*:?-{3,}:?\s*\|)"
+)
+MARKDOWN_INLINE_RE = re.compile(
+    r"(?:\*\*[^*]+\*\*|__[^_]+__|`[^`]+`|!?\[[^]]+\]\([^)]+\))"
+)
+
+ALLOWED_TAGS = {
+    "a", "blockquote", "br", "code", "del", "em", "h1", "h2", "h3", "h4",
+    "h5", "h6", "hr", "img", "li", "ol", "p", "pre", "strong", "table",
+    "tbody", "td", "th", "thead", "tr", "ul",
+}
+ALLOWED_ATTRIBUTES = {
+    "a": ["href", "title"],
+    "code": ["class"],
+    "img": ["src", "alt", "title", "width", "height"],
+    "ol": ["start"],
+    "td": ["align"],
+    "th": ["align"],
+}
+
+EMAIL_CSS = """
+body{margin:0;background:#f4f6f8;color:#18212b;font-family:-apple-system,
+BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;line-height:1.65}
+.email-content{box-sizing:border-box;max-width:760px;margin:28px auto;padding:30px 34px;
+background:#fff;border:1px solid #dfe4ea;border-radius:12px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;color:#132238}
+h1{font-size:28px}h2{font-size:22px;margin-top:1.5em}h3{font-size:18px}
+a{color:#0969da}blockquote{margin-left:0;padding:8px 16px;border-left:4px solid
+#8c959f;color:#57606a;background:#f6f8fa}code{padding:.15em .35em;background:#eff1f3;
+border-radius:4px}pre{overflow:auto;padding:14px;background:#f6f8fa;border-radius:7px}
+pre code{padding:0;background:transparent}table{width:100%;border-collapse:collapse;
+margin:16px 0}th,td{padding:8px 10px;border:1px solid #d0d7de;text-align:left;
+vertical-align:top}th{background:#f6f8fa}img{max-width:100%;height:auto}
+@media(max-width:600px){.email-content{margin:0;padding:20px;border:0;border-radius:0}}
+""".strip()
+
+
+# --------------------------------------------------------------------------
+# Addresses
+# --------------------------------------------------------------------------
+
+def config_file() -> Path:
+    override = os.getenv("NOTIFY_CONFIG")
+    if override:
+        return Path(override)
+    xdg = os.getenv("XDG_CONFIG_HOME") or os.path.expanduser("~/.config")
+    return Path(xdg) / "notify-email" / "config"
+
+
+def load_config() -> dict[str, str]:
+    """Read `key = value` lines; blank lines and # comments are ignored."""
+    values: dict[str, str] = {}
+    try:
+        text = config_file().read_text()
+    except OSError:
+        return values
+    for line in text.splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        key, separator, value = line.partition("=")
+        if separator:
+            values[key.strip().lower()] = value.strip()
+    return values
+
+
+def resolve_addresses() -> tuple[str, str] | None:
+    """Return (sender, recipient), or None when no recipient is configured."""
+    config = load_config()
+    recipient = (os.getenv("NOTIFY_TO") or config.get("to") or "").strip()
+    if not recipient:
+        return None
+    sender = (os.getenv("NOTIFY_FROM") or config.get("from") or recipient).strip()
+    return sender, recipient
+
+
+def address_help() -> str:
+    return (
+        "notify-email: no recipient configured.\n"
+        "  Set NOTIFY_TO=you@example.com, or write it to "
+        f"{config_file()}:\n"
+        "      to = you@example.com\n"
+        "      from = agent@example.com   # optional, defaults to \"to\""
+    )
+
+
+# --------------------------------------------------------------------------
+# Thread identity
+# --------------------------------------------------------------------------
+
+def agent_names() -> set[str]:
+    names = set(DEFAULT_AGENTS)
+    extra = os.getenv("NOTIFY_AGENTS", "")
+    names.update(n.strip() for n in extra.replace(":", ",").split(",") if n.strip())
+    return names
+
+
+def read_proc_stat(pid: int) -> tuple[str, int, str] | None:
+    """Return (comm, ppid, starttime) for pid, or None if unreadable."""
+    try:
+        data = Path(f"/proc/{pid}/stat").read_text()
+    except OSError:
+        return None
+    left, right = data.find("("), data.rfind(")")
+    if left < 0 or right < 0:
+        return None
+    comm = data[left + 1 : right]
+    rest = data[right + 2 :].split()
+    if len(rest) < 20:
+        return None
+    try:
+        return comm, int(rest[1]), rest[19]
+    except ValueError:
+        return None
+
+
+def in_pid_namespace(agents: set[str]) -> bool:
+    """True when pid 1 is an agent process, i.e. we are inside a sandbox.
+
+    Codex gives each sandboxed command a fresh PID namespace, so ancestry
+    keys taken there change on every call and must not be used.
+    """
+    info = read_proc_stat(1)
+    return bool(info and info[0] in agents)
+
+
+def ancestry_key(agents: set[str]) -> tuple[str, str] | None:
+    """Walk up the process tree to the nearest agent process."""
+    pid = os.getpid()
+    for _ in range(24):
+        info = read_proc_stat(pid)
+        if not info:
+            return None
+        comm, ppid, starttime = info
+        if comm in agents:
+            return f"{comm}:{pid}:{starttime}", comm
+        if ppid <= 1:
+            return None
+        pid = ppid
+    return None
+
+
+def git_root() -> str | None:
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            capture_output=True, text=True, timeout=5, check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return result.stdout.strip() if result.returncode == 0 else None
+
+
+def resolve_thread(explicit: str | None) -> tuple[str, str | None, str]:
+    """Return (thread key, harness name or None, how it was resolved)."""
+    named = (explicit or os.getenv("NOTIFY_THREAD", "")).strip()
+    if named:
+        return f"named:{named}", None, "explicit"
+
+    agents = agent_names()
+    if not in_pid_namespace(agents):
+        found = ancestry_key(agents)
+        if found:
+            return found[0], found[1], "ancestry"
+
+    for harness, variable in ENV_SESSION_KEYS:
+        value = os.getenv(variable, "").strip()
+        if value:
+            return f"{harness}:{value}", harness, f"${variable}"
+
+    root = git_root() or os.getcwd()
+    day = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    return f"cwd:{root}:{day}", None, "cwd"
+
+
+def root_message_id(thread_key: str, domain: str) -> str:
+    """Deterministic root id, so stateful and stateless sends agree."""
+    digest = hashlib.sha256(thread_key.encode("utf-8")).hexdigest()[:24]
+    return f"<notify-root-{digest}@{domain}>"
+
+
+def unique_message_id(domain: str) -> str:
+    return f"<notify-{uuid.uuid4().hex}@{domain}>"
+
+
+# --------------------------------------------------------------------------
+# Thread state (best effort: absent state degrades to phantom-root threading)
+# --------------------------------------------------------------------------
+
+def state_path(thread_key: str) -> Path | None:
+    base = os.getenv("NOTIFY_STATE_DIR")
+    if not base:
+        xdg = os.getenv("XDG_STATE_HOME") or os.path.expanduser("~/.local/state")
+        base = os.path.join(xdg, "notify-email")
+    directory = Path(base) / "threads"
+    try:
+        directory.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        return None
+    digest = hashlib.sha256(thread_key.encode("utf-8")).hexdigest()[:16]
+    return directory / f"{digest}.json"
+
+
+@contextlib.contextmanager
+def thread_lock(path: Path | None):
+    """Serialise sends within one thread, but never block a notification.
+
+    Parallel agents in one session contend here. If the holder is slow we
+    give up after LOCK_TIMEOUT_SECONDS and send unsynchronised rather than
+    queue behind it; the caller then falls back to phantom-root threading.
+    """
+    if not path or not HAVE_FLOCK:
+        yield False
+        return
+
+    handle = None
+    acquired = False
+    deadline = time.monotonic() + LOCK_TIMEOUT_SECONDS
+    try:
+        handle = open(path.with_suffix(".lock"), "w")
+        while True:
+            try:
+                fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                acquired = True
+                break
+            except OSError:
+                if time.monotonic() >= deadline:
+                    break
+                time.sleep(0.05)
+    except OSError:
+        pass
+
+    try:
+        yield acquired
+    finally:
+        if handle:
+            if acquired:
+                try:
+                    fcntl.flock(handle, fcntl.LOCK_UN)
+                except OSError:
+                    pass
+            handle.close()
+
+
+def load_state(path: Path | None) -> dict:
+    if not path:
+        return {}
+    try:
+        return json.loads(path.read_text())
+    except (OSError, ValueError):
+        return {}
+
+
+def save_state(path: Path | None, state: dict) -> bool:
+    if not path:
+        return False
+    try:
+        temporary = path.with_suffix(f".tmp{os.getpid()}")
+        temporary.write_text(json.dumps(state, indent=1))
+        os.replace(temporary, path)
+        return True
+    except OSError:
+        return False
+
+
+def content_fingerprint(thread_key: str, subject: str, body: str) -> str:
+    payload = "\x00".join((thread_key, subject, body)).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()[:32]
+
+
+def already_sent(state: dict, fingerprint: str, now: float) -> bool:
+    for entry in state.get("sent", []):
+        if entry.get("hash") == fingerprint:
+            if now - float(entry.get("at", 0)) < DEDUPE_WINDOW_SECONDS:
+                return True
+    return False
+
+
+# --------------------------------------------------------------------------
+# Message construction
+# --------------------------------------------------------------------------
+
+def looks_like_markdown(body: str) -> bool:
+    return bool(MARKDOWN_BLOCK_RE.search(body) or MARKDOWN_INLINE_RE.search(body))
+
+
+def render_markdown(body: str) -> str:
+    fragment = markdown.markdown(
+        body, extensions=["extra", "sane_lists"], output_format="html5"
+    )
+    return bleach.clean(
+        fragment,
+        tags=ALLOWED_TAGS,
+        attributes=ALLOWED_ATTRIBUTES,
+        protocols={"http", "https", "mailto"},
+        strip=True,
+    )
+
+
+def html_document(fragment: str) -> str:
+    return (
+        "<!doctype html>\n"
+        '<html lang="en"><head><meta charset="UTF-8">'
+        '<meta name="viewport" content="width=device-width,initial-scale=1">'
+        f"<style>{EMAIL_CSS}</style></head>"
+        f'<body><main class="email-content">{fragment}</main></body></html>'
+    )
+
+
+def validate_header(name: str, value: str) -> None:
+    if "\n" in value or "\r" in value:
+        raise ValueError(f"{name} must not contain a newline")
+
+
+def subject_tag(harness: str | None) -> str:
+    override = os.getenv("NOTIFY_TAG", "").strip()
+    if override:
+        return f"[{override}] "
+    return f"[AGENT:{harness}] " if harness else "[AGENT] "
+
+
+def build_message(
+    *,
+    subject: str,
+    body: str,
+    sender: str,
+    recipient: str,
+    format_name: str,
+    harness: str | None,
+    message_id: str,
+    in_reply_to: str | None,
+    references: list[str],
+) -> EmailMessage:
+    for name, value in (
+        ("subject", subject), ("sender", sender), ("recipient", recipient)
+    ):
+        validate_header(name, value)
+
+    message = EmailMessage(policy=policy.SMTP)
+    message["From"] = sender
+    message["To"] = recipient
+    message["Subject"] = f"{subject_tag(harness)}{subject}"
+    message["Date"] = format_datetime(datetime.now(timezone.utc))
+    message["Message-ID"] = message_id
+    if in_reply_to:
+        message["In-Reply-To"] = in_reply_to
+    if references:
+        message["References"] = " ".join(references)
+
+    message.set_content(body, subtype="plain", charset="utf-8")
+    if format_name == "markdown":
+        message.add_alternative(
+            html_document(render_markdown(body)), subtype="html", charset="utf-8"
+        )
+    return message
+
+
+def env_flag(name: str) -> bool:
+    return os.getenv(name, "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def read_body(argument: str | None) -> str:
+    if argument is not None and argument != "-":
+        return argument
+    if sys.stdin.isatty():
+        return ""
+    return sys.stdin.read().rstrip("\n")
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="notify-email",
+        description=(
+            "Email a notification. Messages from one agent session are "
+            "threaded automatically; just pass a subject and a body."
+        ),
+    )
+    formats = parser.add_mutually_exclusive_group()
+    formats.add_argument("--auto", action="store_const", const="auto", dest="format")
+    formats.add_argument(
+        "--markdown", "--md", action="store_const", const="markdown", dest="format"
+    )
+    formats.add_argument(
+        "--plain", "--text", action="store_const", const="plain", dest="format"
+    )
+    parser.add_argument("--dry-run", action="store_true",
+                        help="print the MIME message without sending")
+    parser.add_argument("--thread", metavar="NAME",
+                        help="override the automatic thread key (rarely needed)")
+    parser.add_argument("--new", action="store_true",
+                        help="start a fresh thread instead of continuing this session's")
+    parser.add_argument("--list", action="store_true",
+                        help="list known threads (human debugging aid)")
+    parser.add_argument("--why", action="store_true",
+                        help="explain how the thread key was resolved, then exit")
+    parser.add_argument("subject", nargs="?")
+    parser.add_argument("body", nargs="?",
+                        help="message body; omit it or pass '-' to read stdin")
+    return parser
+
+
+def list_threads() -> int:
+    path = state_path("probe")
+    if not path:
+        print("notify-email: no readable state directory", file=sys.stderr)
+        return 1
+    entries = sorted(path.parent.glob("*.json"))
+    if not entries:
+        print("no threads recorded")
+        return 0
+    for entry in entries:
+        state = load_state(entry)
+        when = state.get("updated", 0)
+        stamp = (
+            datetime.fromtimestamp(when, timezone.utc).strftime("%Y-%m-%d %H:%M")
+            if when else "?"
+        )
+        print(f"{stamp}  {len(state.get('ids', [])):3d} msg  "
+              f"{state.get('subject', '?')}  [{state.get('key', entry.stem)}]")
+    return 0
+
+
+def main() -> int:
+    parser = build_parser()
+    args = parser.parse_args()
+
+    if args.list:
+        return list_threads()
+
+    thread_key, harness, how = resolve_thread(args.thread)
+    if args.new:
+        thread_key = f"{thread_key}:new:{uuid.uuid4().hex[:8]}"
+        how += "+new"
+
+    if args.why:
+        print(f"thread key : {thread_key}")
+        print(f"resolved by: {how}")
+        print(f"harness    : {harness or 'unknown'}")
+        path = state_path(thread_key)
+        print(f"state file : {path or 'unavailable (read-only; phantom-root mode)'}")
+        addresses = resolve_addresses()
+        print(f"config     : {config_file()}")
+        print(f"addresses  : {addresses[1] if addresses else 'UNCONFIGURED'}")
+        return 0
+
+    if not args.subject:
+        parser.error("a subject is required")
+
+    format_name = args.format or os.getenv("NOTIFY_FORMAT", "auto").lower()
+    if format_name not in FORMATS:
+        parser.error(
+            f"invalid NOTIFY_FORMAT {format_name!r}; expected auto, markdown, or plain"
+        )
+
+    body = read_body(args.body)
+    if not body.strip():
+        print(f"notify-email: refusing to send an empty body "
+              f"(subject: {args.subject})", file=sys.stderr)
+        print("  pass the body as an argument, or pipe/heredoc it on stdin",
+              file=sys.stderr)
+        return 3
+
+    if format_name == "auto":
+        format_name = "markdown" if looks_like_markdown(body) else "plain"
+    if format_name == "markdown" and not HAVE_MARKDOWN:
+        print("notify-email: Markdown/bleach unavailable; sending plain text",
+              file=sys.stderr)
+        format_name = "plain"
+
+    addresses = resolve_addresses()
+    if not addresses:
+        print(address_help(), file=sys.stderr)
+        return 2
+    sender, recipient = addresses
+    domain = sender.rpartition("@")[2] or "localhost"
+
+    if env_flag("CODEX_SANDBOX_NETWORK_DISABLED"):
+        print("notify-email: the sandbox has networking disabled, so mail cannot "
+              "be sent.\n  Re-run this command with escalated permissions "
+              "(outside the sandbox).", file=sys.stderr)
+        return 4
+
+    path = state_path(thread_key)
+    now = time.time()
+    root_id = root_message_id(thread_key, domain)
+    fingerprint = content_fingerprint(thread_key, args.subject, body)
+
+    with thread_lock(path) as holding_lock:
+        stateful = bool(path) and holding_lock
+        state = load_state(path) if stateful else {}
+
+        if stateful and already_sent(state, fingerprint, now):
+            print("notify-email: identical message already sent to this thread; "
+                  "skipping", file=sys.stderr)
+            return 0
+
+        ids = state.get("ids") or []
+        if not ids:
+            # First message in the thread owns the deterministic root id.
+            message_id, in_reply_to, references = root_id, None, []
+        else:
+            # Keep the thread flat: every later message replies to the root,
+            # making them siblings rather than an ever-deepening reply chain.
+            reply_to = state.get("root") or ids[0]
+            message_id = unique_message_id(domain)
+            in_reply_to, references = reply_to, [reply_to]
+
+        if not stateful:
+            # No usable state (read-only filesystem, or the lock was busy).
+            # Reference the deterministic root so these messages still land
+            # in the same thread as the stateful ones.
+            message_id = unique_message_id(domain)
+            in_reply_to, references = root_id, [root_id]
+
+        try:
+            message = build_message(
+                subject=args.subject, body=body, sender=sender,
+                recipient=recipient, format_name=format_name, harness=harness,
+                message_id=message_id, in_reply_to=in_reply_to,
+                references=references,
+            )
+        except (ValueError, TypeError) as exc:
+            print(f"notify-email: {exc}", file=sys.stderr)
+            return 2
+
+        payload = message.as_bytes(policy=policy.SMTP)
+        if args.dry_run or env_flag("NOTIFY_DRY_RUN"):
+            sys.stdout.buffer.write(payload)
+            return 0
+
+        msmtp = shutil.which("msmtp")
+        if not msmtp:
+            print("notify-email: msmtp is not installed or not on PATH",
+                  file=sys.stderr)
+            return 127
+
+        try:
+            result = subprocess.run(
+                [msmtp, f"--from={sender}", recipient], input=payload,
+                check=False, timeout=SEND_TIMEOUT_SECONDS,
+            )
+        except subprocess.TimeoutExpired:
+            print(f"notify-email: msmtp timed out after "
+                  f"{SEND_TIMEOUT_SECONDS:.0f}s; nothing recorded",
+                  file=sys.stderr)
+            return 75
+        if result.returncode != 0:
+            # Leave state untouched so a retry reuses this slot in the chain.
+            return result.returncode
+
+        if not stateful:
+            return 0
+
+        ids.append(message_id)
+        sent = [
+            entry for entry in state.get("sent", [])
+            if now - float(entry.get("at", 0)) < DEDUPE_RETENTION_SECONDS
+        ]
+        sent.append({"hash": fingerprint, "at": now, "id": message_id})
+        save_state(path, {
+            "key": thread_key, "root": root_id, "harness": harness,
+            "subject": state.get("subject") or args.subject,
+            "ids": ids, "sent": sent, "updated": now,
+        })
+        return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,0 +1,270 @@
+#!/usr/bin/env python3
+
+import argparse
+import fcntl
+import html
+import json
+import mimetypes
+import shutil
+import socket
+import struct
+import subprocess
+import webbrowser
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+from urllib.parse import quote, unquote, urlsplit
+
+DOCUMENT_SUFFIXES = {".md", ".markdown", ".org"}
+CLASSLESS_CSS = """
+:root { color-scheme: light dark; font: 18px/1.6 system-ui, sans-serif; }
+body { max-width: 52rem; margin: 3rem auto; padding: 0 1.25rem; }
+h1, h2, h3, h4 { line-height: 1.2; margin-top: 2em; }
+a { color: #268bd2; }
+img, video { max-width: 100%; height: auto; }
+pre { overflow-x: auto; padding: 1rem; border-radius: .4rem; }
+code, pre { background: color-mix(in srgb, CanvasText 8%, Canvas); }
+code { padding: .15rem .3rem; border-radius: .2rem; }
+blockquote { margin-left: 0; padding-left: 1rem; border-left: .25rem solid #8888; }
+table { border-collapse: collapse; width: 100%; }
+th, td { padding: .4rem .6rem; border: 1px solid #8888; text-align: left; }
+hr { border: 0; border-top: 1px solid #8888; }
+"""
+
+
+def is_document(path):
+    return path.suffix.lower() in DOCUMENT_SUFFIXES
+
+
+def view_url(relative):
+    path = relative.as_posix()
+    return "/view/" + quote("" if path == "." else path)
+
+
+def ipv4_addresses():
+    addresses = {"127.0.0.1"}
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+        for _, name in socket.if_nameindex():
+            request = struct.pack("256s", name.encode()[:15])
+            try:
+                response = fcntl.ioctl(sock.fileno(), 0x8915, request)
+            except OSError:
+                continue
+            addresses.add(socket.inet_ntoa(response[20:24]))
+    return sorted(addresses, key=lambda address: (address.startswith("127."), socket.inet_aton(address)))
+
+
+def javascript_string(value):
+    return json.dumps(value).replace("<", "\\u003c")
+
+
+def page(title, body, script=""):
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{html.escape(title)}</title>
+  <style>{CLASSLESS_CSS}</style>
+</head>
+<body>
+{body}
+{script}
+</body>
+</html>
+"""
+
+
+def reload_script(stamp_url):
+    stamp = javascript_string(stamp_url)
+    return f"""<script>
+let previewStamp;
+async function checkForChanges() {{
+  try {{
+    const response = await fetch({stamp}, {{cache: "no-store"}});
+    const nextStamp = await response.text();
+    if (previewStamp !== undefined && previewStamp !== nextStamp) location.reload();
+    previewStamp = nextStamp;
+  }} catch (_) {{}}
+}}
+checkForChanges();
+setInterval(checkForChanges, 1000);
+</script>"""
+
+
+def document_page(root, target):
+    relative = target.relative_to(root)
+    source_format = "org" if target.suffix.lower() == ".org" else "gfm+tex_math_dollars"
+    result = subprocess.run(
+        [
+            "pandoc",
+            "--from",
+            source_format,
+            "--to",
+            "html5",
+            "--standalone",
+            "--mathml",
+            "--metadata",
+            f"pagetitle={target.name}",
+        ],
+        input=target.read_bytes(),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    if result.returncode:
+        message = result.stderr.decode(errors="replace").strip()
+        raise RuntimeError(message or "Pandoc failed")
+
+    content = result.stdout.decode(errors="replace")
+    content = content.replace("</head>", f"<style>{CLASSLESS_CSS}</style>\n</head>", 1)
+    stamp_url = "/_stamp/" + quote(relative.as_posix())
+    return content.replace("</body>", reload_script(stamp_url) + "\n</body>", 1)
+
+
+def directory_page(root, directory):
+    relative = directory.relative_to(root)
+    relative_path = "" if relative == Path(".") else relative.as_posix()
+    items = []
+    if relative_path:
+        items.append('<li><a href="../">../</a></li>')
+
+    children = sorted(
+        (child for child in directory.iterdir() if child.is_dir() or is_document(child)),
+        key=lambda child: (not child.is_dir(), child.name.casefold()),
+    )
+    for child in children:
+        child_relative = child.relative_to(root)
+        label = child.name + ("/" if child.is_dir() else "")
+        items.append(
+            f'<li><a href="{html.escape(view_url(child_relative), quote=True)}">'
+            f"{html.escape(label)}</a></li>"
+        )
+
+    listing = "\n".join(items) or "<li><em>No Markdown or Org files</em></li>"
+    title = relative_path or root.name
+    body = f"<main><h1>{html.escape(title)}</h1><ul>{listing}</ul></main>"
+    stamp_url = "/_stamp/" + quote(relative_path)
+    return page(title, body, reload_script(stamp_url))
+
+
+def make_handler(root):
+    class PreviewHandler(BaseHTTPRequestHandler):
+        def resolve(self, encoded):
+            candidate = (root / unquote(encoded)).resolve()
+            try:
+                candidate.relative_to(root)
+            except ValueError:
+                return None
+            return candidate
+
+        def send_bytes(self, content, content_type, status=200):
+            self.send_response(status)
+            self.send_header("Content-Type", content_type)
+            self.send_header("Content-Length", str(len(content)))
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            self.wfile.write(content)
+
+        def send_html(self, content, status=200):
+            self.send_bytes(content.encode(), "text/html; charset=utf-8", status)
+
+        def do_GET(self):
+            path = urlsplit(self.path).path
+            if path.startswith("/view/"):
+                self.serve_view(path[len("/view/"):])
+            elif path.startswith("/_stamp/"):
+                self.serve_stamp(path[len("/_stamp/"):])
+            else:
+                self.send_error(404)
+
+        def serve_view(self, encoded):
+            target = self.resolve(encoded)
+            if target is None:
+                self.send_error(403, "Outside preview root")
+            elif target.is_dir():
+                self.send_html(directory_page(root, target))
+            elif not target.is_file():
+                self.send_error(404)
+            elif is_document(target):
+                try:
+                    self.send_html(document_page(root, target))
+                except (OSError, RuntimeError) as error:
+                    self.send_error(500, str(error))
+            else:
+                content_type = mimetypes.guess_type(target.name)[0] or "application/octet-stream"
+                try:
+                    self.send_bytes(target.read_bytes(), content_type)
+                except OSError as error:
+                    self.send_error(500, str(error))
+
+
+        def serve_stamp(self, encoded):
+            target = self.resolve(encoded)
+            if target is None:
+                self.send_error(403, "Outside preview root")
+                return
+            try:
+                stat = target.stat()
+                value = f"{stat.st_mtime_ns}:{stat.st_size}".encode()
+            except OSError:
+                value = b"missing"
+            self.send_bytes(value, "text/plain; charset=utf-8")
+
+        def log_message(self, format, *args):
+            if not self.path.startswith("/_stamp/"):
+                super().log_message(format, *args)
+
+
+    return PreviewHandler
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Preview Markdown and Org in a local browser")
+    parser.add_argument("path", type=Path, help="Markdown/Org file or directory")
+    parser.add_argument(
+        "--host",
+        choices=("127.0.0.1", "0.0.0.0"),
+        default="127.0.0.1",
+        help="bind address (default: 127.0.0.1)",
+    )
+    parser.add_argument("--no-open", action="store_true", help="do not open a browser")
+    args = parser.parse_args()
+
+    target = args.path.expanduser().resolve()
+    if not target.exists():
+        parser.error(f"path does not exist: {args.path}")
+    if target.is_file() and not is_document(target):
+        parser.error(f"not a Markdown or Org file: {args.path}")
+    if not target.is_file() and not target.is_dir():
+        parser.error(f"not a regular file or directory: {args.path}")
+    if shutil.which("pandoc") is None:
+        parser.error("pandoc is required but was not found")
+
+    root = target.parent if target.is_file() else target
+    start = target.relative_to(root) if target.is_file() else Path()
+    server = ThreadingHTTPServer((args.host, 0), make_handler(root))
+    path = view_url(start)
+    hosts = ipv4_addresses() if args.host == "0.0.0.0" else ["127.0.0.1"]
+    urls = [f"http://{host}:{server.server_port}{path}" for host in hosts]
+    output = [
+        "md-preview",
+        f"Bound to {args.host}:{server.server_port}",
+        f"Serving path {target}",
+        "Available at (non-exhaustive list):",
+        *(f"    {url}" for url in urls),
+        "",
+        "Quit by pressing CTRL-C",
+    ]
+    print("\n".join(output), flush=True)
+    if not args.no_open:
+        webbrowser.open(f"http://127.0.0.1:{server.server_port}{path}")
+
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()
+
+
+if __name__ == "__main__":
+    main()
