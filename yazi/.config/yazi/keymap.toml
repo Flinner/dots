@@ -1,0 +1,92 @@
+# Ranger-flavoured overrides on top of yazi's defaults.
+[mgr]
+prepend_keymap = [
+  # yank / cut / paste / delete chords
+  { on = ["y","y"], run = "yank",                 desc = "Copy" },
+  { on = ["d","d"], run = "yank --cut",           desc = "Cut" },
+  { on = ["p","p"], run = "paste",                desc = "Paste" },
+  { on = ["p","o"], run = "paste --force",        desc = "Paste (overwrite)" },
+  { on = ["d","D"], run = "remove",               desc = "Trash" },
+  { on = ["d","T"], run = "remove --permanently", desc = "Delete permanently" },
+  { on = ["u","d"], run = "unyank",               desc = "Cancel yank" },
+  { on = ["u","y"], run = "unyank",               desc = "Cancel yank" },
+  { on = ["y","p"], run = "copy path",            desc = "Copy path" },
+  { on = ["y","n"], run = "copy filename",        desc = "Copy name" },
+  { on = ["y","."], run = "copy name_without_ext", desc = "Copy name w/o ext" },
+  { on = ["y","d"], run = "copy dirpath",         desc = "Copy dir path" },
+
+  # rename
+  { on = ["c","w"], run = "rename --empty=all",         desc = "Rename" },
+  { on = "a",       run = "rename --cursor=before_ext", desc = "Rename (before ext)" },
+  { on = "I",       run = "rename --cursor=start",      desc = "Rename (start)" },
+  { on = "A",       run = "rename --cursor=end",        desc = "Rename (end)" },
+
+  # marking
+  { on = "<Space>", run = ["toggle", "arrow next"], desc = "Mark" },
+  { on = ["u","v"], run = "toggle_all --state=off", desc = "Unmark all" },
+
+  # movement / preview
+  { on = "J",     run = "arrow 50%",  desc = "Half page down" },
+  { on = "K",     run = "arrow -50%", desc = "Half page up" },
+  { on = "<A-j>", run = "seek 5",     desc = "Scroll preview down" },
+  { on = "<A-k>", run = "seek -5",    desc = "Scroll preview up" },
+  { on = "<C-h>",       run = "hidden toggle" },
+  { on = "<Backspace>", run = "hidden toggle" },
+
+  # shell / console
+  { on = "S", run = 'shell "$SHELL" --block', desc = "Shell here" },
+  { on = "s", run = "shell --interactive",            desc = "Run command" },
+  { on = "!", run = "shell --interactive",            desc = "Run command" },
+  { on = "@", run = "shell --block --interactive",    desc = "Run command (block)" },
+  { on = ["c","d"], run = "cd --interactive",         desc = "cd" },
+  { on = "f", run = "filter --smart",                 desc = "Filter" },
+  { on = "r", run = "open --interactive",             desc = "Open with" },
+  { on = "w", run = "tasks:show",                     desc = "Tasks" },
+
+  # tabs
+  { on = ["g","n"], run = "tab_create --current",     desc = "New tab" },
+  { on = ["g","t"], run = "tab_switch 1 --relative",  desc = "Next tab" },
+  { on = ["g","T"], run = "tab_switch -1 --relative", desc = "Prev tab" },
+  { on = ["g","x"], run = "close",                    desc = "Close tab" },
+
+  # go-to (ranger g*)
+  { on = ["g","h"], run = "cd ~" },
+  { on = ["g","c"], run = "cd ~/.config" },
+  { on = ["g","/"], run = "cd /" },
+  { on = ["g","e"], run = "cd /etc" },
+  { on = ["g","u"], run = "cd /usr" },
+  { on = ["g","l"], run = "follow",           desc = "Follow symlink" },
+  { on = ["g","L"], run = "follow",           desc = "Follow symlink" },
+  { on = ["g","m"], run = "cd /media" },
+  { on = ["g","M"], run = "cd /mnt" },
+  { on = ["g","s"], run = "cd /srv" },
+  { on = ["g","o"], run = "cd /opt" },
+  { on = ["g","v"], run = "cd /var" },
+  { on = ["g","r"], run = "cd /" },
+  { on = ["g","R"], run = "cd /usr/share/ranger" },
+
+  # sort (ranger o*)
+  { on = ["o","n"], run = "sort natural --reverse=no" },
+  { on = ["o","N"], run = "sort natural --reverse=yes" },
+  { on = ["o","b"], run = "sort alphabetical --reverse=no" },
+  { on = ["o","B"], run = "sort alphabetical --reverse=yes" },
+  { on = ["o","s"], run = "sort size --reverse=no" },
+  { on = ["o","S"], run = "sort size --reverse=yes" },
+  { on = ["o","m"], run = "sort mtime --reverse=no" },
+  { on = ["o","M"], run = "sort mtime --reverse=yes" },
+  { on = ["o","e"], run = "sort extension --reverse=no" },
+  { on = ["o","E"], run = "sort extension --reverse=yes" },
+
+  # linemode (ranger M*)
+  { on = ["M","f"], run = "linemode none" },
+  { on = ["M","m"], run = "linemode mtime" },
+  { on = ["M","p"], run = "linemode permissions" },
+  { on = ["M","s"], run = "linemode size" },
+
+  # custom (from rc.conf)
+  { on = ["g","z"], run = "plugin fzf",                       desc = "Fuzzy jump" },
+  { on = "C", run = """shell --block -- bash -c 'read -rei "${PWD##*/}.zip" -p "Archive: " n && apack -- "$n" "${@#"$PWD"/}"' _ %s""", desc = "Compress selection (apack)" },
+  { on = ["g","d"], run = "shell -- dragon-drop -a -x %s",    desc = "Drag & drop" },
+  { on = ["d","l","c"], run = "shell -- latexmk -c",          desc = "latexmk -c" },
+  { on = ["d","l","C"], run = "shell -- latexmk -C",          desc = "latexmk -C" },
+]

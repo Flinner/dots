@@ -1,0 +1,19 @@
+[mgr]
+ratio          = [1, 3, 4]
+sort_by        = "natural"
+sort_sensitive = false
+sort_dir_first = true
+show_hidden    = false
+linemode       = "size"
+scrolloff      = 8
+
+# Reuse ranger's rifle.conf for opening files.
+[opener]
+rifle = [
+  { run = 'rifle %s', block = true, desc = "rifle" },
+]
+
+[open]
+prepend_rules = [
+  { url = "*", use = "rifle" },
+]
